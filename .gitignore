@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.venv*/
+.pytest_cache/
+.ruff_cache/
+
+# 运行时数据（事件库、片段、合成视频、模型）
+data/
+*.db
+*.db-wal
+*.db-shm
+*.avi
+*.mp4
+!docs/**/*.mp4
+models/*.onnx
+models/*.engine
+models/*.trt
+
+# 训练产物
+runs/
+datasets/
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store

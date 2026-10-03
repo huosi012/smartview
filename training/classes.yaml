@@ -1,0 +1,5 @@
+# 检测类别（顺序即类别 id，必须与模型导出时一致）
+names: [stone, well_pipe, stake, concrete_pile, person, animal]
+names_zh: [石块, 井口钢管, 桩体, 水泥桩, 行人, 动物]
+# 标注最小尺寸（像素，1080p 原图）：低于此值的目标不标（远处不可辨），避免噪声标签
+min_box_px: 8

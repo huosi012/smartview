@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartview"
+version = "0.1.0"
+description = "玉米收获机垄内异物视觉预警系统（石块 / 机井井口钢管 / 桩体）— 边缘端软件原型"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "smartview contributors" }]
+keywords = ["agriculture", "harvester", "obstacle-detection", "jetson", "yolo"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+  # numpy >= 2.3 不再支持 Python 3.10（JetPack 6 的系统 Python），上限 <3 保证 Jetson 可装 2.2.x
+  "numpy>=1.26,<3",
+  # OpenCV 5.0 已上 PyPI，接口尚在变化，锁定 4.x；Jetson(aarch64) 使用带 GStreamer 的系统 cv2，不装 wheel
+  "opencv-python-headless>=4.9,<5; platform_machine != 'aarch64'",
+  "pydantic>=2,<3",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+hmi = ["fastapi>=0.110", "uvicorn[standard]>=0.27"]
+onnx = ["onnxruntime>=1.17"]
+jetson = ["Jetson.GPIO", "pyserial>=3.5", "cuda-python"]
+train = ["ultralytics>=8.2", "onnx>=1.15", "onnxslim"]
+dev = [
+  "pytest>=8",
+  "pytest-timeout>=2.3",
+  "httpx>=0.27",
+  "onnx>=1.15",
+  "ruff>=0.5",
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+]
+
+[project.scripts]
+smartview = "smartview.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/huosi012/smartview"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"smartview.hmi" = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --timeout=300"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+src = ["src", "tests", "training", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY"]
+ignore = ["E501", "B008", "UP007"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

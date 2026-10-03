@@ -1,0 +1,71 @@
+# 合成场景回放配置：CPU、离线、classical 基线检测器，无 GPIO。
+# 用法：smartview replay -c configs/replay_synthetic.yaml [--realtime] [--hmi]
+machine:
+  n_rows: 4
+  row_spacing_m: 0.6
+  header_width_m: 2.4
+  path_margin_m: 0.3
+
+speed:
+  source: manual
+  manual_mps: 2.0            # 7.2 km/h
+
+cameras:
+  - id: fwd                  # 驾驶室顶前视相机
+    role: forward
+    source: "synthetic:pipe_forward"
+    width: 640
+    height: 360
+    fps: 15
+    mount: {x_fwd_m: -2.5, y_lat_m: 0.0, z_m: 3.2, pitch_deg: 15, yaw_deg: 0, roll_deg: 0, hfov_deg: 60}
+    detect_crop: [0.05, 0.25, 0.95, 1.0]
+    roi_polygon: [[0.05, 1.0], [0.30, 0.30], [0.70, 0.30], [0.95, 1.0]]
+    rows_covered: [0, 3]
+
+  - id: hdr_l                # 割台左侧近场相机（覆盖第 0、1 行）
+    role: header
+    source: "synthetic:header_selfview"
+    width: 640
+    height: 360
+    fps: 15
+    mount: {x_fwd_m: 0.3, y_lat_m: 0.6, z_m: 0.5, pitch_deg: 25, yaw_deg: 0, roll_deg: 0, hfov_deg: 100}
+    # 画面底部为分禾器 / 割台自身，必须剔除，否则会被当作异物
+    exclude_polygons:
+      - [[0.0, 1.0], [0.0, 0.80], [0.30, 0.66], [0.70, 0.66], [1.0, 0.80], [1.0, 1.0]]
+    rows_covered: [0, 1]
+    purge_channel: header
+
+detector:
+  backend: classical
+  conf_thr: 0.35
+  num_threads: 2
+
+tracker:
+  min_hits: 3
+  max_age: 10
+
+risk:
+  sensitivity: medium
+  hold_s: {L1: 1.0, L2: 2.0, L3: 3.0}
+  cooldown_s: 5
+  mute_max_s: 60
+
+alarm:
+  sinks: [console, hmi]
+  purge:
+    enabled: false           # 真机置 true 并配置 channels
+    channels: {header: 18, forward: 22}
+    burst_s: 1.5
+    period_s: 60
+    on_dirty: true
+
+storage:
+  db_path: ../data/replay/events.db   # 相对配置文件目录 → 仓库根 data/（已 gitignore）
+  clip_dir: ../data/replay/clips
+  pre_roll_s: 5
+  post_roll_s: 3
+
+hmi:
+  enabled: true
+  host: 0.0.0.0
+  port: 8080

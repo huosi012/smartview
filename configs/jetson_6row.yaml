@@ -1,0 +1,125 @@
+# 真机配置示例：6 行玉米收获机，1 路驾驶室前视 + 3 路割台近场 GMSL2 相机，Jetson Orin NX，TensorRT。
+# 复制到 /etc/smartview/config.yaml 后按实际安装位置标定 mount / homography / roi / exclude_polygons。
+# ⚠ GStreamer 管线、GPIO 引脚号、串口设备名因载板与相机型号而异，需真机验证。
+machine:
+  n_rows: 6
+  row_spacing_m: 0.6
+  header_width_m: 3.6
+  path_margin_m: 0.3
+
+speed:
+  source: nmea                 # GNSS 车速；无 GNSS 时改 manual 并在 HMI 设定
+  manual_mps: 1.5
+  nmea_port: /dev/ttyTHS1
+  baud: 9600
+  stale_s: 3.0
+
+cameras:
+  - id: fwd
+    role: forward
+    # 2 MP UYVY GMSL2 相机经解串板映射为 /dev/video0（用 v4l2-ctl --list-formats-ext 核对格式）
+    source: "gst:v4l2src device=/dev/video0 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1080,framerate=30/1 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false"
+    width: 1920
+    height: 1080
+    fps: 30
+    mount: {x_fwd_m: -2.5, y_lat_m: 0.0, z_m: 3.2, pitch_deg: 15, yaw_deg: 0, roll_deg: 0, hfov_deg: 60}
+    homography: null           # 用 scripts/calibrate_homography.py 标定后填入 3x3，优先于 mount
+    detect_crop: [0.15, 0.30, 0.85, 0.95]   # 覆盖 5~20 m 的中心区域，避免整帧缩放丢失远处小目标
+    roi_polygon: [[0.10, 0.95], [0.35, 0.32], [0.65, 0.32], [0.90, 0.95]]
+    exclude_polygons: []       # 若前视画面下缘可见割台 / 机罩，用 smartview calib-mask 学习后填入
+    rows_covered: [0, 5]
+    purge_channel: forward
+
+  - id: hdr_l
+    role: header
+    source: "gst:v4l2src device=/dev/video1 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1080,framerate=30/1 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false"
+    width: 1920
+    height: 1080
+    fps: 30
+    mount: {x_fwd_m: 0.3, y_lat_m: 1.2, z_m: 0.5, pitch_deg: 25, yaw_deg: 0, roll_deg: 0, hfov_deg: 100}
+    exclude_mask_png: masks/hdr_l.png          # smartview calib-mask 生成（白=割台/分禾器）
+    exclude_polygons:
+      - [[0.0, 1.0], [0.0, 0.80], [0.30, 0.66], [0.70, 0.66], [1.0, 0.80], [1.0, 1.0]]
+    rows_covered: [0, 1]
+    purge_channel: header
+
+  - id: hdr_c
+    role: header
+    source: "gst:v4l2src device=/dev/video3 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1080,framerate=30/1 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false"
+    width: 1920
+    height: 1080
+    fps: 30
+    mount: {x_fwd_m: 0.3, y_lat_m: 0.0, z_m: 0.5, pitch_deg: 25, yaw_deg: 0, roll_deg: 0, hfov_deg: 100}
+    exclude_mask_png: masks/hdr_c.png
+    exclude_polygons:
+      - [[0.0, 1.0], [0.0, 0.80], [0.30, 0.66], [0.70, 0.66], [1.0, 0.80], [1.0, 1.0]]
+    rows_covered: [2, 3]
+    purge_channel: header
+
+  - id: hdr_r
+    role: header
+    source: "gst:v4l2src device=/dev/video2 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1080,framerate=30/1 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false"
+    width: 1920
+    height: 1080
+    fps: 30
+    mount: {x_fwd_m: 0.3, y_lat_m: -1.2, z_m: 0.5, pitch_deg: 25, yaw_deg: 0, roll_deg: 0, hfov_deg: 100}
+    exclude_mask_png: masks/hdr_r.png
+    exclude_polygons:
+      - [[0.0, 1.0], [0.0, 0.80], [0.30, 0.66], [0.70, 0.66], [1.0, 0.80], [1.0, 1.0]]
+    rows_covered: [4, 5]
+    purge_channel: header
+
+detector:
+  backend: tensorrt
+  model_path: /opt/smartview/models/smartview_yolov8s_fp16.engine   # training/export_trt.sh 在本机构建
+  classes: [stone, well_pipe, stake, concrete_pile, person, animal]
+  input_size: 640
+  conf_thr: 0.35
+  iou_thr: 0.5
+
+tracker:
+  min_hits: 3
+  max_age: 10
+  conf_high: 0.5
+  conf_low: 0.1
+
+risk:
+  sensitivity: medium
+  hold_s: {L1: 1.0, L2: 2.0, L3: 3.0}
+  cooldown_s: 5
+  mute_max_s: 60
+
+alarm:
+  sinks: [console, gpio, sound, hmi]
+  gpio:
+    mode: BOARD
+    buzzer_pin: 12             # 继电器 IN1 → 蜂鸣器（≥95 dB）
+    lamp_pin: 16               # 继电器 IN2 → 红色灯条
+    lamp_yellow_pin: 18        # 继电器 IN3 → 黄色灯条（可选）
+    active_high: false         # 常见继电器模块低电平有效
+  sound:
+    player: aplay
+    wav_dir: /opt/smartview/assets/sounds
+  purge:
+    enabled: true
+    channels: {forward: 22, header: 24}   # 继电器 IN4/IN5 → 电磁阀
+    burst_s: 1.5
+    period_s: 60
+    on_dirty: true
+    min_interval_s: 10
+    max_duty: 0.10
+
+storage:
+  db_path: /var/lib/smartview/events.db
+  clip_dir: /var/lib/smartview/clips
+  pre_roll_s: 5
+  post_roll_s: 3
+  max_disk_gb: 20
+  ring_fps: 10
+  ring_max_width: 960
+
+hmi:
+  enabled: true
+  host: 0.0.0.0
+  port: 8080
+  mjpeg_fps: 8

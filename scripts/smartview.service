@@ -1,0 +1,21 @@
+[Unit]
+Description=smartview 玉米收获机垄内异物视觉预警
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=smartview
+Group=smartview
+SupplementaryGroups=gpio video dialout audio
+WorkingDirectory=/opt/smartview
+Environment=OMP_NUM_THREADS=2
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/smartview/.venv/bin/smartview run -c /etc/smartview/config.yaml
+Restart=always
+RestartSec=3
+# 掉电保护：收割机熄火时供电模块给出 ≥5 s 延时，服务收到 SIGTERM 后完成事件落盘
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

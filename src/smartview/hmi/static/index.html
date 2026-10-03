@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>smartview 异物预警</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body data-level="0">
+  <header id="banner" class="banner l0">
+    <div class="banner-main">
+      <div class="level-badge" id="levelBadge">L0</div>
+      <div class="banner-text">
+        <div class="level-name" id="levelName">正常</div>
+        <div class="message" id="message">系统启动中…</div>
+        <div class="sub" id="subline"></div>
+      </div>
+    </div>
+    <div class="banner-actions">
+      <button id="btnAck" class="btn big">确认</button>
+      <button id="btnMute" class="btn">静音 30 秒</button>
+      <button id="btnUnmute" class="btn ghost">取消静音</button>
+      <button id="btnTest" class="btn ghost">测试报警</button>
+      <button id="btnPurge" class="btn ghost" title="手动镜头吹扫">镜头吹扫</button>
+    </div>
+  </header>
+
+  <section class="strip">
+    <div class="tile"><span class="k">车速</span><span class="v" id="speed">--</span><span class="badge" id="speedSrc">手动</span></div>
+    <div class="tile"><span class="k">灵敏度</span>
+      <select id="sensitivity"><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select>
+    </div>
+    <div class="tile"><span class="k">设定车速</span><input id="speedInput" type="number" min="0" max="30" step="0.5" value="7.2"> km/h <button id="btnSpeed" class="btn small">应用</button></div>
+    <div class="tile"><span class="k">事件</span><span class="v" id="eventCount">0</span></div>
+    <div class="tile"><span class="k">吹扫</span><span class="v small" id="purgeInfo">未启用</span></div>
+    <div class="tile"><span class="k">连接</span><span class="v small" id="conn">—</span></div>
+    <div class="tile"><label class="k"><input type="checkbox" id="beep"> 浏览器提示音</label></div>
+  </section>
+
+  <main>
+    <section id="cams" class="cams"></section>
+    <section class="events">
+      <h2>事件记录 <small id="stats"></small></h2>
+      <table>
+        <thead><tr><th>时间</th><th>等级</th><th>相机</th><th>类型</th><th>最近距离</th><th>最小TTC</th><th>确认</th><th>快照</th></tr></thead>
+        <tbody id="eventRows"></tbody>
+      </table>
+    </section>
+  </main>
+  <footer id="footer">smartview</footer>
+  <script src="/static/app.js"></script>
+</body>
+</html>
