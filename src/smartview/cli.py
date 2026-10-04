@@ -70,7 +70,7 @@ def _replay(cfg, args, hold: bool) -> int:
         app.start_hmi()
         print(f"HMI: http://127.0.0.1:{cfg.hmi.port}/  （Ctrl-C 退出）", flush=True)
     try:
-        summary = app.run_sync(max_frames=getattr(args, "max_frames", None))
+        summary = app.run_sync(max_frames=getattr(args, "max_frames", None), loop=bool(getattr(args, "loop", False)))
         print(json.dumps(summary.to_dict(), ensure_ascii=False, indent=2), flush=True)
         if hold and args.hmi:
             print("回放结束，HMI 继续运行，按 Ctrl-C 退出", flush=True)
@@ -240,6 +240,7 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("--hmi", action="store_true", help="同时启动 HMI")
     rp.add_argument("--no-hmi", dest="hmi", action="store_false")
     rp.add_argument("--hold", action="store_true", help="回放结束后保持 HMI 运行")
+    rp.add_argument("--loop", action="store_true", help="循环回放（演示 / 展会），Ctrl-C 退出")
     rp.add_argument("--max-frames", type=int, default=None)
     rp.add_argument("--log-detections", default=None)
     rp.add_argument("--seed", type=int, default=None)
@@ -252,6 +253,7 @@ def build_parser() -> argparse.ArgumentParser:
     d.add_argument("--scenario", default=None, help="前视相机场景（pipe_forward / stone_forward / mixed_forward / empty）")
     d.add_argument("--hmi", action="store_true")
     d.add_argument("--realtime", action="store_true")
+    d.add_argument("--loop", action="store_true", help="循环播放场景直到 Ctrl-C（配合 --hmi 做持续演示）")
     d.add_argument("--seed", type=int, default=None)
     d.add_argument("--duration", type=float, default=None)
     d.set_defaults(func=cmd_demo, max_frames=None, log_detections=None)

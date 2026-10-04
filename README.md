@@ -46,6 +46,27 @@ t=   5.87s [L3 危险] 前方 5.7 m 疑似钢管，请立即停车（fwd #10）
 事件 1 开始 … 事件 1 结束（快照 + 前 5 s / 后 3 s 片段已写入 data/demo/clips）
 ```
 
+## 在普通电脑 / 虚拟机 / Docker 中运行
+
+原型不依赖 GPU、相机或 Jetson：任何 Linux 虚拟机（VirtualBox / VMware / Hyper-V / WSL2 / 云主机，推荐 Ubuntu 22.04+）
+给 ≥2 vCPU、≥2 GB 内存、≥2 GB 磁盘即可跑全部测试、演示与 HMI。
+
+```bash
+# 虚拟机内
+git clone <本仓库> smartview && cd smartview
+python3 -m venv .venv && . .venv/bin/activate && pip install -e ".[dev,onnx]"
+smartview demo --hmi --realtime --loop --scenario mixed_forward   # 循环播放，Ctrl-C 退出
+# 宿主机浏览器打开 http://<虚拟机IP>:8080/ （VirtualBox NAT 需添加端口转发 8080→8080，或改桥接网络；WSL2 直接 localhost:8080）
+
+# Docker（宿主机）
+docker build -t smartview . && docker run --rm -p 8080:8080 smartview
+```
+
+- 回放自己的视频：在配置里把 `source` 改为视频路径（`source: /videos/field.mp4`），`mount` 填相机大致安装参数即可；USB 摄像头经 VirtualBox/VMware USB 直通后用 `v4l2:/dev/video0`，网络相机用 `rtsp://...`。
+- 性能：4 vCPU 下合成场景约 0.5× 实时（开销主要在渲染合成画面，回放真实视频无此开销）；不加 `--realtime` 则全速跑。
+- 虚拟机里不可用的部分：GPIO（自动退化为只记录日志的 `FakeGpioDriver`）、TensorRT（用 `detector.backend: onnx` 代替）、GMSL2 相机、音频播放（无 `aplay` 时自动停用，蜂鸣器本就在真机 GPIO 上）。
+- Windows 原生运行理论可行（依赖均有 Windows 轮子），未经测试；推荐 WSL2。
+
 ## 真机部署（Jetson Orin，JetPack 6.x）
 
 ```bash

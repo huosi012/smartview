@@ -13,6 +13,7 @@ class FrameSource(ABC):
     is_live: bool = False
     width: int = 0
     height: int = 0
+    ts_offset: float = 0.0  # 回放源时间戳偏移（循环回放时保证时钟单调）
 
     @abstractmethod
     def open(self) -> None: ...

@@ -131,3 +131,14 @@ def test_cli_replay_smoke(replay_config_path, tmp_path, monkeypatch, capsys):
     assert main(["replay", "-c", str(p), "--max-frames", "20", "--no-hmi"]) == 0
     out = capsys.readouterr().out
     assert '"frames"' in out
+
+
+def test_loop_replay_rewinds_sources_with_monotonic_time(replay_config_path, tmp_path):
+    cfg = _cfg(replay_config_path, tmp_path, cams=("hdr_l",), hdr_scene="empty")
+    app = SmartViewApp(cfg, live=False, hmi=False, duration_s=0.5, console_printer=lambda s: None)  # 每遍 8 帧
+    summary = app.run_sync(max_frames=30, loop=True)
+    assert summary.frames["hdr_l"] == 30 and app.passes >= 3
+    assert app.clock.now() > 3 * 0.5
+    ts = [t for t, _ in app.timeline]
+    assert ts == sorted(ts)
+    app.shutdown()

@@ -76,7 +76,7 @@ class OpenCVSource(FrameSource):
             else:
                 self._finished = True
                 return None
-        ts = self.clock.now() if self.is_live else self.seq / self.fps
+        ts = self.clock.now() if self.is_live else self.ts_offset + self.seq / self.fps
         fr = Frame(cam_id=self.cam_id, seq=self.seq, ts=ts, image=img, wall_ts=time.time())
         self.seq += 1
         return fr
@@ -134,7 +134,7 @@ class SyntheticSource(FrameSource):
         if self.seq >= self.scene.n_frames:
             return None
         img = self.scene.render(self.seq)
-        fr = Frame(cam_id=self.cam_id, seq=self.seq, ts=self.scene.ts_at(self.seq), image=img, wall_ts=time.time())
+        fr = Frame(cam_id=self.cam_id, seq=self.seq, ts=self.ts_offset + self.scene.ts_at(self.seq), image=img, wall_ts=time.time())
         self.seq += 1
         return fr
 

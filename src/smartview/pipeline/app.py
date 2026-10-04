@@ -94,6 +94,7 @@ class SmartViewApp:
         self.recorder: EventRecorder | None = None
         self.purge: LensPurgeController | None = None
         self.gpio_driver = None
+        self.passes = 0
         self._events_at_start = 0
         self._hmi_server = None
         self._hmi_thread: threading.Thread | None = None
@@ -259,8 +260,24 @@ class SmartViewApp:
             self._hmi_thread = None
 
     # ------------------------------------------------------------- run modes
-    def run_sync(self, max_frames: int | None = None) -> RunSummary:
-        """回放：在调用线程中 lockstep 推进所有相机（确定性）。"""
+    def rewind(self) -> None:
+        """重建所有回放源并重置跟踪状态，用于循环回放；时间戳接着当前时钟继续，保证单调。"""
+        for w in self.workers.values():
+            try:
+                w.source.close()
+            except Exception:  # noqa: BLE001
+                pass
+            src = build_source(w.cam, self.cfg.speed, clock=self.clock, seed=self.seed, duration_s=self.duration_s)
+            src.ts_offset = self.clock.now() + 1.0 / max(src.fps, 1.0)
+            src.open()
+            w.source = src
+            w.tracker.reset()
+            w._dist_hist.clear()
+        self.passes += 1
+
+    def run_sync(self, max_frames: int | None = None, loop: bool = False) -> RunSummary:
+        """回放：在调用线程中 lockstep 推进所有相机（确定性）。``loop=True`` 时源结束后自动重头循环，直到
+        ``max_frames`` 或 ``stop_event``。"""
         assert isinstance(self.clock, ReplayClock)
         t_wall0 = time.perf_counter()
         summary = RunSummary()
@@ -270,33 +287,40 @@ class SmartViewApp:
         n = 0
         last_house = -1.0
         t_first: float | None = None
+        done = False
         try:
-            while active and not self.stop_event.is_set():
-                for cam_id, w in list(active.items()):
-                    fr = w.source.read()
-                    if fr is None:
-                        active.pop(cam_id)
-                        continue
-                    if fr.ts > self.clock.now():
-                        self.clock.set(fr.ts)
-                    if self.realtime:
-                        if t_first is None:
-                            t_first = time.perf_counter() - fr.ts
-                        delay = (t_first + fr.ts) - time.perf_counter()
-                        if delay > 0:
-                            time.sleep(min(delay, 0.5))
-                    w.process(fr)
-                    summary.frames[cam_id] = summary.frames.get(cam_id, 0) + 1
-                    n += 1
-                    if max_frames is not None and n >= max_frames:
-                        active = {}
-                        break
-                now = self.clock.now()
-                if now - last_house >= 0.1:
-                    last_house = now
-                    self._housekeeping()
-                    if n % 50 == 0:
-                        self._publish_system()
+            while not done and not self.stop_event.is_set():
+                while active and not self.stop_event.is_set():
+                    for cam_id, w in list(active.items()):
+                        fr = w.source.read()
+                        if fr is None:
+                            active.pop(cam_id)
+                            continue
+                        if fr.ts > self.clock.now():
+                            self.clock.set(fr.ts)
+                        if self.realtime:
+                            if t_first is None:
+                                t_first = time.perf_counter() - fr.ts
+                            delay = (t_first + fr.ts) - time.perf_counter()
+                            if delay > 0:
+                                time.sleep(min(delay, 0.5))
+                        w.process(fr)
+                        summary.frames[cam_id] = summary.frames.get(cam_id, 0) + 1
+                        n += 1
+                        if max_frames is not None and n >= max_frames:
+                            active = {}
+                            done = True
+                            break
+                    now = self.clock.now()
+                    if now - last_house >= 0.1:
+                        last_house = now
+                        self._housekeeping()
+                        if n % 50 == 0:
+                            self._publish_system()
+                if done or not loop or self.stop_event.is_set():
+                    break
+                self.rewind()
+                active = dict(self.workers)
         finally:
             for w in self.workers.values():
                 w.source.close()
