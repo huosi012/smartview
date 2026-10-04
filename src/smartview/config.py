@@ -216,11 +216,39 @@ class PurgeConfig(_Strict):
         return self
 
 
+class HikvisionExtraRequest(_Strict):
+    """可配置的 ISAPI 扩展请求（声光报警 / 白光灯等，端点因机型而异，须按相机 ISAPI 文档核对）。"""
+
+    method: Literal["PUT", "POST", "GET"] = "PUT"
+    path: str = "/ISAPI/System/IO/outputs/1/trigger"
+    body: str | None = None
+    content_type: str = "application/xml"
+
+
+class HikvisionConfig(_Strict):
+    """海康威视相机 ISAPI 报警回传（sinks 中加入 "hikvision" 启用）。"""
+
+    host: str = "192.168.1.64"
+    port: int = Field(80, ge=1, le=65535)
+    https: bool = False
+    user: str = "admin"
+    password: str = ""
+    password_env: str | None = None  # 优先从环境变量读取密码
+    output_port: int = Field(1, ge=1)  # 报警输出继电器编号
+    pulse_s: float = Field(2.0, gt=0)  # 每次触发保持时间
+    min_interval_s: float = Field(5.0, ge=0)  # 重复触发最小间隔
+    min_level: int = Field(2, ge=1, le=3)  # 达到该等级才触发
+    audio_alarm: HikvisionExtraRequest | None = None  # 声光警戒机型：自定义触发请求
+    audio_wav: str | None = None  # 经双向音频通道播放的 WAV（内置喇叭机型）
+    timeout_s: float = Field(3.0, gt=0)
+
+
 class AlarmConfig(_Strict):
-    sinks: list[Literal["console", "sound", "gpio", "hmi"]] = Field(default_factory=lambda: ["console", "hmi"])
+    sinks: list[Literal["console", "sound", "gpio", "hmi", "hikvision"]] = Field(default_factory=lambda: ["console", "hmi"])
     gpio: GpioConfig = Field(default_factory=GpioConfig)
     sound: SoundConfig = Field(default_factory=SoundConfig)
     purge: PurgeConfig = Field(default_factory=PurgeConfig)
+    hikvision: HikvisionConfig = Field(default_factory=HikvisionConfig)
     refresh_s: float = Field(1.0, gt=0)  # 状态无变化时也按此周期刷新 sinks
 
 
@@ -244,6 +272,27 @@ class HmiConfig(_Strict):
     jpeg_quality: int = Field(70, ge=10, le=100)
 
 
+class CloudConfig(_Strict):
+    """边缘 → 云端上传代理（抽帧 / 事件片段 / 命令轮询 / 模型同步）。"""
+
+    enabled: bool = False
+    url: str = "http://127.0.0.1:8090"
+    api_key: str = ""
+    api_key_env: str | None = None
+    device_id: str = "harvester-01"
+    frame_fps: float = Field(1.0, ge=0, le=30)  # 训练素材抽帧频率；0 = 不传帧
+    frame_max_width: int = Field(1280, ge=160)
+    jpeg_quality: int = Field(85, ge=10, le=100)
+    upload_events: bool = True  # 事件快照 + 片段
+    spool_dir: str = "data/cloud_spool"  # 断网时的磁盘排队目录
+    max_spool_mb: float = Field(2048, gt=0)
+    poll_commands_s: float = Field(5.0, ge=0)  # 云端命令轮询周期；0 = 关闭
+    model_sync: bool = False  # 自动下载云端最新模型（OTA）
+    model_dir: str = "models"
+    model_sync_interval_s: float = Field(600, gt=0)
+    timeout_s: float = Field(10.0, gt=0)
+
+
 class SmartViewConfig(_Strict):
     machine: MachineConfig = Field(default_factory=MachineConfig)
     speed: SpeedConfig = Field(default_factory=SpeedConfig)
@@ -254,6 +303,7 @@ class SmartViewConfig(_Strict):
     alarm: AlarmConfig = Field(default_factory=AlarmConfig)
     storage: StorageConfig = Field(default_factory=StorageConfig)
     hmi: HmiConfig = Field(default_factory=HmiConfig)
+    cloud: CloudConfig = Field(default_factory=CloudConfig)
     base_dir: str | None = Field(None, exclude=True)  # 相对路径的解析基准（配置文件所在目录）
 
     @model_validator(mode="after")
