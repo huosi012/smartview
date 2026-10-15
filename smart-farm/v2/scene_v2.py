@@ -39,8 +39,13 @@ TEX2 = os.path.join(HERE, "tex")
 CAL = json.load(open(os.path.join(HERE, "calib.json")))
 L, W, K = 17.8, 8.5, 0.9
 Z_HI, Z_LO = 3.35, 2.6                   # roof height at corridor side (under the corridor beam) / street side
-COLS = [-3.0, 7.0, 12.0, 17.05]          # corridor columns (x), located from the corridor photos
-DOOR = (14.6, 16.1)                      # door cut into the corridor parapet (client's mark)
+ALC = 2.4                                # louver section at the corridor end; its end is in line with the red wall
+PIER = L - ALC                           # last corridor pier (terrace-side photo), louvers run from here to L
+COLS = [-3.0, 7.0, 12.0, PIER]           # corridor columns (x), located from the corridor photos
+DOOR = (PIER - 1.85, PIER - 0.35)        # door in the last bay, right next to the louver section
+PW = 6.0                                 # raised platform width (estimate); another terrace lies beyond it
+XS = -PW - 14.0                          # how far the existing site is modelled towards the other terrace
+GATE = (-PW - 1.9, -PW - 0.3)            # existing sliding gate + stainless arch onto the other terrace
 HC = 0.35                                # corridor parapet top above the terrace (photos: 0.2-0.45)
 BEAM = 3.45                              # underside of the corridor edge beam
 PHASE1_X = 11.8                          # phase 1 = x 11.8..17.8 (6.0 x 8.5 = 51 m2)
@@ -123,7 +128,7 @@ def build_existing():
     tiles, white, red, caps, rails, conc, floor_c = MB(), MB(), MB(), MB(), MB(), MB(), MB()
     # corridor parapet with the new door gap, coping and railing
     cf = HC - 0.65                                   # corridor floor level
-    for a, b in ((-8.0, DOOR[0]), (DOOR[1], L)):
+    for a, b in ((XS, GATE[0]), (GATE[1], DOOR[0]), (DOOR[1], PIER - 0.25)):
         tiles.box(a, b, -0.25, 0.0, cf - 0.3, HC - 0.05)
         caps.box(a, b, -0.28, 0.03, HC - 0.05, HC)
         x = a + 0.3
@@ -134,39 +139,72 @@ def build_existing():
     for cx in COLS:
         white.box(cx - 0.25, cx + 0.25, -0.55, 0.0, cf, BEAM)
     # corridor floor, ceiling beam and slab, inner wall
-    floor_c.box(-8.0, L, -2.9, -0.25, cf - 0.2, cf)
-    white.box(-8.0, L, -0.55, 0.0, BEAM, BEAM + 0.5)
-    white.box(-8.0, L, -2.9, -0.25, BEAM + 0.35, BEAM + 0.5)
-    white.box(-8.0, L, -3.15, -2.9, cf, BEAM + 0.35)
+    floor_c.box(XS, L, -2.9, -0.25, cf - 0.2, cf)
+    white.box(XS, L + 0.25, -0.55, 0.0, BEAM, BEAM + 0.5)
+    white.box(XS, L + 0.25, -2.9, -0.25, BEAM + 0.35, BEAM + 0.5)
+    white.box(XS, L + 0.25, -3.15, -2.9, cf, BEAM + 0.35)
     # upper floors: red-band parapets like the photos
     for k in (1, 2):
         z = BEAM + 0.5 + (k - 1) * 3.4
-        red.box(-8.0, L, -0.3, 0.0, z, z + 0.95)
-        caps.box(-8.0, L, -0.33, 0.03, z + 0.95, z + 1.02)
-        white.box(-8.0, L, -0.55, 0.0, z + 2.85, z + 3.4)
-        white.box(-8.0, L, -3.15, -2.9, z, z + 3.4)
-        white.box(-8.0, L, -2.9, -0.3, z + 3.25, z + 3.4)
-    white.box(-8.0, L, -9.0, -3.15, 0.0, 10.55)
+        red.box(XS, PIER, -0.3, 0.0, z, z + 0.95)
+        caps.box(XS, PIER, -0.33, 0.03, z + 0.95, z + 1.02)
+        white.box(XS, L + 0.25, -0.55, 0.0, z + 2.85, z + 3.4)
+        white.box(XS, L + 0.25, -3.15, -2.9, z, z + 3.4)
+        white.box(XS, L + 0.25, -2.9, -0.3, z + 3.25, z + 3.4)
+    white.box(XS, L + 0.25, -9.0, -3.15, 0.0, 10.55)
+    # grey slogan cladding above the louver section (terrace-side photo)
+    caps.box(PIER + 0.25, L, -0.12, 0.0, BEAM + 0.5, 10.55)
     # street parapet with piers
-    tiles.box(-8.0, L, W, W + 0.25, 0.0, 1.35)
-    caps.box(-8.0, L, W - 0.02, W + 0.27, 1.35, 1.4)
-    x = -7.5
+    tiles.box(XS, L, W, W + 0.25, 0.0, 1.35)
+    caps.box(XS, L, W - 0.02, W + 0.27, 1.35, 1.4)
+    x = XS + 0.5
     while x < L and MODE == "3d":
         white.box(x, x + 0.3, W, W + 0.25, 1.4, 1.75)
         x += 3.0
-    # red block at the end + white upstand
-    red.box(L, L + 7.0, -9.0, W + 3.0, 0.0, 9.8)
+    # red block: its face is the hall's end wall; on the corridor side it stands ~1 m behind the end louvers
+    red.box(L, L + 7.0, 0.0, W + 3.0, 0.0, 9.8)
+    red.box(L + 1.2, L + 7.0, -9.0, 0.0, 0.0, 9.8)
     for z in (2.85, 5.95, 7.85):
-        caps.box(L - 0.02, L + 7.0, -9.0, W + 3.0, z, z + 0.16)
-    white.box(L - 0.22, L, 0.0, W, 0.0, 0.8)
-    # raised platform beyond the kerb
-    conc.box(-7.0, 0.0, -0.25, W + 0.25, 0.0, K)
-    # terrace slab (old pavers live outside the new floor, which covers the hall)
-    conc.box(-8.0, L + 7.0, -9.0, W + 3.0, -0.3, -0.001)
+        caps.box(L - 0.02, L + 7.0, 0.0, W + 3.0, z, z + 0.16)
+        caps.box(L + 1.18, L + 7.0, -9.0, 0.0, z, z + 0.16)
+    white.box(L - 0.22, L, 0.8, W, 0.0, 0.8)
+    red.box(L, L + 0.25, 0.0, 0.8, 0.0, BEAM + 0.5)            # red frame at the louver/red-wall corner
+    # louver section at the corridor end: solid sill + horizontal fins, side (facing the hall) and end
+    louv = MB()
+    for (x0, x1, y0, y1) in ((PIER + 0.25, L, -0.25, 0.0), (L, L + 0.25, -2.9, -0.25)):
+        tiles.box(x0, x1, y0, y1, cf - 0.3, cf + 0.85)
+        caps.box(x0, x1, y0 - 0.02, y1 + 0.02, cf + 0.85, cf + 0.9)
+        z = cf + 1.2
+        while z < BEAM - 0.1:
+            louv.box(x0, x1, y0, y1, z, z + 0.09)
+            z += 0.42
+    for (x0, y0, y1) in ((PIER + 0.25, -0.25, 0.0), ((PIER + 0.25 + L) / 2 - 0.08, -0.25, 0.0), (L - 0.16, -0.25, 0.0)):
+        red.box(x0, x0 + 0.16, y0, y1, cf + 0.9, BEAM)
+    red.box(L, L + 0.25, -1.65, -1.5, cf + 0.9, BEAM)
+    # raised platform beyond the kerb, the other terrace beyond it, existing steps and gate
+    conc.box(-PW, 0.0, -0.25, W + 0.25, 0.0, K)
+    conc.box(XS, L + 7.0, -9.0, W + 3.0, -0.3, -0.001)
+    steps = MB()
+    for k, (h, d) in enumerate(((0.3, 0.9), (0.6, 0.6), (0.9, 0.3))):
+        steps.box(-PW - d, -PW, 1.6, 2.8, 0.0, h - 0.02)
+    gate = MB()
+    gate.box(GATE[0], GATE[1], -0.15, -0.1, cf + 0.05, HC + 0.35)
+    for k in range(9):
+        gx = GATE[0] + 0.1 + k * (GATE[1] - GATE[0] - 0.2) / 8
+        gate.box(gx - 0.012, gx + 0.012, -0.14, -0.11, cf + 0.05, HC + 0.35)
+    ra = (GATE[1] - GATE[0]) / 2
+    gc = (GATE[0] + GATE[1]) / 2
+    for r in (ra, ra - 0.12):
+        pts = [(gc + r * math.cos(math.pi * t / 16), -0.12, HC + 1.4 + r * math.sin(math.pi * t / 16)) for t in range(17)]
+        for a, b in zip(pts, pts[1:]):
+            gate.tube(a, b, 0.018, 8)
+        gate.tube((gc - r, -0.12, HC), (gc - r, -0.12, HC + 1.4), 0.018, 8)
+        gate.tube((gc + r, -0.12, HC), (gc + r, -0.12, HC + 1.4), 0.018, 8)
     objs = [tiles.build("parapet_tiles", "wall_tile", coll=coll), white.build("white_walls", "paint_white", coll=coll),
             red.build("red_walls", "paint_red", coll=coll), caps.build("caps", "cap_stone", coll=coll),
             rails.build("rails", "steel", smooth=True, coll=coll), conc.build("platform", "concrete", coll=coll),
-            floor_c.build("corridor_floor", "floor_tile", coll=coll)]
+            floor_c.build("corridor_floor", "floor_tile", coll=coll), louv.build("louver_fins", "paint_white", coll=coll),
+            steps.build("old_steps", "wood_slat", coll=coll), gate.build("old_gate", "steel", coll=coll)]
     # bulletin boards on the street parapet (existing, kept)
     for i, cx in enumerate((3.0, 9.5)):
         objs.append(plane_uv(f"board{i}", (cx, W - 0.01, 0.85), (2.8, 0.9), (math.radians(90), 0, 0),
@@ -176,7 +214,7 @@ def build_existing():
     if MODE == "3d":
         build_context()
         cf = HC - 0.65
-        for x in (9.5, 14.5, 19.0):
+        for x in (9.5, 14.0, 16.6):
             ld = bpy.data.lights.new("corr", "AREA")
             ld.size = 0.4
             ld.energy = 120
@@ -279,14 +317,21 @@ def build_shell():
     gl, gf = MB(), MB()
     # corridor side: glass sealing the railing, coping to roof (door bay left open for the door)
     yg = 0.04
-    segs = [(0.0, DOOR[0] - 0.05), (DOOR[1] + 0.05, L - 0.02)]
+    segs = [(0.0, DOOR[0] - 0.05), (DOOR[1] + 0.05, PIER - 0.25)]
     for a, b in segs:
         gl.poly([(a, yg, HC), (b, yg, HC), (b, yg, roof_z(yg)), (a, yg, roof_z(yg))])
         gf.box(a, b, yg - 0.03, yg + 0.03, HC, HC + 0.05)
         gf.box(a, b, yg - 0.03, yg + 0.03, 2.3, 2.35)
     for x in BARS:
-        if not (DOOR[0] - 0.1 < x < DOOR[1] + 0.1):
+        if not (DOOR[0] - 0.1 < x < DOOR[1] + 0.1) and x < PIER - 0.25:
             gf.box(x - 0.025, x + 0.025, yg - 0.03, yg + 0.03, HC, roof_z(yg))
+    # louver section: glass on the hall side (client: seal the louvers, LED strips + potted plants)
+    yl = 0.12
+    gl.poly([(PIER + 0.25, yl, 0.0), (L - 0.02, yl, 0.0), (L - 0.02, yl, roof_z(yl)), (PIER + 0.25, yl, roof_z(yl))])
+    for x in (PIER + 0.25, (PIER + 0.25 + L) / 2, L - 0.05):
+        gf.box(x - 0.025, x + 0.025, yl - 0.03, yl + 0.03, 0.0, roof_z(yl))
+    for z in (0.0, 2.35):
+        gf.box(PIER + 0.25, L - 0.02, yl - 0.03, yl + 0.03, z, z + 0.05)
     # threshold step from the corridor up into the hall
     stp = MB()
     stp.box(DOOR[0], DOOR[1], -0.3, 0.3, HC - 0.65, 0.0)
@@ -345,17 +390,19 @@ def build_shell():
 def build_signage():
     coll = collection("signage")
     sg = MB()
-    x0, x1 = 13.7, 17.1
-    sg.box(x0, x1, -0.36, -0.22, 2.48, 3.08)
+    x0, x1 = DOOR[0] - 0.65, PIER - 0.3                # between the column at 12.0 and the last pier
+    fh = (x1 - x0) / 6.0
+    sg.box(x0, x1, -0.36, -0.22, 3.1 - fh - 0.04, 3.1)
     sg.build("fascia", "sign_green", coll=coll, bevel=0.01)
-    plane_uv("fascia_face", ((x0 + x1) / 2, -0.362, 2.78), (x1 - x0, 0.6), (math.radians(90), 0, 0), "fascia", coll)
+    plane_uv("fascia_face", ((x0 + x1) / 2, -0.362, 3.08 - fh / 2), (x1 - x0, fh), (math.radians(90), 0, 0), "fascia", coll)
     # totem in the corridor beside the door
     tb = MB()
-    tb.box(13.85, 14.45, -0.75, -0.65, 0.0, 0.05)
+    tx = DOOR[0] - 0.6
+    tb.box(tx - 0.3, tx + 0.3, -0.75, -0.65, HC - 0.65, HC - 0.6)
     tb.build("totem_base", "frame", coll=coll)
-    plane_uv("totem", (14.15, -0.76, 0.95), (0.6, 1.8), (math.radians(90), 0, 0), "totem", coll)
+    plane_uv("totem", (tx, -0.76, HC - 0.6 + 0.9), (0.6, 1.8), (math.radians(90), 0, 0), "totem", coll)
     bk = MB()
-    bk.box(13.85, 14.45, -0.74, -0.68, 0.05, 1.85)
+    bk.box(tx - 0.3, tx + 0.3, -0.74, -0.68, HC - 0.6, HC - 0.6 + 1.8)
     bk.build("totem_back", "sign_green", coll=coll)
     # big letters on the red wall above the roof (face -x, toward the platform)
     text("智慧农业科普展厅", S.CJK_FONT, 0.85, (L - 0.06, 4.7, 9.0), (math.radians(90), 0, math.radians(-90)),
@@ -614,6 +661,35 @@ def build_interior(P):
         link(lo, coll)
 
 
+def build_louver_display(P):
+    """Potted plants on the louver sill/fins and LED strips under the fins (client's plant-observation window)."""
+    coll = collection("louver_display")
+    rnd = random.Random(21)
+    cf = HC - 0.65
+    pots, led = MB(), MB()
+    levels = [cf + 0.9, cf + 1.2 + 0.42 + 0.09, cf + 1.2 + 0.84 + 0.09]
+    runs = [("side", PIER + 0.45, L - 0.25), ("end", -2.7, -0.45)]
+    for kind, a, b in runs:
+        n = int((b - a) / 0.3)
+        for lv in levels:
+            for k in range(n):
+                t = a + (k + 0.5) * (b - a) / n
+                x, y = (t, -0.12) if kind == "side" else (L + 0.12, t)
+                r = rnd.uniform(0.055, 0.07)
+                pots.tube((x, y, lv), (x, y, lv + 0.11), r * 0.8, 14, r1=r)
+                instance(rnd.choice(P["small"] + P["fern"] + P["red"]), "lp", (x, y, lv + 0.1), (0, 0, rnd.uniform(0, 6)),
+                         rnd.uniform(0.7, 0.95), coll)
+        z = cf + 1.2
+        while z < BEAM - 0.1:
+            if kind == "side":
+                led.box(a - 0.15, b + 0.15, -0.2, -0.17, z - 0.012, z)
+            else:
+                led.box(L + 0.03, L + 0.06, a - 0.15, b + 0.15, z - 0.012, z)
+            z += 0.42
+    pots.build("louver_pots", "white_plastic", smooth=True, coll=coll)
+    led.build("louver_led", "led_warm", coll=coll)
+
+
 # ---------------------------------------------------------------- world / cameras
 def world_overcast(strength=1.0, sun=0.6):
     sc = bpy.context.scene
@@ -661,12 +737,12 @@ def calibrated_camera(name):
 
 VIEWS = {
     # name: (location, target, lens, shift_y)
-    "interior_in": ((16.4, 0.9, 1.55), (6.0, 6.2, 1.25), 16.0, 0.04),
+    "interior_in": ((DOOR[0] + 0.75, 0.9, 1.55), (4.0, 6.2, 1.25), 16.0, 0.04),
     "interior_wall": ((8.6, 6.6, 1.6), (17.8, 3.0, 1.5), 17.0, 0.06),
     "interior_kerb": ((5.2, 1.6, 1.5), (0.0, 5.8, 0.8), 18.0, 0.02),
     "germ": ((1.75, 1.35, 1.2), (0.3, 3.9, 0.55), 22.0, 0.0),
     "aerial": ((-7.0, 21.0, 17.5), (8.6, 3.2, 0.0), 30.0, 0.0),
-    "corridor": ((14.2, -2.75, 1.25), (15.6, 0.0, 1.25), 15.0, 0.12),
+    "corridor": ((DOOR[0] - 1.0, -2.7, 1.2), (PIER + 0.4, 0.3, 1.2), 15.0, 0.12),
 }
 
 
@@ -723,7 +799,10 @@ def main():
     build_existing()
     roof_coll = build_shell()
     build_signage()
-    build_interior(plant_meshes())
+    P = plant_meshes()
+    build_interior(P)
+    if MODE == "3d":            # photo-matched alignment at the far corridor end is too loose for small props
+        build_louver_display(P)
     sc = bpy.context.scene
     S.setup_render((960, 640), args.samples)
     if MODE == "montage":
