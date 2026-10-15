@@ -1,5 +1,5 @@
 """Finish the v2 images: title badges, callouts (montages, placed by projecting 3D anchors
-through the calibrated cameras), the annotated plan, and watermarked preview copies.
+through the calibrated cameras) and the annotated plan.
 
     python annotate_v2.py
 """
@@ -13,7 +13,6 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 R = os.environ.get("V2_RENDERS", os.path.join(HERE, "renders"))
 FINAL = os.path.join(R, "final")
-PREV = os.path.join(R, "preview_watermark")
 CJK = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
 CAL = json.load(open(os.path.join(HERE, "calib.json")))
 GREEN = (24, 58, 44)
@@ -225,25 +224,8 @@ def plan():
     sheet.save(os.path.join(FINAL, "10_plan.jpg"), quality=92)
 
 
-def watermark(im, text="智慧农业设计"):
-    W_, H_ = im.size
-    layer = Image.new("RGBA", (W_ * 2, H_ * 2), (0, 0, 0, 0))
-    d = ImageDraw.Draw(layer)
-    f = font(max(W_, H_) / 28)
-    step_x, step_y = int(max(W_, H_) / 4.2), int(max(W_, H_) / 7)
-    for j, yy in enumerate(range(0, H_ * 2, step_y)):
-        for xx in range(-(j % 2) * step_x // 2, W_ * 2, step_x):
-            d.text((xx, yy), text, font=f, fill=(255, 255, 255, 70))
-    layer = layer.rotate(25, resample=Image.BICUBIC)
-    layer = layer.crop((W_ // 2, H_ // 2, W_ // 2 + W_, H_ // 2 + H_))
-    out = im.convert("RGBA")
-    out.alpha_composite(layer)
-    return out.convert("RGB")
-
-
 def main():
     os.makedirs(FINAL, exist_ok=True)
-    os.makedirs(PREV, exist_ok=True)
     for name, num in ORDER:
         if name in MONTAGES:
             src = os.path.join(R, f"comp_{name}.jpg")
@@ -271,10 +253,6 @@ def main():
     sb = os.path.join(R, "signage_board.jpg")
     if os.path.exists(sb):
         Image.open(sb).save(os.path.join(FINAL, "11_signage.jpg"), quality=92)
-    for fn in sorted(os.listdir(FINAL)):
-        im = Image.open(os.path.join(FINAL, fn)).convert("RGB")
-        im.thumbnail((2400, 2400) if fn.startswith(("10_", "11_")) else (1600, 1600))
-        watermark(im).save(os.path.join(PREV, fn), quality=85)
     print("done:", sorted(os.listdir(FINAL)))
 
 
