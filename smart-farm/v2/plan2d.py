@@ -1,7 +1,8 @@
 """2D top view (CAD-style) of the science hall and its surroundings, for confirming the site
 layout before the 3D views are revised.
 
-    python3 plan2d.py  ->  renders/plan2d.jpg
+    python3 plan2d.py          ->  renders/plan2d.jpg        (site-confirmation draft, with items to measure)
+    python3 plan2d.py --clean  ->  renders/plan2d_clean.jpg  (client version: no estimates, phases or notes)
 
 Coordinates as in scene_v2.py: x along the terrace from the kerb (0) to the red wall (17.8),
 y from the corridor parapet (0) to the street parapet (8.5). Corridor is y < 0.
@@ -114,7 +115,9 @@ def marker(d, x, y, n):
     text(d, (px, py), str(n), 24, col=(255, 255, 255))
 
 
-def main():
+def main(clean=False):
+    def T(draft, client):
+        return client if clean else draft
     img = Image.new("RGB", (WPX + LEG, HPX + MARGIN_T + MARGIN_B), (250, 250, 247))
     d = ImageDraw.Draw(img)
 
@@ -123,18 +126,18 @@ def main():
     rect(d, X0, -0.25 - CW - 1.3, L + 0.25, -0.25 - CW - 0.3, fill=(232, 232, 228))  # classrooms
     text(d, P(5.0, -0.25 - CW - 0.8), "教室", 28, MUTED)
     rect(d, X0, -0.25 - CW, L, -0.25, fill=(236, 233, 224))                       # corridor floor
-    text(d, P(3.6, -1.55), "教学楼走廊（宽约 2.6 m，待量）", 30, MUTED)
+    text(d, P(3.6, -1.55), T("教学楼走廊（宽约 2.6 m，待量）", "教学楼走廊"), 30, MUTED)
     # raised platform
     rect(d, -PW, 0.0, 0.0, W, fill=(214, 214, 210))
     hatch(d, -PW, 0.0, 0.0, W, (190, 190, 186), 0.5, 1)
     text(d, P(-PW / 2, 5.6), "抬高平台（高台）", 32, INK, bg=(240, 240, 236))
     text(d, P(-PW / 2, 4.9), "高出两侧空地约 0.9 m", 24, MUTED)
-    text(d, P(-PW / 2, 4.35), f"宽约 {PW:.0f} m（待量）", 24, MUTED)
+    text(d, P(-PW / 2, 4.35), T(f"宽约 {PW:.0f} m（待量）", f"宽约 {PW:.0f} m"), 24, MUTED)
     # the other terrace beyond the platform (drawn partly, break line)
     bx0 = -PW - BX
     rect(d, bx0, 0.0, -PW, W, fill=(244, 243, 238))
     text(d, P(-PW - BX / 2, 5.4), "另一块空地", 32, INK, bg=(250, 250, 247))
-    text(d, P(-PW - BX / 2, 4.7), "（高台另一侧，长度待量，图中未画完）", 22, MUTED)
+    text(d, P(-PW - BX / 2, 4.7), T("（高台另一侧，长度待量，图中未画完）", "（高台另一侧）"), 22, MUTED)
     zz = [P(bx0 + (0.18 if k % 2 else -0.18), -2.0 + k * 0.6) for k in range(int((W + 2.6) / 0.6) + 1)]
     d.line(zz, fill=MUTED, width=3)
     # existing steel steps from the other terrace up onto the platform
@@ -146,7 +149,8 @@ def main():
     # red block beyond the terrace end (its face is in line with the louver alcove's end wall)
     rect(d, L, 0.0, X1, Y1, fill=(232, 200, 194))
     hatch(d, L, 0.0, X1, Y1, RED, 0.45, 2)
-    text(d, P(L + 1.6, -1.5), "格栅外侧（未测）", 20, MUTED)
+    if not clean:
+        text(d, P(L + 1.6, -1.5), "格栅外侧（未测）", 20, MUTED)
     text(d, P(20.1, 5.2), "红色楼体", 36, RED, bg=(250, 238, 236))
     text(d, P(20.1, 4.4), "（展厅尽端靠红墙）", 24, RED, bg=(250, 238, 236))
     # street side
@@ -191,9 +195,9 @@ def main():
                 outline=ORANGE, width=4)
     text(d, P((ax0 + ax1) / 2, -1.35), "百叶格栅", 28, INK, bg=(255, 255, 255))
     text(d, P((ax0 + ax1) / 2, -1.9), "植物观察窗", 24, MUTED)
-    text(d, P((ax0 + ax1) / 2, -2.35), "（长约 2.4 m，待量）", 20, MUTED)
-    text(d, P((ax0 + ax1) / 2, 0.75), "格栅朝展厅一侧封玻璃", 20, MUTED)
-    text(d, P((ax0 + ax1) / 2, 0.4), "展厅内外都能看到盆栽", 20, MUTED)
+    text(d, P((ax0 + ax1) / 2, -2.35), T("（长约 2.4 m，待量）", "（长约 2.4 m）"), 20, MUTED)
+    text(d, P(ax0 + 0.6, 0.75), "格栅朝展厅一侧封玻璃", 20, MUTED)
+    text(d, P(ax0 + 0.6, 0.4), "展厅内外都能看到盆栽", 20, MUTED)
     # entrance totem in the corridor
     rect(d, DOOR[0] - 0.9, -0.8, DOOR[0] - 0.3, -0.7, fill=GREEN)
 
@@ -252,6 +256,18 @@ def main():
     text(d, P(mid, 1.55), "入口通道", 22, ORANGE)
 
     # phase line
+    if not clean:
+        draw_phase(d)
+
+    # numbered markers
+    marks = [(0.22, 2.2), (2.4, 0.65), (4.5, 7.8), (2.7, 4.25), (6.1, 4.25), (10.6, 4.25), (16.95, 3.2),
+             (17.6, 2.0), (12.6, 0.6), (17.2, 7.0)]
+    for i, (x, y) in enumerate(marks, 1):
+        marker(d, x, y, i)
+    rest(d, img, clean, T)
+
+
+def draw_phase(d):
     x0p, ytop = P(PHASE1_X, W + 0.1)
     _, ybot = P(PHASE1_X, -0.1)
     yy = ytop
@@ -261,27 +277,25 @@ def main():
     text(d, P(14.8, W - 1.75), "一期 6.0 × 8.5 m ≈ 51 ㎡", 26, (255, 255, 255), bg=ORANGE)
     text(d, P(6.0, W - 1.75), "二期 ≈ 100 ㎡", 26, (255, 255, 255), bg=(130, 130, 125))
 
-    # numbered markers
-    marks = [(0.22, 2.2), (2.4, 0.65), (4.5, 7.8), (2.7, 4.25), (6.1, 4.25), (10.6, 4.25), (16.95, 3.2),
-             (17.6, 2.0), (12.6, 0.6), (17.2, 7.0)]
-    for i, (x, y) in enumerate(marks, 1):
-        marker(d, x, y, i)
 
+def rest(d, img, clean, T):
     # dimensions
-    dim_h(d, 0.0, L, Y1 - 0.4, "17.8 m（坎 → 红墙，客户给）")
+    dim_h(d, 0.0, L, Y1 - 0.4, T("17.8 m（坎 → 红墙，客户给）", "17.8 m（坎 → 红墙）"))
     dim_v(d, 0.0, W, -0.55, "8.5 m")
-    dim_h(d, -PW, 0.0, W + 0.6, f"高台 ≈{PW:.1f}（待量）", 22)
+    dim_h(d, -PW, 0.0, W + 0.6, T(f"高台 ≈{PW:.1f}（待量）", f"高台 ≈{PW:.1f} m"), 22)
     dim_h(d, DOOR[0], DOOR[1], -3.75, "1.5", 22)
     dim_h(d, PIER, L, -3.75, "≈2.4", 22)
-    for cx in COLS + [PIER]:
-        px, py = P(cx, -0.55)
-        d.line((px, py, px, P(cx, -3.4)[1]), fill=(170, 170, 166), width=1)
-        text(d, P(cx, -3.25), f"≈{cx:.1f}", 20, MUTED)
-    text(d, P(-PW / 2, -3.25), "柱位（按照片估；高台和另一块空地段未画柱）", 20, MUTED)
+    if not clean:
+        for cx in COLS + [PIER]:
+            px, py = P(cx, -0.55)
+            d.line((px, py, px, P(cx, -3.4)[1]), fill=(170, 170, 166), width=1)
+            text(d, P(cx, -3.25), f"≈{cx:.1f}", 20, MUTED)
+        text(d, P(-PW / 2, -3.25), "柱位（按照片估；高台和另一块空地段未画柱）", 20, MUTED)
 
     # title
-    text(d, (60, 70), "智慧农业科普展厅 · 二维平面（现场关系确认稿）", 56, GREEN, anchor="lm")
-    text(d, (60, 140), "高台两侧各一块空地，展厅在红墙这一侧：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊尽头是百叶格栅段，末端与红墙齐平、侧面朝展厅；入口紧挨格栅",
+    text(d, (60, 70), T("智慧农业科普展厅 · 二维平面（现场关系确认稿）", "智慧农业科普展厅 · 二维平面图"), 56, GREEN, anchor="lm")
+    text(d, (60, 140), T("高台两侧各一块空地，展厅在红墙这一侧：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊尽头是百叶格栅段，末端与红墙齐平、侧面朝展厅；入口紧挨格栅",
+                         "高台两侧各一块空地，展厅在红墙一侧，17.8 m × 8.5 m；走廊尽头为百叶格栅植物观察窗，入口紧挨格栅"),
          28, MUTED, anchor="lm")
     d.rectangle((60, 180, 300, 186), fill=GOLD)
 
@@ -292,7 +306,8 @@ def main():
         d.rectangle((a, sy0 - 8, a + S, sy0 + 8), fill=INK if k % 2 == 0 else (255, 255, 255), outline=INK, width=2)
     text(d, (sx0, sy0 - 30), "0", 22, INK)
     text(d, (sx0 + 5 * S, sy0 - 30), "5 m", 22, INK)
-    text(d, (sx0 + 5 * S + 60, sy0), "朝向未知，图中不标指北；屋面坡向：走廊侧高 → 沿街侧低（灰色箭头）", 24, MUTED, anchor="lm")
+    text(d, (sx0 + 5 * S + 60, sy0), T("朝向未知，图中不标指北；屋面坡向：走廊侧高 → 沿街侧低（灰色箭头）",
+                                       "屋面坡向：走廊侧高 → 沿街侧低（灰色箭头）。示意图，尺寸以现场实测为准"), 24, MUTED, anchor="lm")
 
     # legend
     lx = WPX + 50
@@ -320,11 +335,13 @@ def main():
     keys = [
         ("line", GLASS, "玻璃：走廊栏杆外封闭 / 坎边端墙 / 沿街推拉窗"),
         ("box", WALL, "原有墙体、栏板"),
-        ("box", INK, "走廊柱（位置按照片估）"),
+        ("box", INK, T("走廊柱（位置按照片估）", "走廊柱")),
         ("box", (120, 120, 116), "百叶格栅（走廊尽头，侧面朝展厅）"),
         ("hatch", RED, "红色楼体"),
         ("dash", ORANGE, "一期分界线"),
     ]
+    if clean:
+        keys = keys[:-1]
     for kind, col, s in keys:
         if kind == "line":
             d.line((lx, y, lx + 44, y), fill=col, width=6)
@@ -340,6 +357,15 @@ def main():
         text(d, (lx + 60, y), s, 25, INK, anchor="lm")
         y += 48
     y += 30
+    if not clean:
+        confirm_list(d, lx, y)
+    out = OUT.replace(".jpg", "_clean.jpg") if clean else OUT
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    img.save(out, quality=93)
+    print("saved", out, img.size)
+
+
+def confirm_list(d, lx, y):
     text(d, (lx, y), "请现场确认", 34, ORANGE, anchor="lm")
     y += 54
     for s in ["1. 17.8 m 是否量到红墙（格栅段末端与红墙齐平）",
@@ -352,10 +378,7 @@ def main():
         text(d, (lx, y), s, 24, INK, anchor="lm")
         y += 42
 
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    img.save(OUT, quality=93)
-    print("saved", OUT, img.size)
-
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(clean="--clean" in sys.argv)
