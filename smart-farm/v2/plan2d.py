@@ -1,0 +1,338 @@
+"""2D top view (CAD-style) of the science hall and its surroundings, for confirming the site
+layout before the 3D views are revised.
+
+    python3 plan2d.py  ->  renders/plan2d.jpg
+
+Coordinates as in scene_v2.py: x along the terrace from the kerb (0) to the red wall (17.8),
+y from the corridor parapet (0) to the street parapet (8.5). Corridor is y < 0.
+"""
+import math
+import os
+
+from PIL import Image, ImageDraw, ImageFont
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "renders", "plan2d.jpg")
+CJK = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
+
+L, W = 17.8, 8.5                 # terrace / hall: kerb -> red wall, corridor parapet -> street parapet
+CW = 2.6                         # corridor clear width (estimate)
+COLS = [7.0, 12.0]               # corridor columns located from the photos (estimate)
+PIER = L                         # last pier where the corridor parapet ends, in line with the red wall
+ALC = 2.4                        # louver alcove length beyond the pier (estimate)
+DOOR = (15.8, 17.3)              # door in the last bay, right next to the louver alcove
+PHASE1_X = 11.8
+
+S = 92                           # px per metre
+X0, X1 = -4.6, 22.4              # drawn extent (m)
+Y0, Y1 = -4.3, 10.4
+MARGIN_T, MARGIN_B, LEG = 250, 190, 1180
+WPX = int((X1 - X0) * S)
+HPX = int((Y1 - Y0) * S)
+
+INK = (40, 44, 42)
+WALL = (70, 74, 72)
+GLASS = (60, 150, 190)
+RED = (176, 58, 50)
+ORANGE = (214, 110, 50)
+GREEN = (31, 77, 58)
+GOLD = (176, 138, 70)
+MUTED = (110, 112, 108)
+
+
+def font(s):
+    return ImageFont.truetype(CJK, int(s), index=0)
+
+
+def P(x, y):
+    return (int((x - X0) * S), int(MARGIN_T + (Y1 - y) * S))
+
+
+def rect(d, x0, y0, x1, y1, **kw):
+    a, b = P(x0, y1), P(x1, y0)
+    d.rectangle((a[0], a[1], b[0], b[1]), **kw)
+
+
+def hatch(d, x0, y0, x1, y1, col, step=0.35, width=2):
+    """45-degree hatch clipped to a rectangle."""
+    k = x0 - (y1 - y0)
+    while k < x1:
+        pts = []
+        for t in (0.0, 1.0):
+            pass
+        ax, ay = k, y0
+        bx, by = k + (y1 - y0), y1
+        if ax < x0:
+            ay += x0 - ax
+            ax = x0
+        if bx > x1:
+            by -= bx - x1
+            bx = x1
+        if ay <= y1 and by >= y0 and ax <= bx:
+            d.line((P(ax, ay), P(bx, by)), fill=col, width=width)
+        k += step
+
+
+def text(d, xy, s, size, col=INK, anchor="mm", bg=None):
+    f = font(size)
+    if bg:
+        tw = d.textlength(s, font=f)
+        x, y = xy
+        if anchor == "mm":
+            box = (x - tw / 2 - 8, y - size * 0.75, x + tw / 2 + 8, y + size * 0.75)
+        else:
+            box = (x - 6, y - size * 0.75, x + tw + 8, y + size * 0.75)
+        d.rounded_rectangle(box, radius=6, fill=bg)
+    d.text(xy, s, font=f, fill=col, anchor=anchor)
+
+
+def dim_h(d, x0, x1, y, label, size=30, off=0):
+    a, b = P(x0, y), P(x1, y)
+    d.line((a, b), fill=INK, width=2)
+    for p in (a, b):
+        d.line((p[0], p[1] - 12, p[0], p[1] + 12), fill=INK, width=2)
+        d.line((p[0] - 7, p[1] + 7, p[0] + 7, p[1] - 7), fill=INK, width=2)
+    text(d, ((a[0] + b[0]) / 2, a[1] - 22 + off), label, size, bg=(255, 255, 255))
+
+
+def dim_v(d, y0, y1, x, label, size=30):
+    a, b = P(x, y0), P(x, y1)
+    d.line((a, b), fill=INK, width=2)
+    for p in (a, b):
+        d.line((p[0] - 12, p[1], p[0] + 12, p[1]), fill=INK, width=2)
+        d.line((p[0] - 7, p[1] + 7, p[0] + 7, p[1] - 7), fill=INK, width=2)
+    text(d, (a[0] - 10, (a[1] + b[1]) / 2), label, size, bg=(255, 255, 255))
+
+
+def marker(d, x, y, n):
+    px, py = P(x, y)
+    r = 21
+    d.ellipse((px - r, py - r, px + r, py + r), fill=ORANGE, outline=(255, 255, 255), width=3)
+    text(d, (px, py), str(n), 24, col=(255, 255, 255))
+
+
+def main():
+    img = Image.new("RGB", (WPX + LEG, HPX + MARGIN_T + MARGIN_B), (250, 250, 247))
+    d = ImageDraw.Draw(img)
+
+    # ---------------- surroundings
+    rect(d, X0, -0.25 - CW - 0.3, X1, -0.25 - CW, fill=(205, 205, 200))           # classroom wall line
+    rect(d, X0, -0.25 - CW - 1.3, X1, -0.25 - CW - 0.3, fill=(232, 232, 228))     # classrooms
+    text(d, P(5.0, -0.25 - CW - 0.8), "教室", 28, MUTED)
+    rect(d, X0, -0.25 - CW, L + ALC, -0.25, fill=(236, 233, 224))                 # corridor floor
+    text(d, P(3.6, -1.55), "教学楼走廊（宽约 2.6 m，待量）", 30, MUTED)
+    # raised platform
+    rect(d, X0, -0.25, 0.0, W + 0.25, fill=(214, 214, 210))
+    hatch(d, X0, -0.25, 0.0, W + 0.25, (190, 190, 186), 0.5, 1)
+    text(d, P(-1.8, 5.6), "抬高平台", 32, INK, bg=(240, 240, 236))
+    text(d, P(-1.8, 4.9), "（高出露台约 0.9 m）", 24, MUTED)
+    # red block beyond the terrace end + light well next to the alcove
+    rect(d, L, 0.0, X1, Y1, fill=(232, 200, 194))
+    hatch(d, L, 0.0, X1, Y1, RED, 0.45, 2)
+    rect(d, L, 0.0, L + ALC + 0.3, 1.4, fill=(246, 244, 238))                      # light well (shape unmeasured)
+    d.line((P(L, 1.4), P(L + ALC + 0.3, 1.4)), fill=RED, width=5)
+    d.line((P(L + ALC + 0.3, 0.0), P(L + ALC + 0.3, 1.4)), fill=RED, width=5)
+    text(d, P(L + 1.35, 0.6), "天井（形状未测）", 22, MUTED)
+    text(d, P(20.1, 5.2), "红色楼体", 36, RED, bg=(250, 238, 236))
+    text(d, P(20.1, 4.4), "（展厅尽端靠红墙）", 24, RED, bg=(250, 238, 236))
+    # street side
+    rect(d, X0, W, L, W + 0.25, fill=WALL)
+    text(d, P(8.9, W + 0.6), "沿街围墙（保留原宣传栏，墙上装推拉玻璃窗）", 26, MUTED)
+
+    # ---------------- corridor parapet, columns, door, louver alcove
+    rect(d, X0, -0.25, DOOR[0], 0.0, fill=WALL)
+    rect(d, DOOR[1], -0.25, PIER - 0.25, 0.0, fill=WALL)
+    for cx in COLS:
+        rect(d, cx - 0.25, -0.55, cx + 0.25, 0.0, fill=INK)
+    rect(d, PIER - 0.25, -0.55, PIER + 0.25, 0.0, fill=INK)                        # end pier
+    # door: double leaf swing arcs
+    mid = (DOOR[0] + DOOR[1]) / 2
+    for hinge, sgn in ((DOOR[0], 1), (DOOR[1], -1)):
+        hx, hy = P(hinge, 0.0)
+        r = (DOOR[1] - DOOR[0]) / 2 * S
+        box = (hx - r, hy - r, hx + r, hy + r)
+        d.arc(box, 270 if sgn > 0 else 180, 360 if sgn > 0 else 270, fill=ORANGE, width=3)
+        d.line((P(hinge, 0.0), P(hinge, (DOOR[1] - DOOR[0]) / 2)), fill=ORANGE, width=4)
+    text(d, P(mid, -0.75), "入口 1.5 m", 26, ORANGE, bg=(255, 255, 255))
+    # glass sealing the corridor railing (whole hall length except the door)
+    for a, b in ((0.0, DOOR[0]), (DOOR[1], PIER - 0.25)):
+        d.line((P(a, 0.06), P(b, 0.06)), fill=GLASS, width=6)
+    # louver alcove: louvers on the terrace side and the end
+    ax0, ax1 = PIER + 0.25, L + ALC
+    rect(d, ax0, -0.25 - CW, ax1, -0.25, fill=(236, 233, 224))
+    for a, b, horiz in ((ax0, ax1, True),):
+        x = a
+        while x < b:
+            rect(d, x, -0.25, min(b, x + 0.12), 0.0, fill=(120, 120, 116))
+            x += 0.3
+    y = -0.25 - CW
+    while y < -0.25:
+        rect(d, ax1, y, ax1 + 0.25, min(-0.25, y + 0.12), fill=(120, 120, 116))
+        y += 0.3
+    d.rectangle((P(ax0, 0.0)[0], P(ax0, 0.0)[1], P(ax1 + 0.25, -0.25 - CW)[0], P(ax1 + 0.25, -0.25 - CW)[1]),
+                outline=ORANGE, width=4)
+    text(d, P((ax0 + ax1) / 2, -1.35), "百叶格栅", 28, INK, bg=(255, 255, 255))
+    text(d, P((ax0 + ax1) / 2, -1.9), "植物观察窗", 24, MUTED)
+    text(d, P((ax0 + ax1) / 2, -2.35), "（长约 2.4 m，待量）", 20, MUTED)
+    # entrance totem in the corridor
+    rect(d, DOOR[0] - 0.9, -0.8, DOOR[0] - 0.3, -0.7, fill=GREEN)
+
+    # ---------------- hall envelope
+    d.line((P(0.03, 0.0), P(0.03, W)), fill=GLASS, width=6)                          # kerb-end glass wall
+    d.line((P(0.0, W - 0.06), P(L, W - 0.06)), fill=GLASS, width=6)                 # street sliding windows
+    for x in [i * L / 16 for i in range(17)]:
+        d.line((P(x, W - 0.18), P(x, W + 0.02)), fill=GLASS, width=2)
+    d.rectangle((P(0, W)[0], P(0, W)[1], P(L, 0)[0], P(L, 0)[1]), outline=GREEN, width=3)
+    # roof slope arrow
+    sx = 8.8
+    d.line((P(sx, 1.8), P(sx, 6.6)), fill=(150, 150, 146), width=3)
+    tip = P(sx, 6.6)
+    d.polygon([tip, (tip[0] - 12, tip[1] + 22), (tip[0] + 12, tip[1] + 22)], fill=(150, 150, 146))
+
+    # ---------------- interior (same positions as scene_v2.py)
+    fill = (255, 255, 255)
+    # 1 seed germination window along the kerb
+    rect(d, 0.03, 0.4, 0.42, W - 0.4, fill=(150, 112, 80))
+    # 2 vertical hydroponic racks along the corridor glass
+    for a, b in ((1.2, 3.6), (3.9, 6.3), (6.6, 9.0), (9.3, 11.7)):
+        rect(d, a, 0.35, b, 0.95, fill=(226, 214, 238), outline=(150, 120, 170), width=2)
+    # 3 class beds along the street side
+    for k in range(8):
+        a = 1.0 + k * 1.65
+        rect(d, a, 7.35, a + 1.4, 8.25, fill=(120, 92, 66), outline=(80, 60, 40), width=2)
+    # 4 aeroponic towers
+    for (x, y) in [(2.2, 3.1), (3.2, 3.1), (2.2, 5.4), (3.2, 5.4), (12.75, 3.0), (12.75, 5.5)]:
+        a, b = P(x - 0.28, y + 0.28), P(x + 0.28, y - 0.28)
+        d.ellipse((a[0], a[1], b[0], b[1]), fill=(230, 240, 230), outline=(70, 120, 80), width=3)
+    # 5 aquaponics tank
+    rect(d, 5.2, 3.85, 7.0, 4.65, fill=(180, 214, 222), outline=(60, 120, 140), width=3)
+    # 6 workbenches + stools
+    for y0_, y1_ in ((2.6, 3.5), (5.0, 5.9)):
+        rect(d, 9.6, y0_, 11.6, y1_, fill=(196, 170, 140), outline=(130, 100, 70), width=2)
+        for x in (9.95, 10.6, 11.25):
+            for y in (y0_ - 0.32, y1_ + 0.32):
+                a, b = P(x - 0.17, y + 0.17), P(x + 0.17, y - 0.17)
+                d.ellipse((a[0], a[1], b[0], b[1]), fill=(225, 225, 220), outline=(150, 150, 146))
+    # 7 lecture seats
+    for x in (14.0, 14.75, 15.5, 16.25):
+        for y in (2.75, 3.55, 4.35, 5.15, 5.95):
+            a, b = P(x - 0.18, y + 0.18), P(x + 0.18, y - 0.18)
+            d.ellipse((a[0], a[1], b[0], b[1]), fill=(240, 200, 120), outline=(170, 130, 60))
+    # 8 red-wall feature wall + screen
+    rect(d, L - 0.3, 0.3, L - 0.02, 8.2, fill=(140, 96, 60))
+    rect(d, L - 0.36, 3.38, L - 0.24, 5.12, fill=(30, 30, 30))
+    # 9 seedling rack, 10 fertigation
+    rect(d, 12.0, 0.35, 13.2, 0.84, fill=(226, 214, 238), outline=(150, 120, 170), width=2)
+    rect(d, 16.9, 7.45, 17.5, 8.25, fill=(235, 235, 232), outline=(120, 120, 116), width=2)
+    a, b = P(16.15, 8.1), P(16.65, 7.6)
+    d.ellipse((a[0], a[1], b[0], b[1]), fill=(80, 120, 190))
+    # entry clearance
+    d.rectangle((P(DOOR[0], 2.2)[0], P(DOOR[0], 2.2)[1], P(DOOR[1], 0.0)[0], P(DOOR[1], 0.0)[1]),
+                outline=ORANGE, width=2)
+    text(d, P(mid, 1.55), "入口通道", 22, ORANGE)
+
+    # phase line
+    x0p, ytop = P(PHASE1_X, W + 0.1)
+    _, ybot = P(PHASE1_X, -0.1)
+    yy = ytop
+    while yy < ybot:
+        d.line((x0p, yy, x0p, min(ybot, yy + 22)), fill=ORANGE, width=5)
+        yy += 36
+    text(d, P(14.8, W - 1.75), "一期 6.0 × 8.5 m ≈ 51 ㎡", 26, (255, 255, 255), bg=ORANGE)
+    text(d, P(6.0, W - 1.75), "二期 ≈ 100 ㎡", 26, (255, 255, 255), bg=(130, 130, 125))
+
+    # numbered markers
+    marks = [(0.22, 2.2), (2.4, 0.65), (4.5, 7.8), (2.7, 4.25), (6.1, 4.25), (10.6, 4.25), (15.1, 2.2),
+             (17.6, 2.0), (12.6, 0.6), (17.2, 7.0)]
+    for i, (x, y) in enumerate(marks, 1):
+        marker(d, x, y, i)
+
+    # dimensions
+    dim_h(d, 0.0, L, Y1 - 0.4, "17.8 m（坎 → 红墙，客户给）")
+    dim_v(d, 0.0, W, X0 + 0.9, "8.5 m")
+    dim_h(d, DOOR[0], DOOR[1], -3.75, "1.5", 22)
+    dim_h(d, PIER + 0.25, L + ALC, -3.75, "≈2.4", 22)
+    for cx in COLS + [PIER]:
+        px, py = P(cx, -0.55)
+        d.line((px, py, px, P(cx, -3.4)[1]), fill=(170, 170, 166), width=1)
+        text(d, P(cx, -3.25), f"≈{cx:.1f}", 20, MUTED)
+    text(d, P(-2.4, -3.25), "柱位（按照片估）", 20, MUTED)
+
+    # title
+    text(d, (60, 70), "智慧农业科普展厅 · 二维平面（现场关系确认稿）", 56, GREEN, anchor="lm")
+    text(d, (60, 140), "范围：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊延伸过红墙线后为百叶格栅（栅格），入口右侧是格栅而不是红墙",
+         28, MUTED, anchor="lm")
+    d.rectangle((60, 180, 300, 186), fill=GOLD)
+
+    # north-free note + scale bar
+    sx0, sy0 = 60, HPX + MARGIN_T + 110
+    for k in range(5):
+        a = sx0 + k * S
+        d.rectangle((a, sy0 - 8, a + S, sy0 + 8), fill=INK if k % 2 == 0 else (255, 255, 255), outline=INK, width=2)
+    text(d, (sx0, sy0 - 30), "0", 22, INK)
+    text(d, (sx0 + 5 * S, sy0 - 30), "5 m", 22, INK)
+    text(d, (sx0 + 5 * S + 60, sy0), "朝向未知，图中不标指北；屋面坡向：走廊侧高 → 沿街侧低（灰色箭头）", 24, MUTED, anchor="lm")
+
+    # legend
+    lx = WPX + 50
+    text(d, (lx, MARGIN_T + 10), "图例", 44, GREEN, anchor="lm")
+    items = [
+        "种子萌发观察窗（坎内玻璃面，与坎齐平）",
+        "立体水培架 ×4（贴走廊玻璃，走廊可看）",
+        "班级种植箱 ×8",
+        "气雾栽培塔 ×6",
+        "鱼菜共生展示缸",
+        "研学操作台 ×2（12 座）",
+        "科普讲解区（20 座）",
+        "红墙展示墙（大屏 · 时间轴 · 照片墙）",
+        "育苗架",
+        "水肥一体机 + 营养液罐",
+    ]
+    y = MARGIN_T + 80
+    for i, s in enumerate(items, 1):
+        px, py = lx + 21, y
+        d.ellipse((px - 21, py - 21, px + 21, py + 21), fill=ORANGE)
+        text(d, (px, py), str(i), 22, (255, 255, 255))
+        text(d, (lx + 56, y), s, 27, INK, anchor="lm")
+        y += 58
+    y += 20
+    keys = [
+        ("line", GLASS, "玻璃：走廊栏杆外封闭 / 坎边端墙 / 沿街推拉窗"),
+        ("box", WALL, "原有墙体、栏板"),
+        ("box", INK, "走廊柱（位置按照片估）"),
+        ("box", (120, 120, 116), "百叶格栅（走廊尽头）"),
+        ("hatch", RED, "红色楼体"),
+        ("dash", ORANGE, "一期分界线"),
+    ]
+    for kind, col, s in keys:
+        if kind == "line":
+            d.line((lx, y, lx + 44, y), fill=col, width=6)
+        elif kind == "box":
+            d.rectangle((lx, y - 12, lx + 44, y + 12), fill=col)
+        elif kind == "hatch":
+            d.rectangle((lx, y - 12, lx + 44, y + 12), fill=(232, 200, 194))
+            for k in range(0, 44, 10):
+                d.line((lx + k, y + 12, lx + k + 12, y - 12), fill=col, width=2)
+        else:
+            for k in range(0, 44, 16):
+                d.line((lx + k, y, lx + k + 9, y), fill=col, width=5)
+        text(d, (lx + 60, y), s, 25, INK, anchor="lm")
+        y += 48
+    y += 30
+    text(d, (lx, y), "请现场确认", 34, ORANGE, anchor="lm")
+    y += 54
+    for s in ["1. 入口是否在最后一跨（紧挨百叶格栅）",
+              "2. 百叶格栅段长度、走廊宽度",
+              "3. 走廊柱实际位置（图中 ≈7.0 / ≈12.0 / 17.8）",
+              "4. 红墙与走廊尽头之间的天井形状",
+              "5. 露台比走廊地面高多少（门口做台阶还是坡道）"]:
+        text(d, (lx, y), s, 24, INK, anchor="lm")
+        y += 42
+
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    img.save(OUT, quality=93)
+    print("saved", OUT, img.size)
+
+
+if __name__ == "__main__":
+    main()
