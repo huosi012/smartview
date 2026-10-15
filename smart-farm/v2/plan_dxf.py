@@ -27,7 +27,6 @@ LAYERS = {
     "04-走廊": (9, "CONTINUOUS"),
     "05-百叶格栅": (30, "CONTINUOUS"),
     "06-红色楼体": (1, "CONTINUOUS"),
-    "07-天井(未测)": (1, "DASHED"),
     "08-抬高平台": (8, "CONTINUOUS"),
     "09-教室": (8, "CONTINUOUS"),
     "10-展厅玻璃": (4, "CONTINUOUS"),
@@ -113,13 +112,13 @@ def main():
         P.text("16-待确认", f"柱≈{cx * 1000:.0f}(待量)", (cx, -0.8), 0.13)
 
     # corridor + classrooms
-    P.line("04-走廊", (-3.0, CORR), (L + ALC + 0.25, CORR))
+    P.line("04-走廊", (-3.0, CORR), (L + 0.25, CORR))
     P.text("15-文字", "教学楼走廊（净宽约2600，待量）", (4.0, -1.6), 0.28)
-    P.rect("09-教室", -3.0, CORR - 0.3, L + ALC + 0.25, CORR, hatch="ANSI31")
+    P.rect("09-教室", -3.0, CORR - 0.3, L + 0.25, CORR, hatch="ANSI31")
     P.text("15-文字", "教室", (1.8, CORR - 0.55), 0.3)
 
-    # louver alcove at the corridor end (side + end louvers)
-    ax0, ax1 = PIER + 0.25, L + ALC
+    # louver alcove at the corridor end: side louvers face the hall, end louvers in line with the red wall
+    ax0, ax1 = PIER + 0.25, L
     x = ax0
     while x < ax1 - 0.01:
         P.rect("05-百叶格栅", x, -0.25, min(ax1, x + 0.12), 0.0, hatch="SOLID")
@@ -129,19 +128,20 @@ def main():
         P.rect("05-百叶格栅", ax1, y, ax1 + 0.25, min(-0.25, y + 0.12), hatch="SOLID")
         y += 0.3
     P.text("15-文字", "百叶格栅段", ((ax0 + ax1) / 2, -1.2), 0.22)
-    P.text("15-文字", "外封玻璃+灯带+盆栽观察", ((ax0 + ax1) / 2, -1.55), 0.12)
+    P.text("15-文字", "朝展厅侧封玻璃+灯带+盆栽", ((ax0 + ax1) / 2, -1.55), 0.12)
+    P.line("10-展厅玻璃", (ax0, 0.06), (ax1, 0.06))
+    P.text("15-文字", "格栅朝展厅一侧封玻璃，展厅内外都能看到盆栽", ((ax0 + ax1) / 2, 0.45), 0.1)
     P.text("16-待确认", "长≈2400(待量)", ((ax0 + ax1) / 2, -1.85), 0.13)
 
-    # red block + light well (light-well shape is a guess)
-    pts = [(L, 1.4), (L + ALC + 0.3, 1.4), (L + ALC + 0.3, 0.0), (L + 5.5, 0.0), (L + 5.5, W + 2.0), (L, W + 2.0)]
+    # red block: its face is the hall's end wall, in line with the louver alcove's end
+    pts = [(L + 0.25, 0.0), (L + 2.6, 0.0), (L + 2.6, W + 2.0), (L, W + 2.0), (L, 0.0)]
     pts_mm = [(m(a), m(b)) for a, b in pts]
     P.msp.add_lwpolyline(pts_mm, close=True, dxfattribs={"layer": "06-红色楼体"})
     h = P.msp.add_hatch(dxfattribs={"layer": "06-红色楼体"})
     h.set_pattern_fill("ANSI31", scale=60)
     h.paths.add_polyline_path(pts_mm, is_closed=True)
-    P.text("15-文字", "红色楼体（红墙）", (L + 2.8, 5.0), 0.35)
-    P.rect("07-天井(未测)", L, 0.0, L + ALC + 0.3, 1.4)
-    P.text("16-待确认", "天井（形状未测）", (L + 1.35, 0.7), 0.15)
+    P.text("15-文字", "红色楼体（红墙）", (L + 1.3, 5.0), 0.3, rot=90)
+    P.text("16-待确认", "格栅外侧（未测）", (L + 1.3, -1.5), 0.13)
 
     # hall glazing
     P.line("10-展厅玻璃", (0.0, 0.06), (DOOR[0], 0.06))
@@ -220,7 +220,7 @@ def main():
     P.dim((COLS[1], -0.25), (PIER, -0.25), (0.0, CORR - 0.9))
     P.dim((DOOR[0], 0.0), (DOOR[1], 0.0), (0.0, CORR - 1.6))
     P.dim((PIER, -0.25), (ax1, -0.25), (0.0, CORR - 1.6))
-    P.dim((L + ALC + 0.6, -0.25), (L + ALC + 0.6, CORR), (L + ALC + 1.1, 0.0), angle=90)
+    P.dim((L + 0.6, -0.25), (L + 0.6, CORR), (L + 1.1, 0.0), angle=90)
 
     # title + notes
     P.text("15-文字", "智慧农业科普展厅  二维平面（现场关系确认稿，可编辑）", (-3.6, W + 2.6), 0.5,

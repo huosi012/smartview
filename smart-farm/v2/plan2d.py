@@ -18,9 +18,9 @@ CJK = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
 L, W = 17.8, 8.5                 # terrace / hall: kerb -> red wall, corridor parapet -> street parapet
 CW = 2.6                         # corridor clear width (estimate)
 COLS = [7.0, 12.0]               # corridor columns located from the photos (estimate)
-PIER = L                         # last pier where the corridor parapet ends, in line with the red wall
-ALC = 2.4                        # louver alcove length beyond the pier (estimate)
-DOOR = (15.8, 17.3)              # door in the last bay, right next to the louver alcove
+ALC = 2.4                        # louver alcove length (estimate); its end wall is in line with the red wall
+PIER = L - ALC                   # last pier: corridor parapet ends here, louver alcove runs on to the red-wall line
+DOOR = (PIER - 1.85, PIER - 0.35)  # door in the last bay, right next to the louver alcove
 PHASE1_X = 11.8
 
 S = 92                           # px per metre
@@ -116,23 +116,20 @@ def main():
     d = ImageDraw.Draw(img)
 
     # ---------------- surroundings
-    rect(d, X0, -0.25 - CW - 0.3, X1, -0.25 - CW, fill=(205, 205, 200))           # classroom wall line
-    rect(d, X0, -0.25 - CW - 1.3, X1, -0.25 - CW - 0.3, fill=(232, 232, 228))     # classrooms
+    rect(d, X0, -0.25 - CW - 0.3, L + 0.25, -0.25 - CW, fill=(205, 205, 200))     # classroom wall line
+    rect(d, X0, -0.25 - CW - 1.3, L + 0.25, -0.25 - CW - 0.3, fill=(232, 232, 228))  # classrooms
     text(d, P(5.0, -0.25 - CW - 0.8), "教室", 28, MUTED)
-    rect(d, X0, -0.25 - CW, L + ALC, -0.25, fill=(236, 233, 224))                 # corridor floor
+    rect(d, X0, -0.25 - CW, L, -0.25, fill=(236, 233, 224))                       # corridor floor
     text(d, P(3.6, -1.55), "教学楼走廊（宽约 2.6 m，待量）", 30, MUTED)
     # raised platform
     rect(d, X0, -0.25, 0.0, W + 0.25, fill=(214, 214, 210))
     hatch(d, X0, -0.25, 0.0, W + 0.25, (190, 190, 186), 0.5, 1)
     text(d, P(-1.8, 5.6), "抬高平台", 32, INK, bg=(240, 240, 236))
     text(d, P(-1.8, 4.9), "（高出露台约 0.9 m）", 24, MUTED)
-    # red block beyond the terrace end + light well next to the alcove
+    # red block beyond the terrace end (its face is in line with the louver alcove's end wall)
     rect(d, L, 0.0, X1, Y1, fill=(232, 200, 194))
     hatch(d, L, 0.0, X1, Y1, RED, 0.45, 2)
-    rect(d, L, 0.0, L + ALC + 0.3, 1.4, fill=(246, 244, 238))                      # light well (shape unmeasured)
-    d.line((P(L, 1.4), P(L + ALC + 0.3, 1.4)), fill=RED, width=5)
-    d.line((P(L + ALC + 0.3, 0.0), P(L + ALC + 0.3, 1.4)), fill=RED, width=5)
-    text(d, P(L + 1.35, 0.6), "天井（形状未测）", 22, MUTED)
+    text(d, P(L + 1.6, -1.5), "格栅外侧（未测）", 20, MUTED)
     text(d, P(20.1, 5.2), "红色楼体", 36, RED, bg=(250, 238, 236))
     text(d, P(20.1, 4.4), "（展厅尽端靠红墙）", 24, RED, bg=(250, 238, 236))
     # street side
@@ -157,8 +154,9 @@ def main():
     # glass sealing the corridor railing (whole hall length except the door)
     for a, b in ((0.0, DOOR[0]), (DOOR[1], PIER - 0.25)):
         d.line((P(a, 0.06), P(b, 0.06)), fill=GLASS, width=6)
-    # louver alcove: louvers on the terrace side and the end
-    ax0, ax1 = PIER + 0.25, L + ALC
+    # louver alcove: side louvers face the hall, end louvers in line with the red wall
+    d.line((P(PIER + 0.25, 0.06), P(L, 0.06)), fill=GLASS, width=6)                # glass on the hall side
+    ax0, ax1 = PIER + 0.25, L
     rect(d, ax0, -0.25 - CW, ax1, -0.25, fill=(236, 233, 224))
     for a, b, horiz in ((ax0, ax1, True),):
         x = a
@@ -174,6 +172,8 @@ def main():
     text(d, P((ax0 + ax1) / 2, -1.35), "百叶格栅", 28, INK, bg=(255, 255, 255))
     text(d, P((ax0 + ax1) / 2, -1.9), "植物观察窗", 24, MUTED)
     text(d, P((ax0 + ax1) / 2, -2.35), "（长约 2.4 m，待量）", 20, MUTED)
+    text(d, P((ax0 + ax1) / 2, 0.75), "格栅朝展厅一侧封玻璃", 20, MUTED)
+    text(d, P((ax0 + ax1) / 2, 0.4), "展厅内外都能看到盆栽", 20, MUTED)
     # entrance totem in the corridor
     rect(d, DOOR[0] - 0.9, -0.8, DOOR[0] - 0.3, -0.7, fill=GREEN)
 
@@ -242,7 +242,7 @@ def main():
     text(d, P(6.0, W - 1.75), "二期 ≈ 100 ㎡", 26, (255, 255, 255), bg=(130, 130, 125))
 
     # numbered markers
-    marks = [(0.22, 2.2), (2.4, 0.65), (4.5, 7.8), (2.7, 4.25), (6.1, 4.25), (10.6, 4.25), (15.1, 2.2),
+    marks = [(0.22, 2.2), (2.4, 0.65), (4.5, 7.8), (2.7, 4.25), (6.1, 4.25), (10.6, 4.25), (16.95, 3.2),
              (17.6, 2.0), (12.6, 0.6), (17.2, 7.0)]
     for i, (x, y) in enumerate(marks, 1):
         marker(d, x, y, i)
@@ -251,7 +251,7 @@ def main():
     dim_h(d, 0.0, L, Y1 - 0.4, "17.8 m（坎 → 红墙，客户给）")
     dim_v(d, 0.0, W, X0 + 0.9, "8.5 m")
     dim_h(d, DOOR[0], DOOR[1], -3.75, "1.5", 22)
-    dim_h(d, PIER + 0.25, L + ALC, -3.75, "≈2.4", 22)
+    dim_h(d, PIER, L, -3.75, "≈2.4", 22)
     for cx in COLS + [PIER]:
         px, py = P(cx, -0.55)
         d.line((px, py, px, P(cx, -3.4)[1]), fill=(170, 170, 166), width=1)
@@ -260,7 +260,7 @@ def main():
 
     # title
     text(d, (60, 70), "智慧农业科普展厅 · 二维平面（现场关系确认稿）", 56, GREEN, anchor="lm")
-    text(d, (60, 140), "范围：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊延伸过红墙线后为百叶格栅（栅格），入口右侧是格栅而不是红墙",
+    text(d, (60, 140), "范围：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊尽头是百叶格栅段，末端与红墙齐平、侧面朝展厅；入口紧挨格栅",
          28, MUTED, anchor="lm")
     d.rectangle((60, 180, 300, 186), fill=GOLD)
 
@@ -300,7 +300,7 @@ def main():
         ("line", GLASS, "玻璃：走廊栏杆外封闭 / 坎边端墙 / 沿街推拉窗"),
         ("box", WALL, "原有墙体、栏板"),
         ("box", INK, "走廊柱（位置按照片估）"),
-        ("box", (120, 120, 116), "百叶格栅（走廊尽头）"),
+        ("box", (120, 120, 116), "百叶格栅（走廊尽头，侧面朝展厅）"),
         ("hatch", RED, "红色楼体"),
         ("dash", ORANGE, "一期分界线"),
     ]
@@ -321,10 +321,10 @@ def main():
     y += 30
     text(d, (lx, y), "请现场确认", 34, ORANGE, anchor="lm")
     y += 54
-    for s in ["1. 入口是否在最后一跨（紧挨百叶格栅）",
-              "2. 百叶格栅段长度、走廊宽度",
-              "3. 走廊柱实际位置（图中 ≈7.0 / ≈12.0 / 17.8）",
-              "4. 红墙与走廊尽头之间的天井形状",
+    for s in ["1. 17.8 m 是否量到红墙（格栅段末端与红墙齐平）",
+              "2. 入口在最后一跨、紧挨格栅",
+              f"3. 格栅段长度（≈{ALC:.1f} m）、走廊宽度",
+              f"4. 走廊柱实际位置（图中 ≈{COLS[0]:.1f} / ≈{COLS[1]:.1f} / ≈{PIER:.1f}）",
               "5. 露台比走廊地面高多少（门口做台阶还是坡道）"]:
         text(d, (lx, y), s, 24, INK, anchor="lm")
         y += 42
