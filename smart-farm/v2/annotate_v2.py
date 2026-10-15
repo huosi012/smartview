@@ -171,21 +171,9 @@ def plan():
         return a, b + pad_top
 
     d.text((60, 80), NAME, font=font(76), fill=GREEN, anchor="lm")
-    d.text((60, 160), "平面布置图 · 按客户标注：贴红墙、对齐坎、贴沿街围墙；单坡屋面走廊侧高", font=font(36),
+    d.text((60, 160), "平面布置图 · 展厅 17.8 m × 8.5 m，单坡屋面（走廊侧高、沿街侧低）", font=font(36),
            fill=(110, 110, 105), anchor="lm")
     d.rectangle((60, 200, 300, 207), fill=GOLD)
-    # phase line
-    x0, y0 = P(PHASE1_X, -0.6)
-    x1, y1 = P(PHASE1_X, W + 0.6)
-    yy = y0
-    while yy > y1:
-        d.line((x0, yy, x0, max(y1, yy - 24)), fill=ORANGE, width=6)
-        yy -= 40
-    ly = P(PHASE1_X, 1.85)[1]
-    d.rounded_rectangle((x0 + 18, ly - 30, x0 + 470, ly + 30), radius=10, fill=ORANGE + (235,))
-    d.text((x0 + 36, ly), "一期 6.0 m × 8.5 m ≈ 51 ㎡", font=font(32), fill="white", anchor="lm")
-    d.rounded_rectangle((x0 - 300, ly - 30, x0 - 18, ly + 30), radius=10, fill=(120, 120, 115, 225))
-    d.text((x0 - 282, ly), "二期 ≈ 100 ㎡", font=font(32), fill="white", anchor="lm")
     # dimensions
     def dim(p0, p1, label, vertical=False):
         d.line((p0, p1), fill=(60, 60, 60), width=3)
@@ -208,7 +196,7 @@ def plan():
         d.ellipse((px - r, py - r, px + r, py + r), fill=ORANGE + (255,), outline=(255, 255, 255), width=4)
         d.text((px, py), str(i), font=font(26), fill="white", anchor="mm")
     d.text(P(8.5, -0.6), "教学楼走廊", font=font(30), fill=(70, 70, 70), anchor="mm")
-    d.text(P(-1.75, 7.4), "抬高平台", font=font(30), fill=(70, 70, 70), anchor="mm")
+    d.text(P(-0.95, 7.4), "抬高平台", font=font(30), fill=(70, 70, 70), anchor="mm")
     d.text(P(8.5, W + 0.35), "沿街围墙（保留原宣传栏）", font=font(26), fill=(70, 70, 70), anchor="mm")
     # legend column
     lx = Wp + 60
@@ -220,7 +208,7 @@ def plan():
         d.text((lx + 22, y), str(i), font=font(24), fill="white", anchor="mm")
         d.text((lx + 66, y), label, font=font(30), fill=(40, 40, 40), anchor="lm")
         y += step
-    d.text((60, Hp + pad_top + 60), "示意图：场地按客户给的 17.8 m × 8.5 m 绘制，施工前需现场复尺（坎高、走廊与露台高差、红墙泛水）",
+    d.text((60, Hp + pad_top + 60), "示意图，尺寸以现场实测为准",
            font=font(30), fill=(110, 110, 105), anchor="lm")
     os.makedirs(FINAL, exist_ok=True)
     sheet.save(os.path.join(FINAL, "10_plan.jpg"), quality=92)
