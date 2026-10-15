@@ -23,6 +23,8 @@ ALC = 2.4                        # louver alcove length (estimate); its end wall
 PIER = L - ALC                   # last pier: corridor parapet ends here, louver alcove runs on to the red-wall line
 DOOR = (PIER - 1.85, PIER - 0.35)  # door in the last bay, right next to the louver alcove
 PHASE1_X = 11.8
+GAP = 1.2                        # open gap between the end louvers and the red block behind them (as in scene_v2.py)
+END_DOOR = (L - 1.0, L - 0.1)    # existing door in the classroom-side wall at the corridor end (louver photo)
 PW = 6.0                         # raised platform width along the corridor (estimate, to measure)
 BX = 6.5                         # length of the other terrace shown before the break line (not its real size)
 GATE = (-PW - 1.9, -PW - 0.3)    # existing sliding gate under the stainless arch, corridor -> other terrace
@@ -175,8 +177,8 @@ def main(clean=False):
     d = ImageDraw.Draw(img)
 
     # ---------------- surroundings
-    rect(d, X0, -0.25 - CW - 0.3, L + 0.25, -0.25 - CW, fill=(205, 205, 200))     # classroom wall line
-    rect(d, X0, -0.25 - CW - 1.3, L + 0.25, -0.25 - CW - 0.3, fill=(232, 232, 228))  # classrooms
+    rect(d, X0, -0.25 - CW - 0.3, L + GAP, -0.25 - CW, fill=(205, 205, 200))      # classroom wall line
+    rect(d, X0, -0.25 - CW - 1.3, L + GAP, -0.25 - CW - 0.3, fill=(232, 232, 228))  # classrooms
     text(d, P(5.0, -0.25 - CW - 0.8), "教室", 28, MUTED)
     rect(d, X0, -0.25 - CW, L, -0.25, fill=(236, 233, 224))                       # corridor floor
     text(d, P(3.6, -1.55), T("教学楼走廊（宽约 2.6 m，待量）", "教学楼走廊"), 30, MUTED)
@@ -202,8 +204,13 @@ def main(clean=False):
     # red block beyond the terrace end (its face is in line with the louver alcove's end wall)
     rect(d, L, 0.0, X1, Y1, fill=(232, 200, 194))
     hatch(d, L, 0.0, X1, Y1, RED, 0.45, 2)
+    # ... and it continues behind the corridor end, ~1.2 m behind the end louvers
+    yb = -0.25 - CW - 1.3
+    rect(d, L + GAP, yb, X1, 0.0, fill=(232, 200, 194))
+    hatch(d, L + GAP, yb, X1, 0.0, RED, 0.45, 2)
     if not clean:
-        text(d, P(L + 1.6, -1.5), "格栅外侧（未测）", 20, MUTED)
+        text(d, P(L + GAP / 2 + 0.12, -1.5), "空隙", 18, MUTED)
+        text(d, P(L + GAP / 2 + 0.12, -1.85), "≈1.2", 16, MUTED)
     text(d, P(20.1, 5.2), "红色楼体", 36, RED, bg=(250, 238, 236))
     text(d, P(20.1, 4.4), "（展厅尽端靠红墙）", 24, RED, bg=(250, 238, 236))
     # street side
@@ -257,6 +264,15 @@ def main(clean=False):
         text(d, P(ax0 + 0.6, 0.4), "展厅内外都能看到盆栽", 20, MUTED)
     # entrance totem in the corridor
     rect(d, DOOR[0] - 0.9, -0.8, DOOR[0] - 0.3, -0.7, fill=GREEN)
+    # existing door at the corridor end (classroom-side wall, next to the end louvers)
+    yw = -0.25 - CW
+    rect(d, END_DOOR[0], yw - 0.3, END_DOOR[1], yw, fill=(236, 233, 224))
+    dw = END_DOOR[1] - END_DOOR[0]
+    hx, hy = P(END_DOOR[1], yw - 0.3)
+    r = dw * S
+    d.arc((hx - r, hy - r, hx + r, hy + r), 90, 180, fill=INK, width=2)
+    d.line((P(END_DOOR[1], yw - 0.3), P(END_DOOR[1], yw - 0.3 - dw)), fill=INK, width=4)
+    text(d, P(END_DOOR[0] - 1.15, yw - 0.6), "现有门", 20, INK, bg=(255, 255, 255))
     if clean:
         text(d, P(DOOR[0] - 0.6, -1.15), "入口立牌", 20, MUTED)
 
@@ -310,8 +326,8 @@ def rest(d, img, clean, T):
     dim_h(d, 0.0, L, Y1 - 0.4, T("17.8 m（坎 → 红墙，客户给）", "17.8 m（坎 → 红墙）"))
     dim_v(d, 0.0, W, -0.55, "8.5 m")
     dim_h(d, -PW, 0.0, W + 0.6, T(f"高台 ≈{PW:.1f}（待量）", f"高台 ≈{PW:.1f} m"), 22)
-    dim_h(d, DOOR[0], DOOR[1], -3.75, "1.5", 22)
-    dim_h(d, PIER, L, -3.75, "≈2.4", 22)
+    dim_h(d, DOOR[0], DOOR[1], -4.45, "1.5", 22)
+    dim_h(d, PIER, L, -4.45, "≈2.4", 22)
     if not clean:
         for cx in COLS + [PIER]:
             px, py = P(cx, -0.55)
@@ -412,7 +428,8 @@ def confirm_list(d, lx, y):
               f"4. 走廊柱实际位置（图中 ≈{COLS[0]:.1f} / ≈{COLS[1]:.1f} / ≈{PIER:.1f}）",
               "5. 露台比走廊地面高多少（门口做台阶还是坡道）",
               "6. 高台宽度、另一块空地的长度",
-              "7. 另一块空地这次是否一起设计"]:
+              "7. 另一块空地这次是否一起设计",
+              "8. 走廊尽头现有门的位置、开向，门后是什么房间"]:
         text(d, (lx, y), s, 24, INK, anchor="lm")
         y += 42
 

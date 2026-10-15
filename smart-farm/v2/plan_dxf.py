@@ -14,7 +14,7 @@ from ezdxf.enums import TextEntityAlignment
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from plan2d import ALC, BX, COLS, CW, DOOR, GATE, L, PHASE1_X, PIER, PW, W  # noqa: E402
+from plan2d import ALC, BX, COLS, CW, DOOR, END_DOOR, GAP, GATE, L, PHASE1_X, PIER, PW, W  # noqa: E402
 
 OUT = os.path.join(HERE, "renders", "plan2d.dxf")
 MM = 1000.0
@@ -38,6 +38,7 @@ LAYERS = {
     "15-文字": (7, "CONTINUOUS"),
     "16-待确认": (6, "CONTINUOUS"),
     "17-标识": (3, "CONTINUOUS"),
+    "18-现有门": (7, "CONTINUOUS"),
 }
 
 
@@ -130,7 +131,14 @@ def main():
     # corridor + classrooms
     P.line("04-走廊", (-PW - BX, CORR), (L + 0.25, CORR))
     P.text("15-文字", "教学楼走廊（净宽约2600，待量）", (4.0, -1.6), 0.28)
-    P.rect("09-教室", -PW - BX, CORR - 0.3, L + 0.25, CORR, hatch="ANSI31")
+    P.rect("09-教室", -PW - BX, CORR - 0.3, END_DOOR[0], CORR, hatch="ANSI31")
+    P.rect("09-教室", END_DOOR[1], CORR - 0.3, L + GAP, CORR, hatch="ANSI31")
+    # existing door at the corridor end, single leaf (swing direction unknown, drawn into the room)
+    dw = END_DOOR[1] - END_DOOR[0]
+    P.msp.add_arc((m(END_DOOR[1]), m(CORR - 0.3)), m(dw), 180, 270, dxfattribs={"layer": "18-现有门"})
+    P.line("18-现有门", (END_DOOR[1], CORR - 0.3), (END_DOOR[1], CORR - 0.3 - dw))
+    P.text("18-现有门", "现有门", (END_DOOR[0] - 0.5, CORR - 0.6), 0.15)
+    P.text("16-待确认", "位置、开向待确认", (END_DOOR[0] - 0.5, CORR - 0.85), 0.11)
     P.text("15-文字", "教室", (1.8, CORR - 0.55), 0.3)
 
     # louver alcove at the corridor end: side louvers face the hall, end louvers in line with the red wall
@@ -150,14 +158,15 @@ def main():
     P.text("16-待确认", "长≈2400(待量)", ((ax0 + ax1) / 2, -1.85), 0.13)
 
     # red block: its face is the hall's end wall, in line with the louver alcove's end
-    pts = [(L + 0.25, 0.0), (L + 2.6, 0.0), (L + 2.6, W + 2.0), (L, W + 2.0), (L, 0.0)]
+    yb = CORR - 1.3
+    pts = [(L, 0.0), (L + GAP, 0.0), (L + GAP, yb), (L + 2.6, yb), (L + 2.6, W + 2.0), (L, W + 2.0)]
     pts_mm = [(m(a), m(b)) for a, b in pts]
     P.msp.add_lwpolyline(pts_mm, close=True, dxfattribs={"layer": "06-红色楼体"})
     h = P.msp.add_hatch(dxfattribs={"layer": "06-红色楼体"})
     h.set_pattern_fill("ANSI31", scale=60)
     h.paths.add_polyline_path(pts_mm, is_closed=True)
     P.text("15-文字", "红色楼体（红墙）", (L + 1.3, 5.0), 0.3, rot=90)
-    P.text("16-待确认", "格栅外侧（未测）", (L + 1.1, -0.8), 0.13)
+    P.text("16-待确认", f"空隙≈{GAP * 1000:.0f}(待量)", (L + GAP / 2 + 0.12, CORR / 2), 0.12, rot=90)
 
     # hall glazing
     P.line("10-展厅玻璃", (0.0, 0.06), (DOOR[0], 0.06))
