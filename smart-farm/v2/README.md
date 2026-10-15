@@ -123,16 +123,17 @@
 ```bash
 pip install bpy==5.2.2 pillow numpy opencv-python-headless scipy
 python3 textures_v2.py                  # 时间轴、照片位、门头、立牌、萌发观察窗贴图、标识设计板
-python pot_sprites.py                   # 百叶窗用的盆栽素材
 python scene_v2.py --mode montage --shots p_platform --samples 96
 python scene_v2.py --mode montage --shots p_corr_across --hc 0.43 --samples 96
 python scene_v2.py --mode montage --shots p_corr_far --hc 0.18 --samples 96
 python composite.py                     # 渲染叠到现场照片上
-python louver_edit.py                   # 百叶窗实景处理
+python louver_scene.py                  # 百叶窗：盆栽、灯带按标定的格栅建模渲染
+python louver_edit.py                   # 百叶窗：灯光、玻璃、盆栽叠到现场照片上
 python scene_v2.py --mode 3d --shots corridor,interior_in,interior_wall,aerial,germ --res 1920x1280 --samples 64
 python scene_v2.py --mode 3d --shots plan --res 2400x1200 --samples 32
 python annotate_v2.py                   # 标注、平面图
 ```
 
 - 相机标定在 `calib.json`，由 `calib_solve.py` 用照片上的点线反算。
+- 百叶窗照片单独标定在 `calib_louver.json`（相机 + 实测的横板高度：横板底 2.45 / 2.00 / 1.57 / 1.13 m，窗台 0.86 m，墙厚 0.25 m）。盆栽放在窗台和横板上，灯带装在横板底面靠走廊一侧，都按这个格栅建模，透视和照片一致。
 - 尺寸参数在 `scene_v2.py` 顶部：`L`、`W`、`K`、`Z_HI`、`Z_LO`、`DOOR`、`HC`、`PHASE1_X`。改完重跑即可。

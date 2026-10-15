@@ -2,3 +2,4 @@ renders/*.png
 renders/comp_*.jpg
 calib_p_*.json
 __pycache__/
+renders/*.npy

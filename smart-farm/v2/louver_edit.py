@@ -1,124 +1,129 @@
-"""Photo edit of the corridor-end louver corner (client's note: seal outside with glass,
-LED strips inside, potted plants for observation).
+"""Corridor-end louver corner (client's note: seal outside with glass, LED strips inside, potted plants for
+observation). Puts the passes from louver_scene.py onto the photo.
 
-    python louver_edit.py  ->  renders/louver_corner.jpg
+    python louver_scene.py && python louver_edit.py  ->  renders/louver_corner.jpg
 """
+import json
 import os
-import random
 
-from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "photos", "p_louver.jpg")
-OUT = os.path.join(HERE, "renders", "louver_corner.jpg")
-def _tone(im):
-    rgb = ImageEnhance.Brightness(ImageEnhance.Color(im.convert("RGB")).enhance(0.72)).enhance(0.86)
-    rgb = rgb.filter(ImageFilter.GaussianBlur(0.7))
-    return Image.merge("RGBA", (*rgb.split(), im.split()[3]))
+R_ = os.path.join(HERE, "renders")
+OUT = os.path.join(R_, "louver_corner.jpg")
+CAL = json.load(open(os.path.join(HERE, "calib_louver.json")))
+FONT = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
+RELIGHT = 0.8                    # how much of the LED light / plant shadows to put on the photo
 
 
-POTS = [_tone(Image.open(os.path.join(HERE, "tex", "pots", f"pot{i}.png")).convert("RGBA")) for i in range(6)]
-
-VP = (1250, 620)                       # vanishing point of the left wall's horizontal lines
-LEFT_X = (380, 738)
-LEFT_FIN_BOTTOMS = [230, 455, 675]     # y at x=380 of each fin's underside (LED strip line)
-BACK_X = (842, 1218)
-BACK_FIN_BOTTOMS = [(505, 470), (598, 565), (688, 662), (780, 760)]   # (y at left, y at right)
-LEFT_REGION = [(373, 8), (748, 330), (752, 862), (388, 1048)]
-BACK_REGION = [(752, 362), (1228, 362), (1228, 838), (752, 862)]
+def lin(a):
+    return np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
 
 
-def left_line_y(y380, x):
-    return y380 + (VP[1] - y380) * (x - 380) / (VP[0] - 380)
+def srgb(a):
+    a = np.clip(a, 0, 1)
+    return np.where(a <= 0.0031308, a * 12.92, 1.055 * a ** (1 / 2.4) - 0.055)
+
+
+def load(name, size, mode=None):
+    im = Image.open(os.path.join(R_, name))
+    if mode:
+        im = im.convert(mode)
+    return im if im.size == size else im.resize(size, Image.LANCZOS)
+
+
+def project(X):
+    c = CAL["cam"]
+    R, _ = cv2.Rodrigues(np.array(c["rv"]))
+    Xc = R @ np.array(X, float) + np.array(c["tv"])
+    w, h = c["size"]
+    return (c["f"] * Xc[0] / Xc[2] + w / 2, c["f"] * Xc[1] / Xc[2] + h / 2)
+
+
+def relight(img):
+    """LED light on the fins, sill and reveals; contact shadows under the pots."""
+    f = np.load(os.path.join(R_, "louver_light.npy")).astype(np.float32)
+    h, w = img.shape[:2]
+    if f.shape[:2] != (h, w):
+        f = cv2.resize(f, (w, h), interpolation=cv2.INTER_LINEAR)
+    d = f[..., :3] - 1
+    d = np.where(d > 0, np.maximum(d - 0.08, 0), d)      # drop the faint overall warm cast, keep the glow
+    fac = 1 + RELIGHT * d
+    return srgb(lin(img) * fac)
 
 
 def glass(img):
-    """Tint and add reflections over the louver openings (non-white pixels inside the regions)."""
-    W, H = img.size
-    region = Image.new("L", (W, H), 0)
-    d = ImageDraw.Draw(region)
-    d.polygon(LEFT_REGION, fill=255)
-    d.polygon(BACK_REGION, fill=255)
-    hsv = img.convert("HSV")
-    s = hsv.split()[1].point(lambda v: 255 if v > 55 else 0)
-    v = hsv.split()[2].point(lambda q: 255 if q < 150 else 0)
-    opening = ImageChops.multiply(region, ImageChops.lighter(s, v)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(1.5))
-    tint = Image.new("RGB", (W, H), (186, 205, 214))
-    glassy = Image.blend(img, tint, 0.22)
-    streak = Image.new("L", (W, H), 0)
+    """Tint and soft reflections where the new glass is seen through the louvers."""
+    h, w = img.shape[:2]
+    m = np.asarray(load("louver_glass.png", (w, h), "RGBA"))[..., 3].astype(np.float32) / 255
+    m = cv2.GaussianBlur(m, (0, 0), 0.8)[..., None]
+    tint = np.array([0.73, 0.80, 0.84])
+    out = img * (1 - 0.2 * m) + tint * 0.2 * m
+    streak = Image.new("L", (w, h), 0)
     sd = ImageDraw.Draw(streak)
-    for x0, wdt in ((430, 70), (560, 30), (900, 90), (1080, 40)):
-        sd.polygon([(x0, 0), (x0 + wdt, 0), (x0 + wdt - 420, H), (x0 - 420, H)], fill=70)
-    streak = streak.filter(ImageFilter.GaussianBlur(25))
-    glassy = Image.composite(Image.new("RGB", (W, H), (245, 248, 250)), glassy, streak)
-    return Image.composite(glassy, img, opening)
+    for x0, wd, a in ((430, 80, 60), (580, 30, 45), (900, 100, 55), (1090, 45, 40)):
+        sd.polygon([(x0, 0), (x0 + wd, 0), (x0 + wd - 420, h), (x0 - 420, h)], fill=a)
+    s = np.asarray(streak.filter(ImageFilter.GaussianBlur(28))).astype(np.float32)[..., None] / 255
+    return out + (0.97 - out) * s * m
 
 
-def led(img):
-    W, H = img.size
-    glow = Image.new("RGB", (W, H), (0, 0, 0))
-    core = Image.new("RGB", (W, H), (0, 0, 0))
-    g, c = ImageDraw.Draw(glow), ImageDraw.Draw(core)
-    lines = []
-    for y380 in LEFT_FIN_BOTTOMS:
-        lines.append(((LEFT_X[0], y380 + 3), (LEFT_X[1], left_line_y(y380, LEFT_X[1]) + 3)))
-    for yl, yr in BACK_FIN_BOTTOMS:
-        lines.append(((BACK_X[0], yl + 2), (BACK_X[1], yr + 2)))
-    for a, b in lines:
-        g.line((a, b), fill=(255, 196, 120), width=26)
-        c.line((a, b), fill=(255, 244, 220), width=4)
-    glow = glow.filter(ImageFilter.GaussianBlur(14))
-    out = ImageChops.screen(img, ImageEnhance.Brightness(glow).enhance(0.75))
-    out = ImageChops.screen(out, core.filter(ImageFilter.GaussianBlur(1)))
-    # warm wash on the fin tops just below each strip
-    wash = Image.new("RGB", (W, H), (0, 0, 0))
-    wd = ImageDraw.Draw(wash)
-    for a, b in lines:
-        wd.polygon([a, b, (b[0], b[1] + 90), (a[0], a[1] + 90)], fill=(70, 48, 20))
-    return ImageChops.screen(out, wash.filter(ImageFilter.GaussianBlur(30)))
+def over(img, beauty):
+    b = np.asarray(beauty).astype(np.float32) / 255
+    a = b[..., 3:]
+    return b[..., :3] * a + img * (1 - a)
 
 
-def plants(img):
-    rnd = random.Random(5)
-    rows = []
-    # (start, end, height_at_start_px, height_at_end_px, count)
-    rows.append(((400, 612), (728, 614), 100, 64, 5))           # left wall eye-level fin
-    rows.append(((440, 982), (728, 858), 125, 84, 4))           # left wall sill
-    rows.append(((860, 642 + 22), (1205, 618 + 22), 58, 52, 6))    # back wall fin 3 top
-    rows.append(((860, 742 + 20), (1205, 722 + 20), 60, 54, 6))    # back wall fin 4 top
-    rows.append(((860, 834), (1205, 832), 64, 58, 6))              # back wall sill
-    out = img.convert("RGBA")
-    for (a, b, h0, h1, n) in rows:
-        for k in range(n):
-            t = (k + 0.5) / n
-            x = a[0] + (b[0] - a[0]) * t
-            y = a[1] + (b[1] - a[1]) * t
-            h = int(h0 + (h1 - h0) * t)
-            spr = POTS[rnd.randrange(6)]
-            bbox = spr.getbbox()
-            spr = spr.crop(bbox)
-            w = int(spr.width * h / spr.height)
-            spr = spr.resize((w, h), Image.LANCZOS)
-            shadow = Image.new("RGBA", (int(w * 1.1), max(4, h // 8)), (0, 0, 0, 0))
-            ImageDraw.Draw(shadow).ellipse((0, 0, shadow.width - 1, shadow.height - 1), fill=(0, 0, 0, 70))
-            out.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(3)), (int(x - shadow.width / 2), int(y - shadow.height / 2)))
-            out.alpha_composite(spr, (int(x - w / 2), int(y - h)))
+def bloom(img, beauty):
+    """Glow around the LED strips (the brightest, warmest pixels of the render)."""
+    b = np.asarray(beauty).astype(np.float32) / 255
+    lum = b[..., :3].mean(-1) * b[..., 3]
+    warm = (b[..., 0] - b[..., 2]) > 0.08
+    core = np.where((lum > 0.9) & warm, 1.0, 0.0).astype(np.float32)
+    glow = cv2.GaussianBlur(core, (0, 0), 6) * 0.7 + cv2.GaussianBlur(core, (0, 0), 20) * 0.45
+    col = np.array([1.0, 0.78, 0.5])
+    return 1 - (1 - img) * (1 - np.clip(glow[..., None] * col, 0, 1))
+
+
+def plaque(im):
+    """Small sign on the wall under the side louvers, put on in perspective."""
+    pw, ph = 1100, 250
+    p = Image.new("RGBA", (pw, ph), (0, 0, 0, 0))
+    d = ImageDraw.Draw(p)
+    d.rounded_rectangle((0, 0, pw - 1, ph - 1), radius=22, fill=(31, 77, 58, 255))
+    d.rectangle((60, 56, 72, ph - 56), fill=(180, 138, 70, 255))
+    d.text((pw / 2 + 36, ph / 2), "植物观察窗", font=ImageFont.truetype(FONT, 150), fill=(247, 245, 238, 255), anchor="mm")
+    x0, x1, z0, z1, y = -3.05, -2.15, 0.54, 0.745, -0.012
+    quad = np.float32([project((x0, y, z1)), project((x1, y, z1)), project((x1, y, z0)), project((x0, y, z0))])
+    H = cv2.getPerspectiveTransform(np.float32([[0, 0], [pw, 0], [pw, ph], [0, ph]]), quad)
+    W_, H_ = im.size
+    warped = cv2.warpPerspective(np.asarray(p), H, (W_, H_), flags=cv2.INTER_AREA)
+    sh = np.zeros((H_, W_), np.uint8)
+    off = np.float32(project((x0 + 0.015, y, z0 - 0.02))) - quad[3]
+    cv2.fillConvexPoly(sh, np.int32(quad + off), 255)
+    sh = cv2.GaussianBlur(sh, (0, 0), 4)
+    shadow = Image.new("RGBA", im.size, (40, 40, 38, 0))
+    shadow.putalpha(Image.fromarray((sh * 0.35).astype(np.uint8)))
+    out = im.convert("RGBA")
+    out.alpha_composite(shadow)
+    out.alpha_composite(Image.fromarray(warped))
     return out.convert("RGB")
 
 
 def main():
-    img = Image.open(SRC).convert("RGB")
+    photo = Image.open(SRC).convert("RGB")
+    size = photo.size
+    img = np.asarray(photo).astype(np.float32) / 255
+    beauty = load("louver_beauty.png", size, "RGBA")
+    img = relight(img)
     img = glass(img)
-    img = plants(img)
-    img = led(img)
-    # a small label plate on the side wall
-    d = ImageDraw.Draw(img)
-    from PIL import ImageFont
-    f = ImageFont.truetype("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", 30)
-    d.rounded_rectangle((1262, 640, 1300, 900), radius=6, fill=(31, 77, 58))
-    for k, ch in enumerate("植物观察窗"):
-        d.text((1281, 668 + k * 48), ch, font=f, fill=(247, 245, 238), anchor="mm")
-    img.save(OUT, quality=93)
+    img = over(img, beauty)
+    img = bloom(img, beauty)
+    out = Image.fromarray((np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8))
+    out = plaque(out)
+    out.save(OUT, quality=93)
     print("saved", OUT)
 
 

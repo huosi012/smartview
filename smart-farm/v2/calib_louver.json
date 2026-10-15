@@ -1,0 +1,59 @@
+{
+ "_note": "p_louver.jpg camera, solved from straight edges (fins, sill, floor, corners) with scale set by a 1.45 m camera height (check: the stool at the end wall comes out 0.45 m). Frame: x along the corridor toward the end wall (inner face x=0), y to the left (inner face of the side louver wall y=0), z up from the corridor floor. Fin levels measured by back-projecting the colour bands onto both wall planes; they agree to 1-2 cm.",
+ "cam": {
+  "rv": [
+   1.2293622649149214,
+   -1.0450254344032632,
+   1.0445548649326128
+  ],
+  "tv": [
+   -0.009286508932659804,
+   1.8044708029666838,
+   6.622276436227874
+  ],
+  "f": 1388.5649287221706,
+  "size": [
+   1706,
+   1279
+  ]
+ },
+ "geom": {
+  "WC": 1.853,
+  "T": 0.25,
+  "ceiling": 3.15,
+  "lintel": 2.92,
+  "fins": [
+   [
+    2.45,
+    2.6
+   ],
+   [
+    2.0,
+    2.14
+   ],
+   [
+    1.57,
+    1.7
+   ],
+   [
+    1.13,
+    1.27
+   ]
+  ],
+  "sill": 0.86,
+  "side_openings": [
+   [
+    -4.1,
+    -1.66
+   ],
+   [
+    -1.17,
+    0.0
+   ]
+  ],
+  "end_opening": [
+   -1.8,
+   0.0
+  ]
+ }
+}
