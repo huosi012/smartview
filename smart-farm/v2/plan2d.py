@@ -22,9 +22,12 @@ ALC = 2.4                        # louver alcove length (estimate); its end wall
 PIER = L - ALC                   # last pier: corridor parapet ends here, louver alcove runs on to the red-wall line
 DOOR = (PIER - 1.85, PIER - 0.35)  # door in the last bay, right next to the louver alcove
 PHASE1_X = 11.8
+PW = 6.0                         # raised platform width along the corridor (estimate, to measure)
+BX = 6.5                         # length of the other terrace shown before the break line (not its real size)
+GATE = (-PW - 1.9, -PW - 0.3)    # existing sliding gate under the stainless arch, corridor -> other terrace
 
 S = 92                           # px per metre
-X0, X1 = -4.6, 22.4              # drawn extent (m)
+X0, X1 = -PW - BX - 0.6, 22.4    # drawn extent (m)
 Y0, Y1 = -4.3, 10.4
 MARGIN_T, MARGIN_B, LEG = 250, 190, 1180
 WPX = int((X1 - X0) * S)
@@ -122,10 +125,24 @@ def main():
     rect(d, X0, -0.25 - CW, L, -0.25, fill=(236, 233, 224))                       # corridor floor
     text(d, P(3.6, -1.55), "教学楼走廊（宽约 2.6 m，待量）", 30, MUTED)
     # raised platform
-    rect(d, X0, -0.25, 0.0, W + 0.25, fill=(214, 214, 210))
-    hatch(d, X0, -0.25, 0.0, W + 0.25, (190, 190, 186), 0.5, 1)
-    text(d, P(-1.8, 5.6), "抬高平台", 32, INK, bg=(240, 240, 236))
-    text(d, P(-1.8, 4.9), "（高出露台约 0.9 m）", 24, MUTED)
+    rect(d, -PW, 0.0, 0.0, W, fill=(214, 214, 210))
+    hatch(d, -PW, 0.0, 0.0, W, (190, 190, 186), 0.5, 1)
+    text(d, P(-PW / 2, 5.6), "抬高平台（高台）", 32, INK, bg=(240, 240, 236))
+    text(d, P(-PW / 2, 4.9), "高出两侧空地约 0.9 m", 24, MUTED)
+    text(d, P(-PW / 2, 4.35), f"宽约 {PW:.0f} m（待量）", 24, MUTED)
+    # the other terrace beyond the platform (drawn partly, break line)
+    bx0 = -PW - BX
+    rect(d, bx0, 0.0, -PW, W, fill=(244, 243, 238))
+    text(d, P(-PW - BX / 2, 5.4), "另一块空地", 32, INK, bg=(250, 250, 247))
+    text(d, P(-PW - BX / 2, 4.7), "（高台另一侧，长度待量，图中未画完）", 22, MUTED)
+    zz = [P(bx0 + (0.18 if k % 2 else -0.18), -2.0 + k * 0.6) for k in range(int((W + 2.6) / 0.6) + 1)]
+    d.line(zz, fill=MUTED, width=3)
+    # existing steel steps from the other terrace up onto the platform
+    rect(d, -PW - 0.9, 1.6, -PW, 2.8, fill=(150, 112, 80), outline=(90, 60, 40), width=2)
+    for k in range(1, 3):
+        d.line((P(-PW - 0.9 + k * 0.3, 1.6), P(-PW - 0.9 + k * 0.3, 2.8)), fill=(90, 60, 40), width=2)
+    text(d, P(-PW - 0.45, 3.15), "现有钢梯", 20, MUTED)
+    text(d, P(-0.25, W - 0.4), "坎", 26, INK, bg=(250, 250, 247))
     # red block beyond the terrace end (its face is in line with the louver alcove's end wall)
     rect(d, L, 0.0, X1, Y1, fill=(232, 200, 194))
     hatch(d, L, 0.0, X1, Y1, RED, 0.45, 2)
@@ -137,7 +154,10 @@ def main():
     text(d, P(8.9, W + 0.6), "沿街围墙（保留原宣传栏，墙上装推拉玻璃窗）", 26, MUTED)
 
     # ---------------- corridor parapet, columns, door, louver alcove
-    rect(d, X0, -0.25, DOOR[0], 0.0, fill=WALL)
+    rect(d, X0, -0.25, GATE[0], 0.0, fill=WALL)
+    rect(d, GATE[1], -0.25, DOOR[0], 0.0, fill=WALL)
+    d.line((P(GATE[0], -0.12), P(GATE[1], -0.12)), fill=(120, 120, 116), width=5)          # existing sliding gate
+    text(d, P((GATE[0] + GATE[1]) / 2, -0.75), "现有推拉门+不锈钢拱门", 20, MUTED, bg=(255, 255, 255))
     rect(d, DOOR[1], -0.25, PIER - 0.25, 0.0, fill=WALL)
     for cx in COLS:
         rect(d, cx - 0.25, -0.55, cx + 0.25, 0.0, fill=INK)
@@ -249,18 +269,19 @@ def main():
 
     # dimensions
     dim_h(d, 0.0, L, Y1 - 0.4, "17.8 m（坎 → 红墙，客户给）")
-    dim_v(d, 0.0, W, X0 + 0.9, "8.5 m")
+    dim_v(d, 0.0, W, -0.55, "8.5 m")
+    dim_h(d, -PW, 0.0, W + 0.6, f"高台 ≈{PW:.1f}（待量）", 22)
     dim_h(d, DOOR[0], DOOR[1], -3.75, "1.5", 22)
     dim_h(d, PIER, L, -3.75, "≈2.4", 22)
     for cx in COLS + [PIER]:
         px, py = P(cx, -0.55)
         d.line((px, py, px, P(cx, -3.4)[1]), fill=(170, 170, 166), width=1)
         text(d, P(cx, -3.25), f"≈{cx:.1f}", 20, MUTED)
-    text(d, P(-2.4, -3.25), "柱位（按照片估）", 20, MUTED)
+    text(d, P(-PW / 2, -3.25), "柱位（按照片估；高台和另一块空地段未画柱）", 20, MUTED)
 
     # title
     text(d, (60, 70), "智慧农业科普展厅 · 二维平面（现场关系确认稿）", 56, GREEN, anchor="lm")
-    text(d, (60, 140), "范围：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊尽头是百叶格栅段，末端与红墙齐平、侧面朝展厅；入口紧挨格栅",
+    text(d, (60, 140), "高台两侧各一块空地，展厅在红墙这一侧：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊尽头是百叶格栅段，末端与红墙齐平、侧面朝展厅；入口紧挨格栅",
          28, MUTED, anchor="lm")
     d.rectangle((60, 180, 300, 186), fill=GOLD)
 
@@ -325,7 +346,9 @@ def main():
               "2. 入口在最后一跨、紧挨格栅",
               f"3. 格栅段长度（≈{ALC:.1f} m）、走廊宽度",
               f"4. 走廊柱实际位置（图中 ≈{COLS[0]:.1f} / ≈{COLS[1]:.1f} / ≈{PIER:.1f}）",
-              "5. 露台比走廊地面高多少（门口做台阶还是坡道）"]:
+              "5. 露台比走廊地面高多少（门口做台阶还是坡道）",
+              "6. 高台宽度、另一块空地的长度",
+              "7. 另一块空地这次是否一起设计"]:
         text(d, (lx, y), s, 24, INK, anchor="lm")
         y += 42
 

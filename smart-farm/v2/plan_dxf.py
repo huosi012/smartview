@@ -14,7 +14,7 @@ from ezdxf.enums import TextEntityAlignment
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from plan2d import ALC, COLS, CW, DOOR, L, PHASE1_X, PIER, W  # noqa: E402
+from plan2d import ALC, BX, COLS, CW, DOOR, GATE, L, PHASE1_X, PIER, PW, W  # noqa: E402
 
 OUT = os.path.join(HERE, "renders", "plan2d.dxf")
 MM = 1000.0
@@ -28,6 +28,7 @@ LAYERS = {
     "05-百叶格栅": (30, "CONTINUOUS"),
     "06-红色楼体": (1, "CONTINUOUS"),
     "08-抬高平台": (8, "CONTINUOUS"),
+    "08b-另一块空地": (8, "CONTINUOUS"),
     "09-教室": (8, "CONTINUOUS"),
     "10-展厅玻璃": (4, "CONTINUOUS"),
     "11-入口门": (30, "CONTINUOUS"),
@@ -95,14 +96,29 @@ def main():
 
     # terrace (= hall footprint) and raised platform
     P.rect("01-露台范围", 0.0, 0.0, L, W)
-    P.rect("08-抬高平台", -3.0, -0.25, 0.0, W + 0.25, hatch="ANSI37")
-    P.text("15-文字", "抬高平台（高出露台约0.9m）", (-1.5, 4.25), 0.22, rot=90)
-    P.text("15-文字", "坎", (-0.15, W + 0.55), 0.22)
+    P.rect("08-抬高平台", -PW, 0.0, 0.0, W, hatch="ANSI37")
+    P.text("15-文字", "抬高平台（高台）", (-PW / 2, 5.0), 0.3)
+    P.text("15-文字", "高出两侧空地约0.9m", (-PW / 2, 4.5), 0.2)
+    P.text("16-待确认", f"高台宽≈{PW * 1000:.0f}(待量)", (-PW / 2, 4.0), 0.18)
+    P.text("15-文字", "坎", (-0.25, W - 0.4), 0.22)
+    bx0 = -PW - BX
+    P.rect("08b-另一块空地", bx0, 0.0, -PW, W)
+    P.text("15-文字", "另一块空地（高台另一侧）", (-PW - BX / 2, 4.6), 0.3)
+    P.text("16-待确认", "长度待量，图中未画完（折断线）", (-PW - BX / 2, 4.0), 0.18)
+    zz = [(m(bx0 + (0.18 if k % 2 else -0.18)), m(-3.4 + k * 0.6)) for k in range(int((W + 4.0) / 0.6) + 1)]
+    P.msp.add_lwpolyline(zz, dxfattribs={"layer": "08b-另一块空地"})
+    P.rect("08b-另一块空地", -PW - 0.9, 1.6, -PW, 2.8)
+    for k in range(1, 3):
+        P.line("08b-另一块空地", (-PW - 0.9 + k * 0.3, 1.6), (-PW - 0.9 + k * 0.3, 2.8))
+    P.text("15-文字", "现有钢梯", (-PW - 0.45, 3.1), 0.15)
 
     # existing walls: corridor parapet (door gap), street parapet
-    P.rect("02-原有墙体栏板", -3.0, -0.25, DOOR[0], 0.0, hatch="ANSI31")
+    P.rect("02-原有墙体栏板", -PW - BX, -0.25, GATE[0], 0.0, hatch="ANSI31")
+    P.rect("02-原有墙体栏板", GATE[1], -0.25, DOOR[0], 0.0, hatch="ANSI31")
+    P.line("02-原有墙体栏板", (GATE[0], -0.12), (GATE[1], -0.12))
+    P.text("15-文字", "现有推拉门+不锈钢拱门", ((GATE[0] + GATE[1]) / 2, -0.5), 0.13)
     P.rect("02-原有墙体栏板", DOOR[1], -0.25, PIER - 0.25, 0.0, hatch="ANSI31")
-    P.rect("02-原有墙体栏板", -3.0, W, L, W + 0.25, hatch="ANSI31")
+    P.rect("02-原有墙体栏板", -PW - BX, W, L, W + 0.25, hatch="ANSI31")
     P.text("15-文字", "沿街围墙（保留原宣传栏）", (L / 2, W + 0.6), 0.25)
     P.text("15-文字", "走廊栏板（原不锈钢栏杆保留，外侧加玻璃封闭）", (3.4, -0.5), 0.18)
 
@@ -112,9 +128,9 @@ def main():
         P.text("16-待确认", f"柱≈{cx * 1000:.0f}(待量)", (cx, -0.8), 0.13)
 
     # corridor + classrooms
-    P.line("04-走廊", (-3.0, CORR), (L + 0.25, CORR))
+    P.line("04-走廊", (-PW - BX, CORR), (L + 0.25, CORR))
     P.text("15-文字", "教学楼走廊（净宽约2600，待量）", (4.0, -1.6), 0.28)
-    P.rect("09-教室", -3.0, CORR - 0.3, L + 0.25, CORR, hatch="ANSI31")
+    P.rect("09-教室", -PW - BX, CORR - 0.3, L + 0.25, CORR, hatch="ANSI31")
     P.text("15-文字", "教室", (1.8, CORR - 0.55), 0.3)
 
     # louver alcove at the corridor end: side louvers face the hall, end louvers in line with the red wall
@@ -141,7 +157,7 @@ def main():
     h.set_pattern_fill("ANSI31", scale=60)
     h.paths.add_polyline_path(pts_mm, is_closed=True)
     P.text("15-文字", "红色楼体（红墙）", (L + 1.3, 5.0), 0.3, rot=90)
-    P.text("16-待确认", "格栅外侧（未测）", (L + 1.3, -1.5), 0.13)
+    P.text("16-待确认", "格栅外侧（未测）", (L + 1.1, -0.8), 0.13)
 
     # hall glazing
     P.line("10-展厅玻璃", (0.0, 0.06), (DOOR[0], 0.06))
@@ -214,22 +230,23 @@ def main():
 
     # dimensions
     P.dim((0.0, W), (L, W), (0.0, W + 1.3))
-    P.dim((0.0, 0.0), (0.0, W), (-3.6, 0.0), angle=90)
+    P.dim((0.0, 0.0), (0.0, W), (-0.6, 0.0), angle=90)
+    P.dim((-PW, W), (0.0, W), (0.0, W + 1.3))
     P.dim((0.0, -0.25), (COLS[0], -0.25), (0.0, CORR - 0.9))
     P.dim((COLS[0], -0.25), (COLS[1], -0.25), (0.0, CORR - 0.9))
     P.dim((COLS[1], -0.25), (PIER, -0.25), (0.0, CORR - 0.9))
     P.dim((DOOR[0], 0.0), (DOOR[1], 0.0), (0.0, CORR - 1.6))
     P.dim((PIER, -0.25), (ax1, -0.25), (0.0, CORR - 1.6))
-    P.dim((L + 0.6, -0.25), (L + 0.6, CORR), (L + 1.1, 0.0), angle=90)
+    P.dim((L + 0.6, -0.25), (L + 0.6, CORR), (L + 2.3, 0.0), angle=90)
 
     # title + notes
-    P.text("15-文字", "智慧农业科普展厅  二维平面（现场关系确认稿，可编辑）", (-3.6, W + 2.6), 0.5,
+    P.text("15-文字", "智慧农业科普展厅  二维平面（现场关系确认稿，可编辑）", (-PW - BX, W + 2.6), 0.5,
            align=TextEntityAlignment.LEFT)
     notes = ["单位：毫米。原点＝坎线与走廊栏板（露台侧面）交点。",
              "图层“16-待确认”内为按照片估计、需要现场测量的尺寸。",
              "改完请另存为 DXF 发回，按此更新三维模型与效果图。"]
     for i, s in enumerate(notes):
-        P.text("16-待确认", s, (-3.6, CORR - 2.6 - i * 0.4), 0.2, align=TextEntityAlignment.LEFT)
+        P.text("16-待确认", s, (-PW - BX, CORR - 2.6 - i * 0.4), 0.2, align=TextEntityAlignment.LEFT)
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     P.doc.saveas(OUT, encoding="utf-8")
