@@ -31,6 +31,7 @@ S = 92                           # px per metre
 X0, X1 = -PW - BX - 0.6, 22.4    # drawn extent (m)
 Y0, Y1 = -4.3, 10.4
 MARGIN_T, MARGIN_B, LEG = 250, 190, 1180
+LEG_BAND = 420                   # client version: legend in a band under the drawing instead of a side column
 WPX = int((X1 - X0) * S)
 HPX = int((Y1 - Y0) * S)
 
@@ -115,10 +116,62 @@ def marker(d, x, y, n):
     text(d, (px, py), str(n), 24, col=(255, 255, 255))
 
 
+def draw_interior(d):
+    fill = (255, 255, 255)
+    # 1 seed germination window along the kerb
+    rect(d, 0.03, 0.4, 0.42, W - 0.4, fill=(150, 112, 80))
+    # 2 vertical hydroponic racks along the corridor glass
+    for a, b in ((1.2, 3.6), (3.9, 6.3), (6.6, 9.0), (9.3, 11.7)):
+        rect(d, a, 0.35, b, 0.95, fill=(226, 214, 238), outline=(150, 120, 170), width=2)
+    # 3 class beds along the street side
+    for k in range(8):
+        a = 1.0 + k * 1.65
+        rect(d, a, 7.35, a + 1.4, 8.25, fill=(120, 92, 66), outline=(80, 60, 40), width=2)
+    # 4 aeroponic towers
+    for (x, y) in [(2.2, 3.1), (3.2, 3.1), (2.2, 5.4), (3.2, 5.4), (12.75, 3.0), (12.75, 5.5)]:
+        a, b = P(x - 0.28, y + 0.28), P(x + 0.28, y - 0.28)
+        d.ellipse((a[0], a[1], b[0], b[1]), fill=(230, 240, 230), outline=(70, 120, 80), width=3)
+    # 5 aquaponics tank
+    rect(d, 5.2, 3.85, 7.0, 4.65, fill=(180, 214, 222), outline=(60, 120, 140), width=3)
+    # 6 workbenches + stools
+    for y0_, y1_ in ((2.6, 3.5), (5.0, 5.9)):
+        rect(d, 9.6, y0_, 11.6, y1_, fill=(196, 170, 140), outline=(130, 100, 70), width=2)
+        for x in (9.95, 10.6, 11.25):
+            for y in (y0_ - 0.32, y1_ + 0.32):
+                a, b = P(x - 0.17, y + 0.17), P(x + 0.17, y - 0.17)
+                d.ellipse((a[0], a[1], b[0], b[1]), fill=(225, 225, 220), outline=(150, 150, 146))
+    # 7 lecture seats
+    for x in (14.0, 14.75, 15.5, 16.25):
+        for y in (2.75, 3.55, 4.35, 5.15, 5.95):
+            a, b = P(x - 0.18, y + 0.18), P(x + 0.18, y - 0.18)
+            d.ellipse((a[0], a[1], b[0], b[1]), fill=(240, 200, 120), outline=(170, 130, 60))
+    # 8 red-wall feature wall + screen
+    rect(d, L - 0.3, 0.3, L - 0.02, 8.2, fill=(140, 96, 60))
+    rect(d, L - 0.36, 3.38, L - 0.24, 5.12, fill=(30, 30, 30))
+    # 9 seedling rack, 10 fertigation
+    rect(d, 12.0, 0.35, 13.2, 0.84, fill=(226, 214, 238), outline=(150, 120, 170), width=2)
+    rect(d, 16.9, 7.45, 17.5, 8.25, fill=(235, 235, 232), outline=(120, 120, 116), width=2)
+    a, b = P(16.15, 8.1), P(16.65, 7.6)
+    d.ellipse((a[0], a[1], b[0], b[1]), fill=(80, 120, 190))
+
+
+def paste_render(img):
+    """Use the rendered top view (renders/plan.png, ortho 20.5 m wide centred on the hall) for the hall interior."""
+    src = os.path.join(HERE, "renders", "plan.png")
+    r = Image.open(src).convert("RGB")
+    ppm = r.width / 20.5
+    cx, cy = L / 2 - 0.6, W / 2 - 0.3
+    box = (r.width / 2 + (0 - cx) * ppm, r.height / 2 - (W - cy) * ppm,
+           r.width / 2 + (L - cx) * ppm, r.height / 2 - (0 - cy) * ppm)
+    crop = r.crop(tuple(int(round(v)) for v in box)).resize((int(round(L * S)), int(round(W * S))), Image.LANCZOS)
+    img.paste(crop, P(0.0, W))
+
+
 def main(clean=False):
     def T(draft, client):
         return client if clean else draft
-    img = Image.new("RGB", (WPX + LEG, HPX + MARGIN_T + MARGIN_B), (250, 250, 247))
+    size = (WPX, HPX + MARGIN_T + MARGIN_B + LEG_BAND) if clean else (WPX + LEG, HPX + MARGIN_T + MARGIN_B)
+    img = Image.new("RGB", size, (250, 250, 247))
     d = ImageDraw.Draw(img)
 
     # ---------------- surroundings
@@ -156,6 +209,9 @@ def main(clean=False):
     # street side
     rect(d, X0, W, L, W + 0.25, fill=WALL)
     text(d, P(8.9, W + 0.6), "沿街围墙（保留原宣传栏，墙上装推拉玻璃窗）", 26, MUTED)
+
+    if clean:
+        paste_render(img)
 
     # ---------------- corridor parapet, columns, door, louver alcove
     rect(d, X0, -0.25, GATE[0], 0.0, fill=WALL)
@@ -196,10 +252,13 @@ def main(clean=False):
     text(d, P((ax0 + ax1) / 2, -1.35), "百叶格栅", 28, INK, bg=(255, 255, 255))
     text(d, P((ax0 + ax1) / 2, -1.9), "植物观察窗", 24, MUTED)
     text(d, P((ax0 + ax1) / 2, -2.35), T("（长约 2.4 m，待量）", "（长约 2.4 m）"), 20, MUTED)
-    text(d, P(ax0 + 0.6, 0.75), "格栅朝展厅一侧封玻璃", 20, MUTED)
-    text(d, P(ax0 + 0.6, 0.4), "展厅内外都能看到盆栽", 20, MUTED)
+    if not clean:
+        text(d, P(ax0 + 0.6, 0.75), "格栅朝展厅一侧封玻璃", 20, MUTED)
+        text(d, P(ax0 + 0.6, 0.4), "展厅内外都能看到盆栽", 20, MUTED)
     # entrance totem in the corridor
     rect(d, DOOR[0] - 0.9, -0.8, DOOR[0] - 0.3, -0.7, fill=GREEN)
+    if clean:
+        text(d, P(DOOR[0] - 0.6, -1.15), "入口立牌", 20, MUTED)
 
     # ---------------- hall envelope
     d.line((P(0.03, 0.0), P(0.03, W)), fill=GLASS, width=6)                          # kerb-end glass wall
@@ -208,52 +267,20 @@ def main(clean=False):
         d.line((P(x, W - 0.18), P(x, W + 0.02)), fill=GLASS, width=2)
     d.rectangle((P(0, W)[0], P(0, W)[1], P(L, 0)[0], P(L, 0)[1]), outline=GREEN, width=3)
     # roof slope arrow
+    if clean:
+        d.rectangle((P(0, W)[0], P(0, W)[1], P(L, 0)[0], P(L, 0)[1]), outline=GREEN, width=3)
     sx = 8.8
     d.line((P(sx, 1.8), P(sx, 6.6)), fill=(150, 150, 146), width=3)
     tip = P(sx, 6.6)
     d.polygon([tip, (tip[0] - 12, tip[1] + 22), (tip[0] + 12, tip[1] + 22)], fill=(150, 150, 146))
 
     # ---------------- interior (same positions as scene_v2.py)
-    fill = (255, 255, 255)
-    # 1 seed germination window along the kerb
-    rect(d, 0.03, 0.4, 0.42, W - 0.4, fill=(150, 112, 80))
-    # 2 vertical hydroponic racks along the corridor glass
-    for a, b in ((1.2, 3.6), (3.9, 6.3), (6.6, 9.0), (9.3, 11.7)):
-        rect(d, a, 0.35, b, 0.95, fill=(226, 214, 238), outline=(150, 120, 170), width=2)
-    # 3 class beds along the street side
-    for k in range(8):
-        a = 1.0 + k * 1.65
-        rect(d, a, 7.35, a + 1.4, 8.25, fill=(120, 92, 66), outline=(80, 60, 40), width=2)
-    # 4 aeroponic towers
-    for (x, y) in [(2.2, 3.1), (3.2, 3.1), (2.2, 5.4), (3.2, 5.4), (12.75, 3.0), (12.75, 5.5)]:
-        a, b = P(x - 0.28, y + 0.28), P(x + 0.28, y - 0.28)
-        d.ellipse((a[0], a[1], b[0], b[1]), fill=(230, 240, 230), outline=(70, 120, 80), width=3)
-    # 5 aquaponics tank
-    rect(d, 5.2, 3.85, 7.0, 4.65, fill=(180, 214, 222), outline=(60, 120, 140), width=3)
-    # 6 workbenches + stools
-    for y0_, y1_ in ((2.6, 3.5), (5.0, 5.9)):
-        rect(d, 9.6, y0_, 11.6, y1_, fill=(196, 170, 140), outline=(130, 100, 70), width=2)
-        for x in (9.95, 10.6, 11.25):
-            for y in (y0_ - 0.32, y1_ + 0.32):
-                a, b = P(x - 0.17, y + 0.17), P(x + 0.17, y - 0.17)
-                d.ellipse((a[0], a[1], b[0], b[1]), fill=(225, 225, 220), outline=(150, 150, 146))
-    # 7 lecture seats
-    for x in (14.0, 14.75, 15.5, 16.25):
-        for y in (2.75, 3.55, 4.35, 5.15, 5.95):
-            a, b = P(x - 0.18, y + 0.18), P(x + 0.18, y - 0.18)
-            d.ellipse((a[0], a[1], b[0], b[1]), fill=(240, 200, 120), outline=(170, 130, 60))
-    # 8 red-wall feature wall + screen
-    rect(d, L - 0.3, 0.3, L - 0.02, 8.2, fill=(140, 96, 60))
-    rect(d, L - 0.36, 3.38, L - 0.24, 5.12, fill=(30, 30, 30))
-    # 9 seedling rack, 10 fertigation
-    rect(d, 12.0, 0.35, 13.2, 0.84, fill=(226, 214, 238), outline=(150, 120, 170), width=2)
-    rect(d, 16.9, 7.45, 17.5, 8.25, fill=(235, 235, 232), outline=(120, 120, 116), width=2)
-    a, b = P(16.15, 8.1), P(16.65, 7.6)
-    d.ellipse((a[0], a[1], b[0], b[1]), fill=(80, 120, 190))
+    if not clean:
+        draw_interior(d)
     # entry clearance
     d.rectangle((P(DOOR[0], 2.2)[0], P(DOOR[0], 2.2)[1], P(DOOR[1], 0.0)[0], P(DOOR[1], 0.0)[1]),
                 outline=ORANGE, width=2)
-    text(d, P(mid, 1.55), "入口通道", 22, ORANGE)
+    text(d, P(mid, 1.55), "入口通道", 22, ORANGE, bg=(255, 255, 255) if clean else None)
 
     # phase line
     if not clean:
@@ -293,7 +320,7 @@ def rest(d, img, clean, T):
         text(d, P(-PW / 2, -3.25), "柱位（按照片估；高台和另一块空地段未画柱）", 20, MUTED)
 
     # title
-    text(d, (60, 70), T("智慧农业科普展厅 · 二维平面（现场关系确认稿）", "智慧农业科普展厅 · 二维平面图"), 56, GREEN, anchor="lm")
+    text(d, (60, 70), T("智慧农业科普展厅 · 二维平面（现场关系确认稿）", "智慧农业科普展厅 · 平面布置图"), 56, GREEN, anchor="lm")
     text(d, (60, 140), T("高台两侧各一块空地，展厅在红墙这一侧：坎 → 红墙 17.8 m，走廊栏杆 → 沿街围墙 8.5 m；走廊尽头是百叶格栅段，末端与红墙齐平、侧面朝展厅；入口紧挨格栅",
                          "高台两侧各一块空地，展厅在红墙一侧，17.8 m × 8.5 m；走廊尽头为百叶格栅植物观察窗，入口紧挨格栅"),
          28, MUTED, anchor="lm")
@@ -309,9 +336,16 @@ def rest(d, img, clean, T):
     text(d, (sx0 + 5 * S + 60, sy0), T("朝向未知，图中不标指北；屋面坡向：走廊侧高 → 沿街侧低（灰色箭头）",
                                        "屋面坡向：走廊侧高 → 沿街侧低（灰色箭头）。示意图，尺寸以现场实测为准"), 24, MUTED, anchor="lm")
 
-    # legend
+    # legend: side column (draft) or a 3-column band under the drawing (client)
     lx = WPX + 50
-    text(d, (lx, MARGIN_T + 10), "图例", 44, GREEN, anchor="lm")
+    if clean:
+        band_y = HPX + MARGIN_T + MARGIN_B
+        d.line((60, band_y - 10, WPX - 60, band_y - 10), fill=(214, 214, 208), width=2)
+        text(d, (60, band_y + 50), "功能分区", 40, GREEN, anchor="lm")
+        col_w = (WPX - 120) / 3
+        slots = [(60 + (k // 5) * col_w, band_y + 120 + (k % 5) * 58) for k in range(15)]
+    else:
+        text(d, (lx, MARGIN_T + 10), "图例", 44, GREEN, anchor="lm")
     items = [
         "种子萌发观察窗（坎内玻璃面，与坎齐平）",
         "立体水培架 ×4（贴走廊玻璃，走廊可看）",
@@ -326,6 +360,8 @@ def rest(d, img, clean, T):
     ]
     y = MARGIN_T + 80
     for i, s in enumerate(items, 1):
+        if clean:
+            lx, y = slots[i - 1]
         px, py = lx + 21, y
         d.ellipse((px - 21, py - 21, px + 21, py + 21), fill=ORANGE)
         text(d, (px, py), str(i), 22, (255, 255, 255))
@@ -342,7 +378,9 @@ def rest(d, img, clean, T):
     ]
     if clean:
         keys = keys[:-1]
-    for kind, col, s in keys:
+    for j, (kind, col, s) in enumerate(keys):
+        if clean:
+            lx, y = slots[10 + j]
         if kind == "line":
             d.line((lx, y, lx + 44, y), fill=col, width=6)
         elif kind == "box":
