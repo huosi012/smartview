@@ -231,7 +231,7 @@ pages.append(f'''
 <section class="page">
   {deco()}
   {header('报价单 · ' + e(QUOTE_TITLE))}
-  <div class="content">
+  <div class="content fill spread">
     <div class="q-head">
       <div>
         <div class="q-eyebrow">{e(QUOTE_TITLE)}</div>
@@ -304,11 +304,11 @@ pages.append(f'''
 <section class="page">
   {deco()}
   {header('规格参数 · 设备概述')}
-  <div class="content">
+  <div class="content fill">
     {sec(2, lab(paras[3]))}
     <div class="tiles">{tiles}</div>
     {sec(3, lab(R[6][0]))}
-    <div class="overview">
+    <div class="overview g1">
       <figure class="ov-img"><img src="assets/p4_m.jpg" alt=""></figure>
       <p class="lead"><b>{e(ov_lead)}：</b>{e(ov_body)}</p>
     </div>
@@ -337,9 +337,9 @@ pages.append(f'''
 <section class="page">
   {deco()}
   {header(e(lab(R[8][0])))}
-  <div class="content">
+  <div class="content fill">
     {sec(4, lab(R[8][0]))}
-    <table class="kv">{''.join(mat_rows)}</table>
+    <table class="kv stretch g1">{''.join(mat_rows)}</table>
   </div>
   {footer(len(pages)+1)}
 </section>''')
@@ -352,13 +352,13 @@ pages.append(f'''
 <section class="page">
   {deco()}
   {header('进气排气 · 循环 · 加热系统')}
-  <div class="content">
+  <div class="content fill">
     {sec(5, lab(R[23][0]))}
-    {kv_table([24, 25])}
+    {kv_table([24, 25], cls='kv stretch g2')}
     {sec(6, lab(R[26][0]))}
-    {kv_table([27, 28, 29])}
+    {kv_table([27, 28, 29], cls='kv stretch g3')}
     {sec(7, lab(R[30][0]))}
-    {kv_table([31, 32, 33])}
+    {kv_table([31, 32, 33], cls='kv stretch g3')}
     <div class="note info">{icon('info')}<p><b>{e(tn_k)}：</b>{e(tn_v)}</p></div>
   </div>
   {footer(len(pages)+1)}
@@ -390,9 +390,9 @@ pages.append(f'''
 <section class="page">
   {deco()}
   {header('公司设备')}
-  <div class="content">
+  <div class="content fill">
     {sec(10, '公司设备')}
-    <div class="gal g-co">
+    <div class="gal g-co g1">
       <figure class="a"><img src="assets/c3_m.jpg" alt=""></figure>
       <figure class="b"><img src="assets/c4_m.jpg" alt=""></figure>
       <figure class="c cut"><img src="assets/card_c1.png" alt=""></figure>
@@ -448,10 +448,10 @@ pages.append(f'''
 <section class="page">
   {deco()}
   {header(e(lab(adv[0])))}
-  <div class="content">
+  <div class="content fill">
     {sec(11, lab(adv[0]))}
     <div class="note warn">{icon('alert')}<p>{warn_html}</p></div>
-    <div class="two">
+    <div class="two g1">
       <div>
         <h3>{e(lab(adv[2]))}</h3>
         <div class="install">

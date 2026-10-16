@@ -230,3 +230,18 @@ header.run,footer.run,.content,.cv-top,.cv-hero,.cv-foot{z-index:1}
 .kv th{background:var(--tint)}
 .cover .cv-foot{background:transparent}
 .cover .cv-top{background:transparent}
+
+/* ---------- fill every page to the bottom ---------- */
+.content.fill{display:flex;flex-direction:column}
+.content.spread{justify-content:space-between}
+.g1{flex-grow:1}.g2{flex-grow:2}.g3{flex-grow:3}
+.kv.stretch th,.kv.stretch td{vertical-align:middle}
+.overview.g1{grid-template-rows:1fr}
+.overview.g1 .ov-img{height:auto;min-height:104mm}
+.g-co.g1{grid-template-rows:1.23fr 1fr;min-height:210mm}
+.two.g1{align-items:stretch;min-height:0}
+.two.g1 .envs{flex:1;grid-auto-rows:1fr}
+.content.fill .closing{position:relative;left:auto;right:auto;bottom:auto;flex:none;margin-top:7mm}
+.content.fill .gal-note{flex:none}
+.content.fill > :last-child{margin-bottom:0}
+.two.g1 .install .plan{flex:1;min-height:0;height:auto}
