@@ -84,6 +84,40 @@ def icon(name, cls='ic'):
             f'stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>')
 
 
+
+def deco(variant='inner'):
+    """decorative background layer: soft gradients + intersecting brand-colour bands (mm coordinates)"""
+    if variant == 'cover':
+        return '''<svg class="deco" viewBox="0 0 210 297" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="cvT" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2E94A6" stop-opacity=".30"/><stop offset="1" stop-color="#2E94A6" stop-opacity="0"/></linearGradient>
+    <linearGradient id="cvO" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#E8743A" stop-opacity=".28"/><stop offset="1" stop-color="#E8743A" stop-opacity="0"/></linearGradient>
+  </defs>
+  <polygon points="118,297 150,297 210,262 210,236" fill="url(#cvT)"/>
+  <polygon points="160,297 176,297 210,276 210,256" fill="url(#cvO)"/>
+  <polygon points="186,297 210,297 210,248 196,256" fill="#0F4C5C" opacity=".07"/>
+</svg>'''
+    return '''<svg class="deco" viewBox="0 0 210 297" preserveAspectRatio="none">
+  <defs>
+    <radialGradient id="gTR" cx="1" cy="0" r=".55"><stop offset="0" stop-color="#2E94A6" stop-opacity=".16"/><stop offset="1" stop-color="#2E94A6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gBL" cx="0" cy="1" r=".5"><stop offset="0" stop-color="#E8743A" stop-opacity=".07"/><stop offset=".5" stop-color="#2E94A6" stop-opacity=".05"/><stop offset="1" stop-color="#2E94A6" stop-opacity="0"/></radialGradient>
+    <linearGradient id="bT" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E94A6" stop-opacity=".42"/><stop offset="1" stop-color="#2E94A6" stop-opacity="0"/></linearGradient>
+    <linearGradient id="bO" x1="1" y1="0" x2=".2" y2="1"><stop offset="0" stop-color="#E8743A" stop-opacity=".36"/><stop offset="1" stop-color="#E8743A" stop-opacity="0"/></linearGradient>
+    <linearGradient id="bD" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#0F4C5C" stop-opacity=".26"/><stop offset="1" stop-color="#0F4C5C" stop-opacity="0"/></linearGradient>
+    <linearGradient id="bL" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#E8743A" stop-opacity=".30"/><stop offset=".55" stop-color="#2E94A6" stop-opacity=".18"/><stop offset="1" stop-color="#2E94A6" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="210" height="297" fill="url(#gTR)"/>
+  <rect width="210" height="297" fill="url(#gBL)"/>
+  <polygon points="138,0 160,0 210,34 210,54" fill="url(#bT)"/>
+  <polygon points="178,0 188,0 210,64 210,84" fill="url(#bO)"/>
+  <polygon points="194,0 210,0 210,22" fill="#0F4C5C" opacity=".18"/>
+  <circle cx="210" cy="0" r="46" fill="none" stroke="#2E94A6" stroke-width=".3" opacity=".45"/>
+  <circle cx="210" cy="0" r="58" fill="none" stroke="#2E94A6" stroke-width=".18" opacity=".22"/>
+  <polygon points="0,248 0,270 52,297 78,297" fill="url(#bD)"/>
+  <polygon points="0,222 0,236 36,297 50,297" fill="url(#bL)"/>
+  <polygon points="0,280 0,297 20,297" fill="#E8743A" opacity=".30"/>
+</svg>'''
+
 # ---------------------------------------------------------------- page chrome
 def header(section):
     return f'''
@@ -132,6 +166,7 @@ date_t, ref_t = INFO[0][0].strip(), INFO[0][1].strip()
 
 pages.append(f'''
 <section class="page cover">
+  {deco('cover')}
   <div class="cv-top">
     <img class="cv-logo" src="assets/logo.png" alt="">
     <div class="cv-ref"><span>{e(ref_t)}</span><span>{e(date_t)}</span></div>
@@ -194,6 +229,7 @@ terms_html = ''.join(
 
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header('报价单 · ' + e(QUOTE_TITLE))}
   <div class="content">
     <div class="q-head">
@@ -273,6 +309,7 @@ ov_lead, _, ov_body = ov.partition('：')
 
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header('规格参数 · 设备概述')}
   <div class="content">
     {sec(2, lab(paras[3]))}
@@ -305,6 +342,7 @@ for i in range(9, 23):
 
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header(e(lab(R[8][0])))}
   <div class="content">
     {sec(4, lab(R[8][0]))}
@@ -319,6 +357,7 @@ tn_k, _, tn_v = test_note.partition('：')
 
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header('进气排气 · 循环 · 加热系统')}
   <div class="content">
     {sec(5, lab(R[23][0]))}
@@ -337,6 +376,7 @@ el_title = R[35][0]
 el_head, _, el_note = el_title.partition('：')
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header(e(el_head) + ' · 产品实物图')}
   <div class="content">
     {sec(8, el_head, f'<span class="pill">{e(el_note)}</span>')}
@@ -355,6 +395,7 @@ pages.append(f'''
 # =============================================================== P8 company equipment
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header('公司设备')}
   <div class="content">
     {sec(10, '公司设备')}
@@ -412,6 +453,7 @@ install_svg = install_svg.replace('stroke="#E2662B" stroke-width="1.4" marker-st
 
 pages.append(f'''
 <section class="page">
+  {deco()}
   {header(e(lab(adv[0])))}
   <div class="content">
     {sec(11, lab(adv[0]))}
