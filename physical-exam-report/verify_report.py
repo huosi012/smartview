@@ -20,7 +20,7 @@ HEADERS = [h for _, h, _, _, _ in COLS]
 
 
 def squash(s):
-    return re.sub(r"[\s\u2060]+", "", str(s))
+    return re.sub(r"[\s\u2060\u200b]+", "", str(s))
 
 
 def main(src, xlsx, pdf_path, plan_path):
@@ -78,7 +78,7 @@ def main(src, xlsx, pdf_path, plan_path):
     seen_ids = []
     name_ok = 0
     for pno, (page, ids) in enumerate(zip(pdf.pages, plan["pages"]), start=1):
-        chars = [c for c in page.chars if c["text"].strip() and c["text"] != "\u2060"]
+        chars = [c for c in page.chars if c["text"].strip() and c["text"] not in "\u2060\u200b"]
         vedges = sorted({round(e["x0"], 1) for e in page.edges if e["orientation"] == "v"})
         hedges = [e for e in page.edges if e["orientation"] == "h"]
         if len(vedges) < 11:
@@ -155,7 +155,7 @@ def main(src, xlsx, pdf_path, plan_path):
                 for li, ln in enumerate(ordered):
                     for ki, c in enumerate(ln):
                         gap = ""
-                        while j < len(full) and full[j] != c["text"] and full[j] in " \n\u2060":
+                        while j < len(full) and full[j] != c["text"] and full[j] in " \n\u2060\u200b":
                             gap += full[j]
                             j += 1
                         if j >= len(full) or full[j] != c["text"]:

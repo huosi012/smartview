@@ -357,12 +357,16 @@ class Office:
         doc.ForbiddenCharacters.setForbiddenCharacters(loc, rules)
         # 西文/数字后紧跟“%”“～”时（如“NEU%”“20.0～40”），LibreOffice 会把它们
         # 断到下一行行首。仅在排版时插入零宽连接符 U+2060（Excel 文件中的文字不变）。
+        # 反过来，“mmol/L↑(<5.18)”这类整串西文无断点，放不下时整串移到下一行，
+        # 上一行留下大段空白。在“↑(”“L(”之间加零宽空格 U+200B，允许在“(”前换行。
         glue = re.compile(r"(?<=[A-Za-z0-9#.)])(?=[%～])")
+        split = re.compile(r"(?<=[A-Za-z↑↓])(?=\()")
         for col in (7, 9):
             for r in range(FIRST_DATA_ROW - 1, n_rows):
                 cell = sheet.getCellByPosition(col, r)
-                if glue.search(cell.String):
-                    cell.String = glue.sub("\u2060", cell.String)
+                text = split.sub("\u200b", glue.sub("\u2060", cell.String))
+                if text != cell.String:
+                    cell.String = text
         return doc, sheet
 
     def measure_heights(self, path, first, last):
