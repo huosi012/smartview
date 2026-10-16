@@ -430,16 +430,16 @@ install_svg = '''
   <rect x="62" y="50" width="176" height="96" rx="3" fill="#EAF4F6" stroke="#0F4C5C" stroke-width="1.6"/>
   <line x1="64" y1="146" x2="236" y2="146" stroke="#2E94A6" stroke-width="4"/>
   <line x1="150" y1="140" x2="150" y2="152" stroke="#fff" stroke-width="1.6"/>
-  <text x="150" y="103" text-anchor="middle" font-size="12" font-weight="700" fill="#0F4C5C">设备</text>
-  <text x="150" y="138" text-anchor="middle" font-size="8" font-weight="600" fill="#2E94A6">正面</text>
+  <text x="150" y="103" text-anchor="middle" font-size="13.2" font-weight="700" fill="#0F4C5C">设备</text>
+  <text x="150" y="138" text-anchor="middle" font-size="8.8" font-weight="600" fill="#2E94A6">正面</text>
   <line x1="150" y1="16" x2="150" y2="48" stroke="#2E94A6" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
-  <text x="156" y="35" font-size="9" font-weight="600" fill="#10252E">≥ 700 mm</text>
+  <text x="156" y="35" font-size="9.9" font-weight="600" fill="#10252E">≥ 700 mm</text>
   <line x1="18" y1="98" x2="60" y2="98" stroke="#2E94A6" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
-  <text x="39" y="91" text-anchor="middle" font-size="9" font-weight="600" fill="#10252E">≥ 700</text>
+  <text x="39" y="91" text-anchor="middle" font-size="9.9" font-weight="600" fill="#10252E">≥ 700</text>
   <line x1="240" y1="98" x2="282" y2="98" stroke="#2E94A6" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
-  <text x="261" y="91" text-anchor="middle" font-size="9" font-weight="600" fill="#10252E">≥ 700</text>
+  <text x="261" y="91" text-anchor="middle" font-size="9.9" font-weight="600" fill="#10252E">≥ 700</text>
   <line x1="150" y1="148" x2="150" y2="214" stroke="#E2662B" stroke-width="1.4" marker-start="url(#ar)" marker-end="url(#ar)"/>
-  <text x="156" y="186" font-size="10" font-weight="800" fill="#C2511C">≥ 1000 mm</text>
+  <text x="156" y="186" font-size="11.0" font-weight="800" fill="#C2511C">≥ 1000 mm</text>
 </svg>'''
 # fix marker colour for front arrow
 install_svg = install_svg.replace('</defs>', '<marker id="ar2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" fill="#E2662B"/></marker></defs>')
