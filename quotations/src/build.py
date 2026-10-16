@@ -192,7 +192,7 @@ pages.append(f'''
         <div><dt>{e(lab(pow_k))}</dt><dd class="num"><small class="pre">功率</small>21KW</dd></div>
       </dl>
     </div>
-    <div class="cv-prod"><i class="shadow"></i><img src="assets/cut_p2.png" alt=""></div>
+    <i class="cv-glow"></i><i class="cv-stage"></i><i class="cv-shadow"></i><div class="cv-prod"><img src="assets/cover_c1.png" alt=""></div>
   </div>
   <div class="cv-foot">
     <div class="cv-co">

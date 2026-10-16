@@ -245,3 +245,17 @@ header.run,footer.run,.content,.cv-top,.cv-hero,.cv-foot{z-index:1}
 .content.fill .gal-note{flex:none}
 .content.fill > :last-child{margin-bottom:0}
 .two.g1 .install .plan{flex:1;min-height:0;height:auto}
+
+/* ---------- cover v3: large walk-in oven ---------- */
+.cv-hero{height:222mm}
+.cv-title h1{font-size:46pt}
+.cv-side{top:104mm}
+.cv-glow{position:absolute;right:-30mm;top:20mm;width:190mm;height:190mm;border-radius:50%;
+  background:radial-gradient(circle,rgba(143,211,223,.30) 0%,rgba(46,148,166,.14) 38%,rgba(46,148,166,0) 70%)}
+.cv-stage{position:absolute;left:60mm;right:-20mm;bottom:-6mm;height:34mm;border-radius:50%;
+  background:radial-gradient(ellipse at 55% 45%,rgba(143,211,223,.22) 0%,rgba(143,211,223,.08) 45%,rgba(143,211,223,0) 72%)}
+.cv-shadow{position:absolute;left:78mm;right:-6mm;bottom:2.5mm;height:13mm;border-radius:50%;
+  background:radial-gradient(ellipse at 52% 50%,rgba(0,0,0,.62) 0%,rgba(0,0,0,.30) 42%,rgba(0,0,0,0) 72%)}
+.cv-prod{right:-1mm;bottom:7mm;width:auto;height:188mm;display:block}
+.cv-prod img{height:100%;width:auto;max-width:none;max-height:none;display:block}
+.cv-floor{height:42mm}
