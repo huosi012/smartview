@@ -259,13 +259,6 @@ pages.append(f'''
     {sec(1, lab(R[47][0]))}
     <div class="terms">{terms_html}</div>
 
-    <div class="sign">
-      <div class="sign-r">
-        <div class="co">{e(COMPANY)}</div>
-        <div class="dt">{e(date_t)}</div>
-        <img class="seal" src="assets/seal.png" alt="">
-      </div>
-    </div>
   </div>
   {footer(len(pages)+1)}
 </section>''')
@@ -479,6 +472,7 @@ pages.append(f'''
       <div class="sig">
         <div class="co">{e(adv[13])}</div>
         <div class="dt">{e(date_t)}</div>
+        <img class="seal" src="assets/seal.png" alt="">
       </div>
     </div>
   </div>
