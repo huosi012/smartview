@@ -112,25 +112,12 @@ def split_items(text):
     return head, items
 
 
-def clean_result(text):
-    """体检结果：每个编号条目一行，条目内部各检查项目用句号连接。"""
+def clean_text(text):
+    """体检结果 / 临床建议：不换行，各检查项目及 1./2./3. 各小项之间用句号隔开。"""
     head, items = split_items(text)
-    rows = [join_parts(it) for it in items]
-    if head:
-        prefix = join_parts(head)
-        if rows:
-            # “【阳性发现】”等小标题与第 1 条接排，省去一行空白
-            rows[0] = prefix + rows[0]
-        else:
-            rows = [prefix]
-    return "\n".join(rows)
-
-
-def clean_advice(text):
-    """临床建议：保留 1./2./3. 分条换行，删除多余空格和空行。"""
-    head, items = split_items(text)
-    rows = ([join_parts(head)] if head else []) + [join_parts(it) for it in items]
-    return "\n".join(rows)
+    body = join_parts([join_parts(it) for it in items]) if items else ""
+    # “【阳性发现】”等小标题直接与第 1 项接排
+    return (join_parts(head) if head else "") + body
 
 
 def clean_short(v):
@@ -159,8 +146,8 @@ def read_source(path):
         if all(v is None or str(v).strip() == "" for v in vals):
             continue
         rec = [clean_short(v) for v in vals]
-        rec[7] = clean_result(vals[7])
-        rec[9] = clean_advice(vals[9])
+        rec[7] = clean_text(vals[7])
+        rec[9] = clean_text(vals[9])
         people.append({"src_row": r, "vals": rec})
     return annex, title, info, headers, people
 
