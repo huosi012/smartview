@@ -1,17 +1,19 @@
-import sys, re, docx, subprocess
+import sys, re, docx, subprocess, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fixes import fix
 src, pdf = sys.argv[1], sys.argv[2]
 txt = subprocess.run(['pdftotext', '-raw', pdf, '-'], capture_output=True, text=True).stdout
 norm = lambda s: re.sub(r'\s+', '', s)
 P = norm(txt)
 d = docx.Document(src)
-segs = [p.text for p in d.paragraphs if p.text.strip()]
+segs = [fix(p.text) for p in d.paragraphs if p.text.strip()]
 for t in d.tables:
     for row in t.rows:
         prev = None
         for c in row.cells:
             if c._tc is prev: continue
             prev = c._tc
-            segs += c.text.split('\n')
+            segs += fix(c.text).split('\n')
 miss = []
 for s in segs:
     s = norm(s)

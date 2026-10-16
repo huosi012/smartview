@@ -1,7 +1,7 @@
 # CS881-TG 热风循环烘箱报价单 — 生成脚本
 
 `../1200x1500x1500热风循环烘箱_CS881-TG_报价单.pdf` 由以下脚本生成，所有文字均直接读取自原始
-`1200×1500×1500热风循环烘箱.docx`，未改写。
+`1200×1500×1500热风循环烘箱.docx`；仅原文中明显的错别字/标点按 `fixes.py` 中的清单逐条更正。
 
 | 文件 | 作用 |
 | --- | --- |
@@ -10,6 +10,7 @@
 | `cutprep.py` | 清理抠图边缘杂物（线缆等）并裁切 |
 | `edges.py` | 用 RANSAC 拟合设备轮廓的上下左右边线 |
 | `rectify.py` | 透视矫正：把设备正面映射为正矩形（三分之四视角的设备只校正竖线） |
+| `fixes.py` | 原文明显错误的更正清单（原文 → 更正） |
 | `build.py` | 读取 docx 文本，生成 A4 分页 HTML（`build.py <docx> <out.html> <总页数> <style.css>`） |
 | `style.css` | 版式与配色（品牌青 #2E94A6，字体 Noto Sans SC / Noto Serif SC / Inter） |
 | `render.js` | Playwright + Chromium 导出 PDF，并报告每页是否溢出 |

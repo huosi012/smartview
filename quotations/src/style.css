@@ -218,6 +218,6 @@ ul.dash li::before{content:"";position:absolute;left:0;top:2.4mm;width:2mm;heigh
   background:linear-gradient(120deg,var(--teal-dd),var(--teal-d) 70%,#16697C);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 9mm}
 .closing::before{content:"";position:absolute;left:-18mm;bottom:-30mm;width:70mm;height:70mm;border-radius:50%;border:8mm solid rgba(46,148,166,.22)}
 .thanks{font-family:NSerif;font-weight:900;font-size:17pt;letter-spacing:.08em;line-height:1.7;position:relative;white-space:nowrap}
-.sig{position:relative;text-align:left;background:#fff;border-radius:2mm;padding:7mm 16mm 7mm 7mm;white-space:nowrap}
+.sig{position:relative;text-align:left;background:#fff;border-radius:2mm;padding:7mm 9mm;white-space:nowrap}
 .sig .co{font-size:11.5pt}
 .sig .seal{right:1mm;bottom:-6.5mm;width:31mm}

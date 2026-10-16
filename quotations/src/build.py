@@ -2,6 +2,7 @@
 import sys, html, re
 import docx
 from docx.table import Table
+from fixes import fix
 
 SRC, OUT = sys.argv[1], sys.argv[2]
 TOTAL_PAGES = int(sys.argv[3]) if len(sys.argv) > 3 else 8
@@ -18,12 +19,12 @@ def rows_of(t):
             if c._tc is prev:
                 continue
             prev = c._tc
-            cells.append(c.text)
+            cells.append(fix(c.text))
         out.append(cells)
     return out
 
 
-paras = [p.text for p in d.paragraphs if p.text.strip()]
+paras = [fix(p.text) for p in d.paragraphs if p.text.strip()]
 COMPANY, DOCTITLE = paras[0], paras[1]          # 吴江长胜烘箱设备制造有限公司 / 烘箱技术规范合同附件
 QUOTE_TITLE = paras[2]                          # QUOTATION（报价）
 INFO = rows_of(tables[0])
@@ -258,12 +259,12 @@ tiles = tile_rows([
     [(lab(R[0][0]), '常温-300℃', '（任意可调）', '', '', 'hot feature', 1),
      (lab(R[3][0]), '室温-200℃', '可调', '', '', 'hot', 1),
      (lab(R[1][0]), '±1℃', '', '', '', 'hot', 1),
-     (lab(R[2][0]), '±3℃', '(空载状态下)', '', '', 'hot', 1)],
+     (lab(R[2][0]), '±3℃', '（空载状态下）', '', '', 'hot', 1)],
     [(lab(R[4][0]), '1200×1500×1500', R[4][3], R[4][2], '', 'dim', 2),
      (lab(R[5][0]), '1400×2200×2200', '（以实际为准）', R[5][2], '', 'dim', 2)],
     [(lab(R[1][2]), R[1][3], '', '', '', 'el', 1),
      (lab(R[2][2]), '21KW', '', '', '功率', 'el', 1),
-     (lab(R[3][2]), '1100w', '（380V）', '', '', 'el', 1),
+     (lab(R[3][2]), '1100W', '（380V）', '', '', 'el', 1),
      (lab(R[0][2]), R[0][3], '', '', '', 'el', 1)],
 ], ['1.3fr 1.3fr .7fr .7fr', '1fr 1fr', '1.5fr 1fr 1fr 1fr'])
 
@@ -436,7 +437,6 @@ pages.append(f'''
       <div class="sig">
         <div class="co">{e(adv[13])}</div>
         <div class="dt">{e(date_t)}</div>
-        <img class="seal" src="assets/seal.png" alt="">
       </div>
     </div>
   </div>
