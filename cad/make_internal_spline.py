@@ -17,13 +17,13 @@ import math
 import os
 import sys
 
-import ezdxf
 from ezdxf.enums import TextEntityAlignment, MTextEntityAlignment
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cad_common import Sheet, add, bulge_of, rot, tol, wavy, wavy_arc  # noqa: E402
 from spline_geom import (  # noqa: E402
-    M_MOD, Z, ALPHA, X, D_PITCH, D_BASE, D_MAJOR, D_MINOR, R_MAJOR, R_MINOR,
-    R_BASE, E_PITCH, S_BASE, PIN_D, psi, pin_measurement, half_space_profile,
+    D_BASE, D_MINOR, PITCH_ANG, PIN_D, R_MAJOR, R_MINOR, S_BASE, full_profile,
+    half_space_profile, pin_measurement, psi, window_profile,
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -31,252 +31,19 @@ OUT_BASE = os.path.join(HERE, "2292-IH-000139_内花键")
 
 K = 2.0  # 图纸 mm -> 模型单位 (主视图比例 1:2)
 TXT = 3.5  # 图纸字高 (mm)
+W, H = 420, 297  # A3
 
-# ---------------------------------------------------------------- 文档设置
-doc = ezdxf.new("R2010", setup=True, units=4)
-doc.header["$MEASUREMENT"] = 1
-doc.header["$LTSCALE"] = 1.0
-doc.header["$PSLTSCALE"] = 0
-msp = doc.modelspace()
+sh = Sheet(K, TXT)
+doc, msp = sh.doc, sh.msp
+P, pline, line, circle, text, mtext = sh.P, sh.pline, sh.line, sh.circle, sh.text, sh.mtext
+arrow, leader_note, lin_dim = sh.arrow, sh.leader_note, sh.lin_dim
+roughness, roughness_leader = sh.roughness, sh.roughness_leader
 
-doc.linetypes.add("GB_CENTER", pattern=[33.0, 24.0, -4.0, 1.0, -4.0],
-                  description="GB 细点画线 ____ . ____")
-doc.linetypes.add("GB_PHANTOM", pattern=[38.0, 24.0, -4.0, 1.0, -4.0, 1.0, -4.0],
-                  description="GB 细双点画线 ____ . . ____")
-
-LAYERS = {
-    "粗实线": dict(color=7, lineweight=50, linetype="Continuous"),
-    "细实线": dict(color=3, lineweight=25, linetype="Continuous"),
-    "波浪线": dict(color=3, lineweight=25, linetype="Continuous"),
-    "中心线": dict(color=1, lineweight=25, linetype="GB_CENTER"),
-    "双点画线": dict(color=6, lineweight=25, linetype="GB_PHANTOM"),
-    "剖面线": dict(color=8, lineweight=25, linetype="Continuous"),
-    "尺寸": dict(color=3, lineweight=25, linetype="Continuous"),
-    "文字": dict(color=7, lineweight=25, linetype="Continuous"),
-    "图框": dict(color=7, lineweight=50, linetype="Continuous"),
-    "图框细": dict(color=7, lineweight=25, linetype="Continuous"),
-}
-for name, a in LAYERS.items():
-    doc.layers.add(name, color=a["color"], linetype=a["linetype"], lineweight=a["lineweight"])
-
-# 字体: 长仿宋 (simfang.ttf, 宽度因子 0.7)
-FONT_FILE = "simfang.ttf"
-doc.styles.add("HZ", font=FONT_FILE).dxf.width = 0.7
-
-ds = doc.dimstyles.new("GB")
-for k, v in dict(
-    dimtxsty="HZ", dimtxt=TXT, dimasz=3.0, dimscale=K, dimtad=1, dimdec=3,
-    dimzin=8, dimtzin=8, dimtdec=3, dimexo=0.0, dimexe=2.0, dimgap=0.8,
-    dimdsep=ord("."), dimtih=0, dimtoh=0, dimtmove=0, dimclrd=3, dimclre=3,
-    dimclrt=7, dimlwd=25, dimlwe=25,
-).items():
-    ds.dxf.set(k, v)
-
-
-# ---------------------------------------------------------------- 工具函数
-def P(x, y):
-    """图纸坐标(mm) -> 模型坐标."""
-    return (x * K, y * K)
-
-
-def rot(p, a):
-    c, s = math.cos(a), math.sin(a)
-    return (p[0] * c - p[1] * s, p[0] * s + p[1] * c)
-
-
-def add(p, q):
-    return (p[0] + q[0], p[1] + q[1])
-
-
-def bulge_of(c, p1, p2):
-    a1 = math.atan2(p1[1] - c[1], p1[0] - c[0])
-    a2 = math.atan2(p2[1] - c[1], p2[0] - c[0])
-    sw = a2 - a1
-    while sw > math.pi:
-        sw -= 2 * math.pi
-    while sw <= -math.pi:
-        sw += 2 * math.pi
-    return math.tan(sw / 4)
-
-
-def pline(pts, layer, closed=False):
-    """pts: [(x, y) | (x, y, bulge)]"""
-    pts = [(p[0], p[1], 0, 0, p[2] if len(p) > 2 else 0) for p in pts]
-    return msp.add_lwpolyline(pts, format="xyseb", close=closed, dxfattribs={"layer": layer})
-
-
-def line(p1, p2, layer):
-    return msp.add_line(p1, p2, dxfattribs={"layer": layer})
-
-
-def circle(c, r, layer):
-    return msp.add_circle(c, r, dxfattribs={"layer": layer})
-
-
-def text(pos, s, h=TXT, align=TextEntityAlignment.MIDDLE_CENTER, rot_deg=0.0,
-         layer="文字", width=0.7):
-    """pos 为模型坐标, h 为图纸字高."""
-    t = msp.add_text(s, height=h * K, rotation=rot_deg,
-                     dxfattribs={"style": "HZ", "layer": layer, "width": width})
-    t.set_placement(pos, align=align)
-    return t
-
-
-def mtext(pos, s, h=TXT, attach=MTextEntityAlignment.MIDDLE_CENTER, rot_deg=0.0,
-          layer="文字"):
-    m = msp.add_mtext(s, dxfattribs={"style": "HZ", "layer": layer,
-                                     "char_height": h * K, "rotation": rot_deg})
-    m.set_location(pos, attachment_point=attach)
-    return m
-
-
-def tol(upper, lower):
-    """MTEXT 堆叠公差 (上偏差^下偏差)."""
-    return r"\H0.7x;\S%s^ %s;\H1.4286x;" % (upper, lower)
-
-
-def arrow(tip, direction, layer="尺寸", size=3.0):
-    """实心箭头 (图纸长度 size, 指向 direction)."""
-    L = size * K
-    d = math.hypot(*direction)
-    ux, uy = direction[0] / d, direction[1] / d
-    w = L / 6
-    base = (tip[0] - ux * L, tip[1] - uy * L)
-    p1 = (base[0] - uy * w, base[1] + ux * w)
-    p2 = (base[0] + uy * w, base[1] - ux * w)
-    msp.add_solid([tip, p1, p2], dxfattribs={"layer": layer})
-
-
-def leader_note(tip, knee, s, side=1, h=TXT, with_arrow=True, layer="尺寸"):
-    """引线 + 水平折线 + 文字 (文字写在折线上方). side=+1 向右, -1 向左."""
-    if with_arrow:
-        arrow(tip, (tip[0] - knee[0], tip[1] - knee[1]))
-    line(tip, knee, layer)
-    w = (len(s) * 0.62 + 1.0) * h * K
-    end = (knee[0] + side * w, knee[1])
-    line(knee, end, layer)
-    mid = ((knee[0] + end[0]) / 2, knee[1] + 0.8 * K)
-    mtext(mid, s, h, attach=MTextEntityAlignment.BOTTOM_CENTER)
-
-
-def roughness(tip, axis_deg, value, h=TXT):
-    """GB/T 131 表面粗糙度符号 (去除材料), 尖端在 tip, 符号轴向 axis_deg."""
-    a = math.radians(axis_deg - 90)
-    s = K
-    h1, h2 = 1.4 * h, 2.6 * h
-    t30 = math.tan(math.radians(30))
-    loc = [(0, 0), (-h1 * t30, h1), (h1 * t30, h1), (h2 * t30, h2)]
-    g = [add(tip, rot((x * s, y * s), a)) for x, y in loc]
-    line(g[0], g[1], "细实线")
-    line(g[1], g[2], "细实线")
-    line(g[0], g[3], "细实线")
-    tpos = add(tip, rot((0.45 * h1 * t30 * s, (h1 + 0.6) * s), a))
-    t = msp.add_text(value, height=h * K, rotation=math.degrees(a),
-                     dxfattribs={"style": "HZ", "layer": "文字", "width": 0.7})
-    t.set_placement(tpos, align=TextEntityAlignment.BOTTOM_RIGHT)
-
-
-def roughness_leader(tip, knee, value, side=1, h=TXT):
-    """带引出线的粗糙度符号 (用于朝右/朝下的表面)."""
-    arrow(tip, (tip[0] - knee[0], tip[1] - knee[1]))
-    line(tip, knee, "尺寸")
-    end = (knee[0] + side * 10 * K, knee[1])
-    line(knee, end, "尺寸")
-    roughness(((knee[0] + end[0]) / 2, knee[1]), 90, value, h)
-
-
-def wavy(p1, p2, amp, waves):
-    """波浪线 (两端点在 p1/p2 上)."""
-    n = max(int(waves * 12), 12)
-    dx, dy = p2[0] - p1[0], p2[1] - p1[1]
-    L = math.hypot(dx, dy)
-    nx, ny = -dy / L, dx / L
-    pts = []
-    for i in range(n + 1):
-        t = i / n
-        o = amp * math.sin(2 * math.pi * waves * t)
-        pts.append((p1[0] + dx * t + nx * o, p1[1] + dy * t + ny * o))
-    return pts
-
-
-def wavy_arc(c, r, a1, a2, amp, waves):
-    n = max(int(waves * 12), 12)
-    pts = []
-    for i in range(n + 1):
-        t = i / n
-        a = a1 + (a2 - a1) * t
-        rr = r + amp * math.sin(2 * math.pi * waves * t)
-        pts.append((c[0] + rr * math.cos(a), c[1] + rr * math.sin(a)))
-    return pts
-
-
-def lin_dim(p1, p2, base, angle, text_str, location=None):
-    d = msp.add_linear_dim(base=base, p1=p1, p2=p2, angle=angle, dimstyle="GB",
-                           text=text_str, location=location,
-                           dxfattribs={"layer": "尺寸"})
-    d.render()
-    return d
-
-
-# ---------------------------------------------------------------- 花键齿形
 HP = half_space_profile()
 TIP_T = HP["tip_theta"]
 R_CH = HP["chamfer_r"]
 R_FL = HP["fillet_r"]
 FC = HP["fillet_center"]
-TH_R = HP["root_theta"]
-PITCH_ANG = 2 * math.pi / Z
-
-
-def space_chain(phi, n_flank=10):
-    """一个齿槽 (中心角 phi) 的轮廓顶点 (x, y, bulge), 逆时针."""
-    def pol(r, t):
-        return (r * math.cos(phi + t), r * math.sin(phi + t))
-
-    def flank(r, side):
-        return pol(r, side * psi(r))
-
-    rs = [R_CH + (R_FL - R_CH) * i / n_flank for i in range(n_flank + 1)]
-    v = [[*pol(R_MINOR, -TIP_T), 0.0]]
-    for r in rs:
-        v.append([*flank(r, -1), 0.0])
-    c_minus = rot((FC[0], -FC[1]), phi)
-    p2 = pol(R_MAJOR, -TH_R)
-    v[-1][2] = bulge_of(c_minus, v[-1][:2], p2)
-    v.append([*p2, math.tan(2 * TH_R / 4)])
-    p3 = pol(R_MAJOR, TH_R)
-    c_plus = rot(FC, phi)
-    v.append([*p3, bulge_of(c_plus, p3, flank(R_FL, +1))])
-    for r in reversed(rs):
-        v.append([*flank(r, +1), 0.0])
-    v.append([*pol(R_MINOR, TIP_T), 0.0])
-    return v
-
-
-def full_profile():
-    verts = []
-    for k in range(Z):
-        phi = math.pi / 2 + k * PITCH_ANG
-        ch = space_chain(phi)
-        ch[-1][2] = math.tan((PITCH_ANG - 2 * TIP_T) / 4)
-        verts.extend(ch)
-    return verts
-
-
-def window_profile(ks, th_s, th_e):
-    """齿槽 ks 范围内的开口轮廓, 起止于小径圆上角度 th_s / th_e."""
-    phis = [math.pi / 2 + k * PITCH_ANG for k in ks]
-    verts = [[R_MINOR * math.cos(th_s), R_MINOR * math.sin(th_s),
-              math.tan(((phis[0] - TIP_T) - th_s) / 4)]]
-    for i, phi in enumerate(phis):
-        ch = space_chain(phi)
-        if i + 1 < len(phis):
-            ch[-1][2] = math.tan((PITCH_ANG - 2 * TIP_T) / 4)
-        else:
-            ch[-1][2] = math.tan((th_e - (phi + TIP_T)) / 4)
-        verts.extend(ch)
-    verts.append([R_MINOR * math.cos(th_e), R_MINOR * math.sin(th_e), 0.0])
-    return verts
 
 
 def xform(verts, s, off, ref=(0.0, 0.0)):
@@ -285,7 +52,6 @@ def xform(verts, s, off, ref=(0.0, 0.0)):
 
 
 # ================================================================ 图框
-W, H = 420, 297
 pline([P(0, 0), P(W, 0), P(W, H), P(0, H)], "图框细", closed=True)
 pline([P(25, 10), P(410, 10), P(410, 287), P(25, 287)], "图框", closed=True)
 for a, b in (((217.5, 0), (217.5, 10)), ((217.5, 287), (217.5, 297)),
@@ -474,7 +240,7 @@ line(p_low, (p_low[0] - 50 * K, p_low[1]), "尺寸")
 mtext((p_low[0] - 21 * K, p_low[1] + 0.8 * K),
       r"%%c212.5H7(" + tol("+0.046", "0") + ")", TXT,
       attach=MTextEntityAlignment.BOTTOM_CENTER)
-roughness((p_low[0] - 45 * K, p_low[1]), 90, "3.2", h=3.0)
+roughness((p_low[0] - 45 * K, p_low[1]), 90, "6.3", h=3.0)
 
 # Ø218.25H11 大径 (右侧齿槽槽底)
 a_sp = math.pi / 2 - PITCH_ANG
@@ -638,42 +404,9 @@ text(P(BX + 155, BY + 9), "2292-IH-000139", 5.5)
 
 
 # ================================================================ 输出
-def save_dxf():
-    doc.saveas(OUT_BASE + ".dxf")
-
-
-def render_preview():
-    """用开源字体渲染预览 (DXF 本身保持仿宋)."""
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    from ezdxf.addons.drawing import Frontend, RenderContext
-    from ezdxf.addons.drawing.matplotlib import MatplotlibBackend
-    from ezdxf.addons.drawing.config import (BackgroundPolicy, ColorPolicy,
-                                             Configuration)
-
-    doc.styles.get("HZ").dxf.font = "wqy-zenhei.ttc"
-    try:
-        fig = plt.figure(figsize=(W / 25.4, H / 25.4))
-        ax = fig.add_axes((0, 0, 1, 1))
-        ax.set_axis_off()
-        cfg = Configuration(color_policy=ColorPolicy.BLACK,
-                            background_policy=BackgroundPolicy.WHITE)
-        Frontend(RenderContext(doc), MatplotlibBackend(ax), config=cfg).draw_layout(
-            msp, finalize=True)
-        ax.set_xlim(0, W * K)
-        ax.set_ylim(0, H * K)
-        ax.set_aspect("equal")
-        fig.savefig(OUT_BASE + ".png", dpi=300, facecolor="white")
-        fig.savefig(OUT_BASE + ".pdf", facecolor="white")
-        plt.close(fig)
-    finally:
-        doc.styles.get("HZ").dxf.font = FONT_FILE
-
-
 if __name__ == "__main__":
-    save_dxf()
+    sh.save(OUT_BASE + ".dxf")
     if "--no-preview" not in sys.argv:
-        render_preview()
+        sh.render_preview(OUT_BASE, W, H)
     m_val, d_m = pin_measurement()
     print(f"saved {OUT_BASE}.dxf  (M={m_val:.3f}, sb={S_BASE:.3f}, db={D_BASE:.3f})")

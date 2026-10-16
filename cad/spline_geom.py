@@ -132,3 +132,73 @@ if __name__ == "__main__":
     for r in (R_MINOR, R_PITCH, R_MAJOR):
         print(f"r={r:.3f}: 齿槽宽 {2*psi(r)*r:.3f}, 齿宽 {(2*math.pi/Z-2*psi(r))*r:.3f}")
     print(half_space_profile())
+
+
+# ---------------------------------------------------------------- 齿形轮廓 (多段线顶点)
+PITCH_ANG = 2 * math.pi / Z
+_HP = None
+
+
+def _hp():
+    global _HP
+    if _HP is None:
+        _HP = half_space_profile()
+    return _HP
+
+
+def space_chain(phi, n_flank=10):
+    """一个齿槽 (中心角 phi) 的轮廓顶点 [x, y, bulge], 逆时针."""
+    from cad_common import bulge_of, rot
+    hp = _hp()
+    tip_t, r_ch, r_fl = hp["tip_theta"], hp["chamfer_r"], hp["fillet_r"]
+    fc, th_r = hp["fillet_center"], hp["root_theta"]
+
+    def pol(r, t):
+        return (r * math.cos(phi + t), r * math.sin(phi + t))
+
+    def flank(r, side):
+        return pol(r, side * psi(r))
+
+    rs = [r_ch + (r_fl - r_ch) * i / n_flank for i in range(n_flank + 1)]
+    v = [[*pol(R_MINOR, -tip_t), 0.0]]
+    for r in rs:
+        v.append([*flank(r, -1), 0.0])
+    c_minus = rot((fc[0], -fc[1]), phi)
+    p2 = pol(R_MAJOR, -th_r)
+    v[-1][2] = bulge_of(c_minus, v[-1][:2], p2)
+    v.append([*p2, math.tan(2 * th_r / 4)])
+    p3 = pol(R_MAJOR, th_r)
+    c_plus = rot(fc, phi)
+    v.append([*p3, bulge_of(c_plus, p3, flank(r_fl, +1))])
+    for r in reversed(rs):
+        v.append([*flank(r, +1), 0.0])
+    v.append([*pol(R_MINOR, tip_t), 0.0])
+    return v
+
+
+def full_profile():
+    """整圈内花键轮廓 (齿槽中心在 90°), 闭合多段线顶点."""
+    tip_t = _hp()["tip_theta"]
+    verts = []
+    for k in range(Z):
+        ch = space_chain(math.pi / 2 + k * PITCH_ANG)
+        ch[-1][2] = math.tan((PITCH_ANG - 2 * tip_t) / 4)
+        verts.extend(ch)
+    return verts
+
+
+def window_profile(ks, th_s, th_e):
+    """齿槽 ks 范围内的开口轮廓, 起止于小径圆上角度 th_s / th_e."""
+    tip_t = _hp()["tip_theta"]
+    phis = [math.pi / 2 + k * PITCH_ANG for k in ks]
+    verts = [[R_MINOR * math.cos(th_s), R_MINOR * math.sin(th_s),
+              math.tan(((phis[0] - tip_t) - th_s) / 4)]]
+    for i, phi in enumerate(phis):
+        ch = space_chain(phi)
+        if i + 1 < len(phis):
+            ch[-1][2] = math.tan((PITCH_ANG - 2 * tip_t) / 4)
+        else:
+            ch[-1][2] = math.tan((th_e - (phi + tip_t)) / 4)
+        verts.extend(ch)
+    verts.append([R_MINOR * math.cos(th_e), R_MINOR * math.sin(th_e), 0.0])
+    return verts
