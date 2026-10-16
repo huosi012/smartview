@@ -234,25 +234,38 @@ pages.append(f'''
 </section>''')
 
 # =============================================================== P3 specs + overview
-def tile(k, big, small='', unit='', pre='', cls=''):
-    pre_h = f'<small class="pre">{e(pre)}</small>' if pre else ''
-    unit_h = f'<small class="unit">{e(unit)}</small>' if unit else ''
-    small_h = f'<em>{e(small)}</em>' if small else ''
-    return f'<div class="tile {cls}"><span>{e(k)}</span><b class="num">{pre_h}{e(big)}{unit_h}</b>{small_h}</div>'
+def tile_rows(rows, templates):
+    """each tile = background + label/value/sub placed on a shared row grid so values share a baseline"""
+    out = []
+    for row, tpl in zip(rows, templates):
+        out.append(f'<div class="trow" style="grid-template-columns:{tpl}">')
+        r = 1
+        col = 1
+        for (k, big, small, unit, pre, cls, span) in row:
+            gc = f'grid-column:{col} / span {span}'
+            pre_h = f'<small class="pre">{e(pre)}</small>' if pre else ''
+            unit_h = f'<small class="unit">{e(unit)}</small>' if unit else ''
+            out.append(f'<div class="tb {cls}" style="{gc};grid-row:{r} / span 3"></div>')
+            out.append(f'<span class="tk {cls}" style="{gc};grid-row:{r}">{e(k)}</span>')
+            out.append(f'<b class="tv num {cls}" style="{gc};grid-row:{r + 1}">{pre_h}{e(big)}{unit_h}</b>')
+            out.append(f'<em class="ts {cls}" style="{gc};grid-row:{r + 2}">{e(small) if small else "&nbsp;"}</em>')
+            col += span
+        out.append('</div>')
+    return ''.join(out)
 
 
-tiles = ''.join([
-    tile(lab(R[0][0]), '常温-300℃', '（任意可调）', cls='hot feature'),
-    tile(lab(R[3][0]), '室温-200℃', '可调', cls='hot'),
-    tile(lab(R[1][0]), '±1℃', cls='hot'),
-    tile(lab(R[2][0]), '±3℃', '(空载状态下)', cls='hot'),
-    tile(lab(R[4][0]), '1200×1500×1500', R[4][3], unit=R[4][2], cls='span2 dim'),
-    tile(lab(R[5][0]), '1400×2200×2200', '（以实际为准）', unit=R[5][2], cls='span2 dim'),
-    tile(lab(R[2][2]), '21KW', pre='功率', cls='el'),
-    tile(lab(R[3][2]), '1100w', '（380V）', cls='el'),
-    tile(lab(R[1][2]), R[1][3], cls='el small-v'),
-    tile(lab(R[0][2]), R[0][3], cls='el small-v'),
-])
+tiles = tile_rows([
+    [(lab(R[0][0]), '常温-300℃', '（任意可调）', '', '', 'hot feature', 1),
+     (lab(R[3][0]), '室温-200℃', '可调', '', '', 'hot', 1),
+     (lab(R[1][0]), '±1℃', '', '', '', 'hot', 1),
+     (lab(R[2][0]), '±3℃', '(空载状态下)', '', '', 'hot', 1)],
+    [(lab(R[4][0]), '1200×1500×1500', R[4][3], R[4][2], '', 'dim', 2),
+     (lab(R[5][0]), '1400×2200×2200', '（以实际为准）', R[5][2], '', 'dim', 2)],
+    [(lab(R[1][2]), R[1][3], '', '', '', 'el', 1),
+     (lab(R[2][2]), '21KW', '', '', '功率', 'el', 1),
+     (lab(R[3][2]), '1100w', '（380V）', '', '', 'el', 1),
+     (lab(R[0][2]), R[0][3], '', '', '', 'el', 1)],
+], ['1.3fr 1.3fr .7fr .7fr', '1fr 1fr', '1.5fr 1fr 1fr 1fr'])
 
 ov = R[7][0]
 ov_lead, _, ov_body = ov.partition('：')

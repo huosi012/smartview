@@ -8,6 +8,8 @@
 | `prep.py` | 处理客户提供的 logo、合同章、照片（旋转纠正、缩放、去白底） |
 | `cut.py` | 用 rembg（BiRefNet）对关键设备照片抠图，每次处理一张以控制内存 |
 | `cutprep.py` | 清理抠图边缘杂物（线缆等）并裁切 |
+| `edges.py` | 用 RANSAC 拟合设备轮廓的上下左右边线 |
+| `rectify.py` | 透视矫正：把设备正面映射为正矩形（三分之四视角的设备只校正竖线） |
 | `build.py` | 读取 docx 文本，生成 A4 分页 HTML（`build.py <docx> <out.html> <总页数> <style.css>`） |
 | `style.css` | 版式与配色（品牌青 #2E94A6，字体 Noto Sans SC / Noto Serif SC / Inter） |
 | `render.js` | Playwright + Chromium 导出 PDF，并报告每页是否溢出 |
