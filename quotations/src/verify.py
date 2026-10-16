@@ -25,6 +25,10 @@ for s in segs:
     parts = [x for x in re.split(r'（[一二三四五六七八九十]）|：', s) if x]
     if parts and all(x.rstrip('：:；;') in P for x in parts):
         continue
+    # long paragraphs laid out as separate points: check sentence by sentence
+    sents = [x for x in re.split(r'[：。]', s) if x]
+    if len(sents) > 1 and all(x in P for x in sents):
+        continue
     miss.append(s)
 print('segments checked:', len([x for x in segs if x.strip()]))
 print('not found verbatim:', len(miss))

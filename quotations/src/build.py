@@ -299,6 +299,8 @@ tiles = tile_rows([
 
 ov = R[7][0]
 ov_lead, _, ov_body = ov.partition('：')
+ov_sents = [x + '。' for x in ov_body.split('。') if x.strip()]
+ov_items = ''.join(f'<li><i>{n:02d}</i><p>{e(t)}</p></li>' for n, t in enumerate(ov_sents, 1))
 
 pages.append(f'''
 <section class="page">
@@ -308,9 +310,9 @@ pages.append(f'''
     {sec(2, lab(paras[3]))}
     <div class="tiles">{tiles}</div>
     {sec(3, lab(R[6][0]))}
-    <div class="overview g1">
-      <figure class="ov-img"><img src="assets/p4_m.jpg" alt=""></figure>
-      <p class="lead"><b>{e(ov_lead)}：</b>{e(ov_body)}</p>
+    <div class="ov-wrap g1">
+      <div class="ov-lead">{e(ov_lead)}：</div>
+      <ol class="ov-grid">{ov_items}</ol>
     </div>
   </div>
   {footer(len(pages)+1)}

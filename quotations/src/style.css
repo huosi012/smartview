@@ -259,3 +259,12 @@ header.run,footer.run,.content,.cv-top,.cv-hero,.cv-foot{z-index:1}
 .cv-prod{right:-1mm;bottom:7mm;width:auto;height:188mm;display:block}
 .cv-prod img{height:100%;width:auto;max-width:none;max-height:none;display:block}
 .cv-floor{height:42mm}
+
+/* ---------- overview as numbered points ---------- */
+.ov-wrap{display:flex;flex-direction:column;min-height:0}
+.ov-lead{font-size:8.6pt;font-weight:700;color:var(--teal-d);letter-spacing:.12em;margin:0 0 2.4mm}
+.ov-grid{list-style:none;margin:0;padding:0;flex:1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:auto;align-content:stretch;gap:2.6mm}
+.ov-grid li{display:flex;gap:3.6mm;align-items:center;background:#fff;border:.3mm solid var(--line);border-radius:2.2mm;padding:3.4mm 4.5mm 3.4mm 4mm;position:relative;overflow:hidden}
+.ov-grid li::before{content:"";position:absolute;left:0;top:0;bottom:0;width:1mm;background:var(--teal);opacity:.85}
+.ov-grid li i{font-style:normal;font-family:Inter,NSC;font-weight:800;font-size:15pt;color:var(--teal);opacity:.9;flex:none;width:9mm;letter-spacing:-.02em}
+.ov-grid li p{margin:0;font-size:9.8pt;line-height:1.75;color:var(--ink);text-align:justify}
