@@ -1,9 +1,14 @@
 """
-生成 链轮 2292-IH-000139 第1张 (A2, 1:3) —— 按原图照抄, DXF + 预览图.
+生成 链轮 2292-IH-000139 (A2, 1:3) —— 按原图照抄并并入内花键内容, DXF + 预览图.
+
+在原图基础上并入的内花键内容: 参数表增加 基圆直径/齿形/基圆齿厚/齿面配合/加工方法/执行标准,
+花键详图改为 B-B 局部剖视 5:1 (含量棒示意), 技术要求增加第 4~6 条.
+执行标准为企业标准 Q/STB13.110.22 (20°压力角), 齿形参照 JIS D2001
+(JIS D2001 规定齿数 6~40, z=85 超出其范围).
 
 约定:
   * 模型空间 1:1 绘制主视图 (全剖) 与左视图, 图框按 K=3 放大;
-  * 花键详图图纸比例 3:1, 在模型空间中按 3*K = 9 倍绘制;
+  * B-B 局部剖视图纸比例 5:1, 在模型空间中按 5*K = 15 倍绘制;
   * 版面位置取自原图 (图框内 1px = 0.397mm).
 
 运行:  python3 make_sprocket.py
@@ -18,7 +23,7 @@ from ezdxf.enums import MTextEntityAlignment, TextEntityAlignment
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sprocket_geom as sg  # noqa: E402
 import spline_geom as spg  # noqa: E402
-from cad_common import Sheet, add, bulge_of, rot, tol, wavy_arc  # noqa: E402
+from cad_common import Sheet, add, bulge_of, rot, tol, wavy, wavy_arc  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_BASE = os.path.join(HERE, "2292-IH-000139_链轮")
@@ -155,6 +160,13 @@ pline([S(XR_L, R_ROOT)] + proj + [S(XR_R, R_ROOT)], "粗实线")
 for sy in (1, -1):
     line(S(XR_L - 6, sy * sg.R_P), S(XR_R + 6, sy * sg.R_P), "中心线")
 line(S(-10.0, 0), S(L + 10.0, 0), "中心线")
+# B-B 剖切符号 (x = 60, 向右投射)
+XB = 60.0
+for sy in (1, -1):
+    line(S(XB, sy * 352.0), S(XB, sy * 362.0), "粗实线")
+    line(S(XB, sy * 362.0), S(XB + 12.0, sy * 362.0), "细实线")
+    arrow(S(XB + 12.0, sy * 362.0), (1, 0), "粗实线")
+    text(S(XB + 4.0, sy * 375.0), "B", 5)
 
 # ---------------------------------------------------------------- 主视图尺寸
 OD = [  # (x_base, p1, p2, 文字)
@@ -349,76 +361,124 @@ arrow(tp, (tp[0] - knee[0], tp[1] - knee[1]))
 line(tp, knee, "尺寸")
 leader_note(knee, knee, "R27.3", side=-1, with_arrow=False)
 
-# ================================================================ 花键详图 (3:1)
-SD = 3.0 * K
+# ================================================================ B-B 局部剖视 (5:1)
+SD = 5.0 * K
 DREF = (0.0, spg.R_MINOR)
-DO = P(268.0, 54.0)
-W_ANG = 1.5 * spg.PITCH_ANG
+DO = P(255.0, 46.0)
+W_ANG = 1.5 * spg.PITCH_ANG            # 窗口半角 (止于齿中部)
 th_s, th_e = math.pi / 2 - W_ANG, math.pi / 2 + W_ANG
-R_OUT = spg.R_MAJOR + 4.5
+R_OUT = spg.R_MAJOR + 3.5
+hp = spg.half_space_profile()
+pitch = spg.PITCH_ANG
 
 
 def D(p):
     return ((p[0] - DREF[0]) * SD + DO[0], (p[1] - DREF[1]) * SD + DO[1])
 
 
-wp = [(*D(v[:2]), v[2]) for v in spg.window_profile([-1, 0, 1], th_s, th_e)]
-pline(wp, "粗实线")
-pline([D((spg.R_MINOR * math.cos(t), spg.R_MINOR * math.sin(t))) for t in (th_e,)]
-      + [D((R_OUT * math.cos(th_e), R_OUT * math.sin(th_e)))], "粗实线")
-pline([D((spg.R_MINOR * math.cos(th_s), spg.R_MINOR * math.sin(th_s))),
-       D((R_OUT * math.cos(th_s), R_OUT * math.sin(th_s)))], "粗实线")
-pline([D(p) for p in wavy_arc((0, 0), R_OUT, th_e, th_s, 0.5 * K / SD, 2.0)], "波浪线")
-hp = spg.half_space_profile()
-pitch = spg.PITCH_ANG
-
-
 def polar(r, a):
     return (r * math.cos(a), r * math.sin(a))
 
 
+wp = [(*D(v[:2]), v[2]) for v in spg.window_profile([-1, 0, 1], th_s, th_e)]
+pline(wp, "粗实线")
+amp = 0.8 * K
+side_r = wavy(D(polar(spg.R_MINOR, th_e)), D(polar(R_OUT, th_e)), amp, 1.0)
+top = [D(p) for p in wavy_arc((0, 0), R_OUT, th_e, th_s, amp / SD, 3.0)]
+side_l = wavy(D(polar(R_OUT, th_s)), D(polar(spg.R_MINOR, th_s)), amp, 1.0)
+pline(side_r + top[1:] + side_l[1:], "波浪线")
+region = [list(v) for v in wp]
+region[-1][2] = 0.0
+region += [(*p, 0) for p in side_r[1:]] + [(*p, 0) for p in top[1:]] + \
+          [(*p, 0) for p in side_l[1:-1]]
+sh.hatch(region)
+
+# 量棒 (双点画线示意)
+m_val, d_m = spg.pin_measurement()
+pc = D((0.0, d_m / 2))
+circle(pc, spg.PIN_D / 2 * SD, "双点画线")
+line((pc[0] - 4 * K, pc[1]), (pc[0] + 4 * K, pc[1]), "中心线")
+line((pc[0], pc[1] - 4 * K), (pc[0], pc[1] + 4 * K), "中心线")
+leader_note((pc[0], pc[1] - spg.PIN_D / 2 * SD), (pc[0], pc[1] - 27 * K),
+            "量棒%%c5.0(参考)", side=1, with_arrow=False, h=3.0)
+
+# Ø212.5 H7 小径 (齿顶), 粗糙度 6.3
+a_tooth = math.pi / 2 + pitch / 2
+p_tip = D(polar(spg.R_MINOR, a_tooth))
+p_low = D(polar(spg.R_MINOR - 4.0, a_tooth))
+arrow(p_tip, (p_tip[0] - p_low[0], p_tip[1] - p_low[1]))
+line(p_tip, p_low, "尺寸")
+line(p_low, (p_low[0] - 50 * K, p_low[1]), "尺寸")
+mtext((p_low[0] - 21 * K, p_low[1] + 0.8 * K), "%%c212.5 H7(" + tol("+0.046", "0") + ")",
+      TXT, attach=MTextEntityAlignment.BOTTOM_CENTER)
+roughness((p_low[0] - 45 * K, p_low[1]), 90, "6.3", h=3.0)
+
+# Ø218.25 H11 大径 (槽底), 粗糙度 6.3
+a_sp = math.pi / 2 - pitch
+p_root = D(polar(spg.R_MAJOR, a_sp))
+p_low2 = D(polar(spg.R_MINOR - 4.0, a_sp))
+arrow(p_root, (p_root[0] - p_low2[0], p_root[1] - p_low2[1]))
+line(p_root, p_low2, "尺寸")
+line(p_low2, (p_low2[0] + 56 * K, p_low2[1]), "尺寸")
+mtext((p_low2[0] + 23 * K, p_low2[1] + 0.8 * K), "%%c218.25 H11(" + tol("+0.29", "0") + ")",
+      TXT, attach=MTextEntityAlignment.BOTTOM_CENTER)
+roughness((p_low2[0] + 51 * K, p_low2[1]), 90, "6.3", h=3.0)
+
+# 齿根圆角 R0.5、齿顶倒角 C0.2
 phi1 = math.pi / 2 + pitch
 p_fil = D(add(rot(hp["fillet_center"], phi1), rot((0.5 * math.cos(0.9), 0.5 * math.sin(0.9)), phi1)))
-leader_note(p_fil, add(p_fil, (-14 * K, 13 * K)), "R0.5", side=-1)
+leader_note(p_fil, add(p_fil, (-22 * K, 18 * K)), "R0.5", side=-1)
 p_ch = D(polar((spg.R_MINOR + hp["chamfer_r"]) / 2,
                phi1 + (hp["tip_theta"] + spg.psi(spg.R_MINOR)) / 2))
-leader_note(p_ch, add(p_ch, (-12 * K, -9 * K)), "C0.2", side=-1)
-for phi, side in ((math.pi / 2 + pitch, -1), (math.pi / 2, +1)):
-    rr = (hp["chamfer_r"] + hp["fillet_r"]) / 2
-    pf = polar(rr, phi + side * spg.psi(rr))
-    pf2 = polar(rr + 0.01, phi + side * spg.psi(rr + 0.01))
-    tang = math.degrees(math.atan2(pf2[1] - pf[1], pf2[0] - pf[0]))
-    roughness(D(pf), tang + (90 if side < 0 else -90), "3.2", h=3.0)
-p_root = D(polar(spg.R_MAJOR, math.pi / 2 - pitch))
-roughness_leader(p_root, (p_root[0] + 2 * K, DO[1] - 11 * K), "6.3", h=3.0)
-p_tip = D(polar(spg.R_MINOR, math.pi / 2 - pitch / 2))
-roughness_leader(p_tip, (p_tip[0] - 1 * K, DO[1] - 19 * K), "6.3", side=-1, h=3.0)
-text(P(266.2, 96.1), "花键详图", 3.5)
-line(P(258.0, 93.0), P(274.4, 93.0), "细实线")
-text(P(266.2, 89.3), "3:1", 5)
+leader_note(p_ch, add(p_ch, (-14 * K, -5 * K)), "C0.2", side=-1)
+
+# 齿面粗糙度 3.2
+rr = (hp["chamfer_r"] + hp["fillet_r"]) / 2
+pf = polar(rr, a_sp - spg.psi(rr))
+pf2 = polar(rr + 0.01, a_sp - spg.psi(rr + 0.01))
+roughness(D(pf), math.degrees(math.atan2(pf2[1] - pf[1], pf2[0] - pf[0])) + 90, "3.2", h=3.0)
+
+text(P(150.0, 86.0), "B-B", 5)
+line(P(143.0, 82.5), P(157.0, 82.5), "细实线")
+text(P(150.0, 78.5), "5:1", 5)
 
 # ================================================================ 其余粗糙度
 text(P(468.0, 384.0), "其余", 3.5, align=TextEntityAlignment.MIDDLE_RIGHT)
 roughness(P(473.5, 382.5), 90, "12.5")
 
 # ================================================================ 参数表
+
+
+def rows_y(top, heights):
+    ys = [top]
+    for hh in heights:
+        ys.append(ys[-1] - hh)
+    return ys
+
+
 x1 = [490.1, 509.9, 542.1, 584.0]
-y1 = [410.2, 400.2, 390.3, 382.4, 374.4, 366.5, 358.1, 346.2, 334.3, 326.4, 318.0, 310.1]
+y1 = rows_y(410.2, [10] + [7] * 7 + [9, 9] + [7] * 7)
 cells1 = [
     (0, 1, 0, 3, "渐开线花键孔参数表"),
     (1, 2, 0, 1, "模数"), (1, 2, 1, 2, "m"), (1, 2, 2, 3, "2.5"),
     (2, 3, 0, 1, "齿数"), (2, 3, 1, 2, "Z"), (2, 3, 2, 3, "85"),
     (3, 4, 0, 1, "压力角"), (3, 4, 1, 2, "α"), (3, 4, 2, 3, "20°"),
     (4, 5, 0, 1, "分度圆直径"), (4, 5, 1, 2, "do"), (4, 5, 2, 3, "%%c212.5"),
-    (5, 6, 0, 1, "变位系数"), (5, 6, 1, 2, "X"), (5, 6, 2, 3, "+0.8"),
-    (6, 8, 0, 1, "齿厚"),
-    (6, 7, 1, 2, "圆棒(球)测跨距M"), (6, 7, 2, 3, "207.63(" + tol("+0.075", "-0.1") + ")"),
-    (7, 8, 1, 2, "圆棒(球)直径"), (7, 8, 2, 3, "5.0(4.2削边后)"),
-    (8, 9, 0, 1, "定心方式"), (8, 9, 1, 3, "齿面定心"),
-    (9, 11, 0, 1, "相配件图号"), (9, 10, 1, 3, "2292-IH-000080"), (10, 11, 1, 3, "2292-IH-000142"),
+    (5, 6, 0, 1, "基圆直径"), (5, 6, 1, 2, "db"), (5, 6, 2, 3, "%%c199.685"),
+    (6, 7, 0, 1, "齿形"), (6, 7, 1, 3, "短齿"),
+    (7, 8, 0, 1, "变位系数"), (7, 8, 1, 2, "X"), (7, 8, 2, 3, "+0.8"),
+    (8, 10, 0, 1, "齿厚"),
+    (8, 9, 1, 2, "圆棒(球)测跨距M"), (8, 9, 2, 3, "207.63(" + tol("+0.075", "-0.1") + ")"),
+    (9, 10, 1, 2, "圆棒(球)直径"), (9, 10, 2, 3, "5.0(4.2削边后)"),
+    (10, 11, 0, 1, "基圆齿厚"), (10, 11, 1, 2, "sb"), (10, 11, 2, 3, "8.034"),
+    (11, 12, 0, 1, "齿面配合"), (11, 12, 1, 3, "c"),
+    (12, 13, 0, 1, "加工方法"), (12, 13, 1, 3, "插齿"),
+    (13, 14, 0, 1, "定心方式"), (13, 14, 1, 3, "齿面定心"),
+    (14, 15, 0, 1, "执行标准"), (14, 15, 1, 3, "Q/STB13.110.22 (齿形参照JIS D2001)"),
+    (15, 17, 0, 1, "相配件图号"), (15, 16, 1, 3, "2292-IH-000080"), (16, 17, 1, 3, "2292-IH-000142"),
 ]
-sh.table(x1, y1, cells1, h=lambda r, c: 3.5 if r == 0 else (2.6 if c == 1 and r in (6, 7) else 3.2))
-y2 = [297.4, 287.5, 277.6, 269.6, 261.3, 253.4, 245.4, 237.5]
+sh.table(x1, y1, cells1, h=lambda r, c: 3.5 if r == 0 else (2.6 if c == 1 and r in (8, 9) else 3.0))
+y2 = rows_y(y1[-1] - 8.0, [10] + [7] * 6)
 cells2 = [
     (0, 1, 0, 3, "链轮参数表"),
     (1, 2, 0, 1, "齿数"), (1, 2, 1, 2, "Z"), (1, 2, 2, 3, "23"),
@@ -428,16 +488,21 @@ cells2 = [
     (5, 6, 0, 1, "量棒直径"), (5, 6, 1, 2, "dR"), (5, 6, 2, 3, "%%c53.98" + tol("+0.01", "0")),
     (6, 7, 0, 1, "齿形"), (6, 7, 1, 3, "按GB/T1243-2006"),
 ]
-sh.table(x1, y2, cells2, h=lambda r, c: 3.5 if r == 0 else 3.2)
+sh.table(x1, y2, cells2, h=lambda r, c: 3.5 if r == 0 else 3.0)
 
 # ================================================================ 技术要求
-text(P(445.2, 114.1), "技术要求", 5)
-for i, s in enumerate([
+text(P(445.2, 118.0), "技术要求", 5)
+for i, s_ in enumerate([
     "1.零件毛坯锻造;",
     "2.未注倒角C1,未注圆角R3;",
     "3.热处理:整体调质,硬度HB277-331,链轮齿部硬度HRC52-60,淬硬层深度3mm-5mm。[B]",
+    "4.内花键按Q/STB13.110.22(20°压力角渐开线花键)设计、制造与检验,齿形参照JIS D2001",
+    "   (x=+0.8),齿面定心,齿面配合c,插齿加工;",
+    "5.花键齿槽宽用圆棒测跨距M检验(圆棒%%c5.0,削边后4.2),并用花键综合通规检验,",
+    "   通规应能自由通过;",
+    "6.花键齿顶倒角C0.2,齿根圆角R0.5,齿面不得有毛刺、碰伤。",
 ]):
-    text(P(398.3, 104.9 - i * 7.3), s, 4.0, align=TextEntityAlignment.MIDDLE_LEFT, width=0.8)
+    text(P(398.3, 110.0 - i * 6.0), s_, 3.5, align=TextEntityAlignment.MIDDLE_LEFT, width=0.8)
 
 # ================================================================ 标题栏 (原图格式, 180×45)
 BX = 404.0
@@ -480,7 +545,7 @@ for xx, s in ((531.5, "阶段标记"), (546.5, "版本号"), (563.5, "重  量")
 for xx, s, hh in ((531.5, "S", 2.8), (546.5, "A.4", 2.8), (563.5, "119.565", 3.0),
                   (578.5, "1:3", 3.5)):
     text(P(xx, 32.0), s, hh)
-for xx, s in ((531.5, "共 2"), (546.5, "张"), (563.5, "第 1"), (578.5, "张")):
+for xx, s in ((531.5, "共"), (546.5, "张"), (563.5, "第"), (578.5, "张")):
     text(P(xx, 26.1), s, 2.8)
 
 # ================================================================ 输出
