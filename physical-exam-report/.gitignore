@@ -1,0 +1,6 @@
+# 含个人体检信息的数据与输出文件不得提交（公开仓库）
+*.xlsx
+*.xls
+*.pdf
+layout_plan.json
+__pycache__/
