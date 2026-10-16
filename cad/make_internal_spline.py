@@ -1,5 +1,9 @@
 """
-生成 链轮 2292-IH-000139 内花键图纸 (JIS D2001, m2.5 z85 α20° x+0.8) —— DXF + 预览图.
+生成 链轮 2292-IH-000139 内花键图纸 (Q/STB13.110.22 20°压力角, 齿形参照 JIS D2001;
+m2.5 z85 α20° x+0.8) —— DXF + 预览图.
+
+JIS D2001 (现为 JIS B1603:1995 附属书) 规定齿数 6~40, z=85 超出其范围,
+故图上执行标准标为企业标准 Q/STB13.110.22, JIS D2001 仅作齿形参照.
 
 约定:
   * 模型空间 1:1 绘制主视图/左视图 (图纸比例 1:2), 图框按 K=2 放大;
@@ -7,7 +11,7 @@
   * 所有尺寸数值使用替代文字, 以保证放大视图中标注真实尺寸.
 
 运行:  python3 make_internal_spline.py
-输出:  2292-IH-000139_内花键_JISD2001.dxf / .png / .pdf
+输出:  2292-IH-000139_内花键.dxf / .png / .pdf
 """
 import math
 import os
@@ -23,7 +27,7 @@ from spline_geom import (  # noqa: E402
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT_BASE = os.path.join(HERE, "2292-IH-000139_内花键_JISD2001")
+OUT_BASE = os.path.join(HERE, "2292-IH-000139_内花键")
 
 K = 2.0  # 图纸 mm -> 模型单位 (主视图比例 1:2)
 TXT = 3.5  # 图纸字高 (mm)
@@ -413,7 +417,7 @@ knee = add(CE, (-30.0, -40.0))
 arrow(tip, (tip[0] - knee[0], tip[1] - knee[1]))
 line(tip, knee, "尺寸")
 line(knee, add(knee, (62.0, 0)), "尺寸")
-mtext(add(knee, (31.0, 1.6)), "渐开线内花键 JIS D2001", 3.0,
+mtext(add(knee, (31.0, 1.6)), "渐开线内花键 Q/STB13.110.22", 3.0,
       attach=MTextEntityAlignment.BOTTOM_CENTER)
 mtext(add(knee, (31.0, -1.6)), "m2.5×z85×20°  x=+0.8", 3.0,
       attach=MTextEntityAlignment.TOP_CENTER)
@@ -538,14 +542,15 @@ rows = [
     ("齿面配合", None, "c"),
     ("加工方法", None, "插齿"),
     ("定心方式", None, "齿面定心"),
+    ("执行标准", None, "Q/STB13.110.22 (齿形参照JIS D2001)"),
     ("相配件图号", None, "2292-IH-000080"),
     ("", None, "2292-IH-000142"),
 ]
 yb = TY0 - HH - RH * len(rows)
 pline([P(TX0, TY0), P(TX0 + TW, TY0), P(TX0 + TW, yb), P(TX0, yb)], "图框", closed=True)
 line(P(TX0, TY0 - HH), P(TX0 + TW, TY0 - HH), "图框细")
-text(P(TX0 + TW / 2, TY0 - HH / 2), "渐开线花键孔参数表 (JIS D2001)", 4)
-merged_first = {10, 11, 17}       # 首列与上一行合并
+text(P(TX0 + TW / 2, TY0 - HH / 2), "渐开线花键孔参数表", 4)
+merged_first = {10, 11, 18}       # 首列与上一行合并
 for i, (a, b, c) in enumerate(rows):
     y1 = TY0 - HH - RH * i
     y0 = y1 - RH
@@ -564,8 +569,6 @@ for i, (a, b, c) in enumerate(rows):
     else:
         mtext(P(TX0 + C1 + (TW - C1) / 2, yc), c, 3.0)
 line(P(TX0 + C1, TY0 - HH), P(TX0 + C1, yb), "图框细")
-y_c2_top = TY0 - HH
-y_c2_bot = TY0 - HH - RH * 13
 for i, (a, b, c) in enumerate(rows):
     y1 = TY0 - HH - RH * i
     if b is not None:
@@ -573,7 +576,8 @@ for i, (a, b, c) in enumerate(rows):
 
 # ================================================================ 技术要求
 reqs = [
-    "1.内花键按JIS D2001(汽车用渐开线花键)设计、制造与检验,",
+    "1.内花键按Q/STB13.110.22(20°压力角渐开线花键)设计、",
+    "   制造与检验,齿形参照JIS D2001(x=+0.8);",
     "   齿面定心,齿面配合c,插齿加工。",
     "2.齿槽宽用圆棒测跨距M检验(圆棒%%c5.0,削边后4.2),",
     "   并用花键综合通规检验,通规应能自由通过。",
@@ -624,7 +628,7 @@ text(P(BX + 112, BY + 24.75), "119.565", 2.5)
 text(P(BX + 124, BY + 24.75), "1:2", 3.5)
 text(P(BX + 92.5, BY + 13.5), "共 2 张", 3)
 text(P(BX + 117.5, BY + 13.5), "第 2 张", 3)
-text(P(BX + 105, BY + 4.5), "JIS D2001 m2.5 z85", 2.8)
+text(P(BX + 105, BY + 4.5), "Q/STB13.110.22 m2.5 z85", 2.6)
 # 右区
 line(P(BX + 130, BY + 38), P(BX + 180, BY + 38), "图框")
 line(P(BX + 130, BY + 18), P(BX + 180, BY + 18), "图框")
