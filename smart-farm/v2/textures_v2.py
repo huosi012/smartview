@@ -256,6 +256,30 @@ def germ_face(path):
     img.save(path, quality=90)
 
 
+def station_led(path):
+    """Double-sided LED screen of the platform weather station: P10 red dot matrix, 160 x 80 dots (1.6 x 0.8 m)."""
+    cols, rows, pitch = 160, 80, 12
+    m = Image.new("L", (cols, rows), 0)
+    d = ImageDraw.Draw(m)
+    d.text((cols / 2, 9), "智慧农业气象站", font=f(16), fill=255, anchor="mm")
+    d.line((6, 19, cols - 7, 19), fill=150)
+    for k, (a, b) in enumerate((("温度", "26.5℃"), ("湿度", "62%RH"), ("风速", "1.8m/s"))):
+        y = 32 + k * 17
+        d.text((8, y), a, font=f(16), fill=255, anchor="lm")
+        d.text((cols - 8, y), b, font=f(16), fill=255, anchor="rm")
+    dots = m.point(lambda v: 255 if v > 110 else 0)
+    img = Image.new("RGB", (cols * pitch, rows * pitch), (14, 8, 8))
+    dd = ImageDraw.Draw(img)
+    px = dots.load()
+    r = pitch * 0.36
+    for j in range(rows):
+        for i in range(cols):
+            cx, cy = (i + 0.5) * pitch, (j + 0.5) * pitch
+            col = (255, 40, 22) if px[i, j] else (46, 14, 12)
+            dd.ellipse((cx - r, cy - r, cx + r, cy + r), fill=col)
+    img.save(path)
+
+
 if __name__ == "__main__":
     os.makedirs(TEX, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
@@ -265,5 +289,6 @@ if __name__ == "__main__":
     totem(os.path.join(TEX, "totem.jpg"))
     germ_face(os.path.join(TEX, "germ_face.jpg"))
     fascia(os.path.join(TEX, "fascia.jpg"))
+    station_led(os.path.join(TEX, "station_led.png"))
     signage_board(os.path.join(OUT, "signage_board.jpg"))
     print("ok")

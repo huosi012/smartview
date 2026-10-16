@@ -28,12 +28,14 @@ END_DOOR = (L - 1.0, L - 0.1)    # existing door in the classroom-side wall at t
 PW = 6.0                         # raised platform width along the corridor (estimate, to measure)
 BX = 6.5                         # length of the other terrace shown before the break line (not its real size)
 GATE = (-PW - 1.9, -PW - 0.3)    # existing sliding gate under the stainless arch, corridor -> other terrace
+STATION = (-PW / 2, W / 2)       # weather station with LED screen, middle of the platform (as in scene_v2.py)
+STATION_ROT = 45.0               # screen direction: one face to the hall + corridor, the other to the far terrace
 
 S = 92                           # px per metre
 X0, X1 = -PW - BX - 0.6, 22.4    # drawn extent (m)
 Y0, Y1 = -4.3, 10.4
 MARGIN_T, MARGIN_B, LEG = 250, 190, 1180
-LEG_BAND = 420                   # client version: legend in a band under the drawing instead of a side column
+LEG_BAND = 480                   # client version: legend in a band under the drawing instead of a side column
 WPX = int((X1 - X0) * S)
 HPX = int((Y1 - Y0) * S)
 
@@ -118,6 +120,21 @@ def marker(d, x, y, n):
     text(d, (px, py), str(n), 24, col=(255, 255, 255))
 
 
+def draw_station(d):
+    """Weather station on the platform: ballast plinth, pole, double-sided LED screen (thick line)."""
+    sx, sy = STATION
+    c, s_ = math.cos(math.radians(STATION_ROT)), math.sin(math.radians(STATION_ROT))
+
+    def R(u, v):
+        return P(sx + u * c - v * s_, sy + u * s_ + v * c)
+    d.polygon([R(-0.4, -0.4), R(0.4, -0.4), R(0.4, 0.4), R(-0.4, 0.4)], fill=(236, 236, 232), outline=INK)
+    d.line((R(-0.8, 0), R(0.8, 0)), fill=(170, 40, 30), width=9)
+    px, py = P(sx, sy)
+    d.ellipse((px - 6, py - 6, px + 6, py + 6), fill=(255, 255, 255), outline=INK, width=2)
+    text(d, P(sx, sy - 1.2), "气象环境监测站", 24, INK, bg=(240, 240, 236))
+    text(d, P(sx, sy - 1.7), "LED 双面屏", 20, MUTED)
+
+
 def draw_interior(d):
     fill = (255, 255, 255)
     # 1 seed germination window along the kerb
@@ -185,9 +202,10 @@ def main(clean=False):
     # raised platform
     rect(d, -PW, 0.0, 0.0, W, fill=(214, 214, 210))
     hatch(d, -PW, 0.0, 0.0, W, (190, 190, 186), 0.5, 1)
-    text(d, P(-PW / 2, 5.6), "抬高平台（高台）", 32, INK, bg=(240, 240, 236))
-    text(d, P(-PW / 2, 4.9), "高出两侧空地约 0.9 m", 24, MUTED)
-    text(d, P(-PW / 2, 4.35), T(f"宽约 {PW:.0f} m（待量）", f"宽约 {PW:.0f} m"), 24, MUTED)
+    text(d, P(-PW / 2, 7.35), "抬高平台（高台）", 32, INK, bg=(240, 240, 236))
+    text(d, P(-PW / 2, 6.75), "高出两侧空地约 0.9 m", 24, MUTED)
+    text(d, P(-PW / 2, 6.25), T(f"宽约 {PW:.0f} m（待量）", f"宽约 {PW:.0f} m"), 24, MUTED)
+    draw_station(d)
     # the other terrace beyond the platform (drawn partly, break line)
     bx0 = -PW - BX
     rect(d, bx0, 0.0, -PW, W, fill=(244, 243, 238))
@@ -304,7 +322,7 @@ def main(clean=False):
 
     # numbered markers
     marks = [(0.22, 2.2), (2.4, 0.65), (4.5, 7.8), (2.7, 4.25), (6.1, 4.25), (10.6, 4.25), (16.95, 3.2),
-             (17.6, 2.0), (12.6, 0.6), (17.2, 7.0)]
+             (17.6, 2.0), (12.6, 0.6), (17.2, 7.0), (STATION[0] + 1.25, STATION[1] + 0.25)]
     for i, (x, y) in enumerate(marks, 1):
         marker(d, x, y, i)
     rest(d, img, clean, T)
@@ -359,7 +377,7 @@ def rest(d, img, clean, T):
         d.line((60, band_y - 10, WPX - 60, band_y - 10), fill=(214, 214, 208), width=2)
         text(d, (60, band_y + 50), "功能分区", 40, GREEN, anchor="lm")
         col_w = (WPX - 120) / 3
-        slots = [(60 + (k // 5) * col_w, band_y + 120 + (k % 5) * 58) for k in range(15)]
+        slots = [(60 + (k // 6) * col_w, band_y + 120 + (k % 6) * 58) for k in range(18)]
     else:
         text(d, (lx, MARGIN_T + 10), "图例", 44, GREEN, anchor="lm")
     items = [
@@ -373,6 +391,7 @@ def rest(d, img, clean, T):
         "红墙展示墙（大屏 · 时间轴 · 照片墙）",
         "育苗架",
         "水肥一体机 + 营养液罐",
+        "气象环境监测站（高台中央，LED 双面屏）",
     ]
     y = MARGIN_T + 80
     for i, s in enumerate(items, 1):
@@ -396,7 +415,7 @@ def rest(d, img, clean, T):
         keys = keys[:-1]
     for j, (kind, col, s) in enumerate(keys):
         if clean:
-            lx, y = slots[10 + j]
+            lx, y = slots[12 + j]
         if kind == "line":
             d.line((lx, y, lx + 44, y), fill=col, width=6)
         elif kind == "box":

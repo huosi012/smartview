@@ -22,6 +22,7 @@
 | 09 | `renders/final/09_aerial.jpg` | 鸟瞰 |
 | 10 | `renders/final/10_plan.jpg` | 平面布置图（15 项编号、尺寸、一期线） |
 | 11 | `renders/final/11_signage.jpg` | 室外标识设计：门头、入口立牌、红墙大字 |
+| 12 | `renders/final/12_station.jpg` | 高台中央气象环境监测站（从另一块空地看，后面是展厅） |
 | — | `renders/plan2d.jpg`、`renders/plan2d.dxf` | 二维平面（现场关系确认稿），DXF 单位毫米、分图层，可在 CAD 里改 |
 
 `renders/final/` 是全部原图，不带水印。
@@ -48,6 +49,7 @@
 | 16 | "水印字改成智慧农业设计，不带公司名称"（23:46） | 出图不带水印，也没有公司名；水印由你们自己加 | — |
 | 17 | 走廊尽头百叶窗："外面用玻璃封起来，里面装上灯带，做盆栽植物观察"（图 38） | 格栅侧面正对展厅，玻璃封在展厅一侧；每道横板下装暖光灯带，横板上摆盆栽，展厅里外都能看到（前设计师拒绝做的部分） | 04、08 |
 | 18 | 外围区域（2:37） | 客户说转弯部分自己设计；抬高平台可以做户外课堂，本版没出图，需要可以补 | — |
+| 19 | 气象监测设备"放中间抬高平台上"（10/16，附设备图） | 高台中央立气象环境监测站：白色立杆约 3.6 m，压重底座不打穿屋面；顶部风速、风向、温湿度百叶箱、雨量筒，避雷针；中部 1.6 × 0.8 m 红色 LED 双面屏，一面朝展厅和走廊、一面朝另一块空地；下部控制箱 | 12、09、05、平面 11 |
 
 ## 面积和预算
 
@@ -129,7 +131,7 @@ python scene_v2.py --mode montage --shots p_corr_far --hc 0.18 --samples 96
 python composite.py                     # 渲染叠到现场照片上
 python louver_scene.py                  # 百叶窗：盆栽、灯带按标定的格栅建模渲染
 python louver_edit.py                   # 百叶窗：灯光、玻璃、盆栽叠到现场照片上
-python scene_v2.py --mode 3d --shots corridor,interior_in,interior_wall,aerial,germ --res 1920x1280 --samples 64
+python scene_v2.py --mode 3d --shots corridor,interior_in,interior_wall,aerial,germ,station --res 1920x1280 --samples 64
 python scene_v2.py --mode 3d --shots plan --res 2400x1200 --samples 32
 python annotate_v2.py                   # 标注、平面图
 ```

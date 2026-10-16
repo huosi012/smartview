@@ -6,6 +6,7 @@ Origin (0, 0) = corner of the kerb line and the corridor parapet's terrace face.
 +X runs along the terrace towards the red wall, +Y from the corridor towards the street.
 Everything is on named layers so the site can be edited and sent back as DXF.
 """
+import math
 import os
 import sys
 
@@ -14,7 +15,8 @@ from ezdxf.enums import TextEntityAlignment
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from plan2d import ALC, BX, COLS, CW, DOOR, END_DOOR, GAP, GATE, L, PHASE1_X, PIER, PW, W  # noqa: E402
+from plan2d import (ALC, BX, COLS, CW, DOOR, END_DOOR, GAP, GATE, L, PHASE1_X, PIER, PW, STATION,  # noqa: E402
+                    STATION_ROT, W)
 
 OUT = os.path.join(HERE, "renders", "plan2d.dxf")
 MM = 1000.0
@@ -39,6 +41,7 @@ LAYERS = {
     "16-待确认": (6, "CONTINUOUS"),
     "17-标识": (3, "CONTINUOUS"),
     "18-现有门": (7, "CONTINUOUS"),
+    "19-气象站": (3, "CONTINUOUS"),
 }
 
 
@@ -98,9 +101,19 @@ def main():
     # terrace (= hall footprint) and raised platform
     P.rect("01-露台范围", 0.0, 0.0, L, W)
     P.rect("08-抬高平台", -PW, 0.0, 0.0, W, hatch="ANSI37")
-    P.text("15-文字", "抬高平台（高台）", (-PW / 2, 5.0), 0.3)
-    P.text("15-文字", "高出两侧空地约0.9m", (-PW / 2, 4.5), 0.2)
-    P.text("16-待确认", f"高台宽≈{PW * 1000:.0f}(待量)", (-PW / 2, 4.0), 0.18)
+    P.text("15-文字", "抬高平台（高台）", (-PW / 2, 7.35), 0.3)
+    P.text("15-文字", "高出两侧空地约0.9m", (-PW / 2, 6.85), 0.2)
+    P.text("16-待确认", f"高台宽≈{PW * 1000:.0f}(待量)", (-PW / 2, 6.4), 0.18)
+    # weather station in the middle of the platform: 800 ballast plinth, pole, 1600 double-sided LED screen
+    sx, sy = STATION
+    c, s_ = math.cos(math.radians(STATION_ROT)), math.sin(math.radians(STATION_ROT))
+    rot = [(m(sx + u * c - v * s_), m(sy + u * s_ + v * c)) for u, v in ((-0.4, -0.4), (0.4, -0.4), (0.4, 0.4), (-0.4, 0.4))]
+    P.msp.add_lwpolyline(rot, close=True, dxfattribs={"layer": "19-气象站"})
+    P.circle("19-气象站", (sx, sy), 0.057)
+    scr = [(sx + u * c - v * s_, sy + u * s_ + v * c) for u, v in ((-0.8, -0.08), (0.8, -0.08), (0.8, 0.08), (-0.8, 0.08))]
+    P.msp.add_lwpolyline([(m(x), m(y)) for x, y in scr], close=True, dxfattribs={"layer": "19-气象站"})
+    P.text("19-气象站", "气象环境监测站", (sx, sy - 1.0), 0.18)
+    P.text("19-气象站", "LED双面屏1600×800，立杆约3600", (sx, sy - 1.35), 0.12)
     P.text("15-文字", "坎", (-0.25, W - 0.4), 0.22)
     bx0 = -PW - BX
     P.rect("08b-另一块空地", bx0, 0.0, -PW, W)

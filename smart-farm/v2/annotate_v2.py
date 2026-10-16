@@ -121,11 +121,12 @@ VIEWS3D = {
     "germ": "室内效果图 · 种子萌发观察窗",
     "aerial": "鸟瞰效果图",
     "louver_corner": "实景效果图 · 走廊尽头百叶窗（植物观察窗）",
+    "station": "效果图 · 高台中央气象环境监测站",
 }
 
 ORDER = [("p_platform", "01"), ("p_corr_across", "02"), ("p_corr_far", "03"), ("corridor", "04"),
          ("interior_in", "05"), ("interior_wall", "06"), ("germ", "07"), ("louver_corner", "08"),
-         ("aerial", "09")]
+         ("aerial", "09"), ("station", "12")]
 
 
 LEGEND = [

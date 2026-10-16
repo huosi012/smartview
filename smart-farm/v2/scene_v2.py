@@ -47,6 +47,8 @@ PW = 6.0                                 # raised platform width (estimate); ano
 XS = -PW - 14.0                          # how far the existing site is modelled towards the other terrace
 GATE = (-PW - 1.9, -PW - 0.3)            # existing sliding gate + stainless arch onto the other terrace
 HC = 0.35                                # corridor parapet top above the terrace (photos: 0.2-0.45)
+STATION = (-PW / 2, W / 2)               # weather / environment monitoring station, middle of the raised platform
+STATION_ROT = 45.0                       # screen turned so one face looks at the hall + corridor, the other back
 BEAM = 3.45                              # underside of the corridor edge beam
 PHASE1_X = 11.8                          # phase 1 = x 11.8..17.8 (6.0 x 8.5 = 51 m2)
 POSTS_X = [0.12, 4.45, 8.9, 13.35, 17.65]
@@ -103,7 +105,7 @@ def make_materials_v2():
     M["letters_white"] = m
     for name, path, emit in (("timeline", "wall_timeline.jpg", 0.0), ("totem", "totem.jpg", 0.4),
                              ("fascia", "fascia.jpg", 2.5 if S.NIGHT else 0.25),
-                             ("germ_face", "germ_face.jpg", 0.0)):
+                             ("germ_face", "germ_face.jpg", 0.0), ("station_led", "station_led.png", 3.0)):
         m, nb, b = S.new_mat(name)
         t = nb.n("ShaderNodeTexImage")
         t.image = bpy.data.images.load(os.path.join(TEX2, path))
@@ -690,6 +692,55 @@ def build_louver_display(P):
     led.build("louver_led", "led_warm", coll=coll)
 
 
+def build_station():
+    """Campus weather station on the raised platform (client's picture): white pole on a ballast plinth,
+    double-sided red LED screen, control box, sensors on a top arm. Built at the origin, then placed."""
+    coll = collection("station")
+    sx, sy = 0.0, 0.0
+    z = K
+    white, steel, dark, base, blue = MB(), MB(), MB(), MB(), MB()
+    base.box(sx - 0.4, sx + 0.4, sy - 0.4, sy + 0.4, z, z + 0.3)              # ballast plinth, no drilling
+    steel.box(sx - 0.2, sx + 0.2, sy - 0.2, sy + 0.2, z + 0.3, z + 0.32)       # flange
+    white.tube((sx, sy, z + 0.32), (sx, sy, z + 3.62), 0.057, 24)             # pole, dia 114
+    white.box(sx - 0.22, sx + 0.22, sy - 0.29, sy - 0.07, z + 1.05, z + 1.65)  # control box
+    blue.box(sx - 0.18, sx + 0.18, sy - 0.292, sy - 0.288, z + 1.5, z + 1.56)
+    dark.box(sx - 0.82, sx + 0.82, sy - 0.08, sy + 0.08, z + 1.95, z + 2.79)   # LED cabinet 1.6 x 0.8
+    plane_uv("station_led_s", (sx, sy - 0.081, z + 2.37), (1.58, 0.79), (math.radians(90), 0, 0), "station_led", coll)
+    plane_uv("station_led_n", (sx, sy + 0.081, z + 2.37), (1.58, 0.79), (math.radians(90), 0, math.radians(180)),
+             "station_led", coll)
+    # top arm: wind speed (cups) at one end, wind vane at the other, radiation shield, rain gauge, lightning rod
+    za = z + 3.3
+    white.box(sx - 0.65, sx + 0.65, sy - 0.03, sy + 0.03, za, za + 0.05)
+    cx = sx - 0.6
+    steel.tube((cx, sy, za + 0.05), (cx, sy, za + 0.32), 0.012, 10)
+    for k in range(3):
+        a = k * 2 * math.pi / 3
+        ex, ey = cx + 0.13 * math.cos(a), sy + 0.13 * math.sin(a)
+        steel.tube((cx, sy, za + 0.3), (ex, ey, za + 0.3), 0.005, 6)
+        tx, ty = -math.sin(a), math.cos(a)
+        white.tube((ex - tx * 0.02, ey - ty * 0.02, za + 0.3), (ex + tx * 0.02, ey + ty * 0.02, za + 0.3), 0.012, 12,
+                   r1=0.035)
+    vx = sx + 0.6
+    steel.tube((vx, sy, za + 0.05), (vx, sy, za + 0.32), 0.012, 10)
+    steel.tube((vx - 0.18, sy, za + 0.3), (vx + 0.14, sy, za + 0.3), 0.006, 6)
+    white.box(vx - 0.2, vx - 0.08, sy - 0.003, sy + 0.003, za + 0.25, za + 0.37)
+    for k in range(7):                                                         # louvred radiation shield
+        zz = za - 0.06 - k * 0.032
+        white.tube((sx - 0.3, sy, zz - 0.012), (sx - 0.3, sy, zz), 0.075, 20)
+    white.tube((sx + 0.3, sy, za + 0.05), (sx + 0.3, sy, za + 0.28), 0.07, 20, r1=0.08)   # rain gauge
+    steel.tube((sx, sy, z + 3.62), (sx, sy, z + 4.1), 0.008, 8)                # lightning rod
+    base.build("station_base", "cap_stone", coll=coll, bevel=0.01)
+    white.build("station_white", "pvc_white", smooth=True, coll=coll)
+    steel.build("station_steel", "steel_brushed", smooth=True, coll=coll)
+    dark.build("station_cabinet", "black", coll=coll, bevel=0.008)
+    blue.build("station_label", "tank_blue", coll=coll)
+    place = Matrix.Translation((STATION[0], STATION[1], 0)) @ Matrix.Rotation(math.radians(STATION_ROT), 4, "Z")
+    bpy.context.view_layer.update()
+    for ob in coll.objects:
+        ob.matrix_world = place @ ob.matrix_world
+    return coll
+
+
 # ---------------------------------------------------------------- world / cameras
 def world_overcast(strength=1.0, sun=0.6):
     sc = bpy.context.scene
@@ -743,6 +794,7 @@ VIEWS = {
     "germ": ((1.75, 1.35, 1.2), (0.3, 3.9, 0.55), 22.0, 0.0),
     "aerial": ((-7.0, 21.0, 17.5), (8.6, 3.2, 0.0), 30.0, 0.0),
     "corridor": ((DOOR[0] - 1.0, -2.7, 1.2), (PIER + 0.4, 0.3, 1.2), 15.0, 0.12),
+    "station": ((-10.3, 7.3, 1.6), (-1.5, 4.0, 1.6), 24.0, 0.13),
 }
 
 
@@ -799,6 +851,7 @@ def main():
     build_existing()
     roof_coll = build_shell()
     build_signage()
+    build_station()
     P = plant_meshes()
     build_interior(P)
     if MODE == "3d":            # photo-matched alignment at the far corridor end is too loose for small props
