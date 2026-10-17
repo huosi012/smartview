@@ -127,8 +127,11 @@ const inner = (label, children) => ({
     type: SectionType.NEXT_PAGE,
     page: { size: { width: tw(210), height: tw(297) }, margin: { top: tw(31), bottom: tw(19), left: tw(17), right: tw(17), header: tw(6.6), footer: tw(5.2) } },
   },
-  headers: { default: header(label) }, footers: { default: footer() }, children,
+  headers: { default: header(label) }, footers: { default: footer() },
+  // one fixed-height block per page: content can never spill onto an extra page in Word/WPS
+  children: [table([row([cell([...children, sp(.3)], CW)], PAGE_BLOCK, HeightRule.EXACT)], [CW])],
 });
+const PAGE_BLOCK = 246;   // body is 247 mm; 1 mm left for the section's closing paragraph
 
 // ================================================================ cover
 function cover() {
