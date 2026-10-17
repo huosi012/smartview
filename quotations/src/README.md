@@ -17,3 +17,17 @@
 | `verify.py` | 校验 docx 中每一段文字均出现在 PDF 中 |
 
 字体与图片素材体积较大，未提交到仓库；字体可从 Google Fonts 下载（Noto Sans SC、Noto Serif SC、Inter）。
+
+## Word 版（.docx）
+
+`../1200x1500x1500热风循环烘箱_CS881-TG_报价单.docx` 与 PDF 内容一致（同一份文字、图片、8 页结构），所有文字、表格、图片均可编辑。
+
+| 文件 | 作用 |
+| --- | --- |
+| `docx/content.py` | 从原 docx（含 `fixes.py` 更正）导出全部文字为 JSON，与 PDF 用同一来源 |
+| `docx/assets_docx.js` | 从 PDF 的 HTML 渲染封面/内页背景（去掉文字）、图标、安装示意图，并记录封面文字位置 |
+| `docx/build_docx.js` | 用 docx-js 生成 Word：每页一节（页眉标签不同），页码用 PAGE/NUMPAGES 字段，固定行距保证分页稳定 |
+| `docx/tune.json` | 各页行高/间距微调参数，使每页内容排到页脚附近 |
+| `docx/measure_docx.py` | 统计每页内容底部位置，用于调整 `tune.json` |
+
+字体使用 Windows 常见的「微软雅黑」+ Arial。封面和内页的渐变、色带作为背景图放在页眉里（双击页眉可编辑或删除）。
