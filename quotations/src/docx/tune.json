@@ -1,1 +1,1 @@
-{"tile_h": 28.5, "spec_gap": 4.5, "ov_pad": 3.8, "mat_pad": 2.45, "el_pad": 2.0, "strip_h": 68, "q_card_h": 28.5, "q_gap2": 8.5, "q_gap3": 11, "sys_gap": 8, "sys_pad": 3.5, "env_h": 18, "inst_pad": 11, "inst_gap": 12, "close_h": 60, "adv_gap1": 7, "adv_gap2": 10, "seal_x": 36, "seal_y": -20}
+{"tile_h": 28.5, "spec_gap": 4, "ov_pad": 2.4, "mat_pad": 2.3, "el_pad": 2.0, "strip_h": 68, "q_card_h": 28.5, "q_gap2": 8.5, "q_gap3": 11, "sys_gap": 7, "sys_pad": 3.3, "env_h": 17, "inst_pad": 11, "inst_gap": 11, "close_h": 58, "adv_gap1": 7, "adv_gap2": 9, "seal_x": 36, "seal_y": -20}

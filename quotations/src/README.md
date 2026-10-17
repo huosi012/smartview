@@ -26,8 +26,8 @@
 | --- | --- |
 | `docx/content.py` | 从原 docx（含 `fixes.py` 更正）导出全部文字为 JSON，与 PDF 用同一来源 |
 | `docx/assets_docx.js` | 从 PDF 的 HTML 渲染封面/内页背景（去掉文字）、图标、安装示意图，并记录封面文字位置 |
-| `docx/build_docx.js` | 用 docx-js 生成 Word：每页一节（页眉标签不同），页码用 PAGE/NUMPAGES 字段，固定行距保证分页稳定 |
+| `docx/build_docx.js` | 用 docx-js 生成 Word：每页一节（页眉标签不同），页码用 PAGE/NUMPAGES 字段，固定行距保证分页稳定。只用 Word/WPS/手机都支持的排版：无文本框、无单元格内边距、无垂直居中，封面为整页图片 |
 | `docx/tune.json` | 各页行高/间距微调参数，使每页内容排到页脚附近 |
 | `docx/measure_docx.py` | 统计每页内容底部位置，用于调整 `tune.json` |
 
-字体使用 Windows 常见的「微软雅黑」+ Arial。封面和内页的渐变、色带作为背景图放在页眉里（双击页眉可编辑或删除）。
+字体使用 Windows 常见的「微软雅黑」+ Arial。封面为与 PDF 相同的整页图片；内页的渐变、色带作为背景图放在页眉里（双击页眉可编辑或删除）。
