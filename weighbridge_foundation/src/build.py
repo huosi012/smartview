@@ -42,24 +42,24 @@ DWG_FONT = "simfang.ttf"      # 交付 DXF 字体：仿宋
 PREVIEW_FONT = "NotoSansCJK-Regular.ttc"
 
 
-def build_sheet(font, number, title, scale, func, x0=0.0, cad=None):
+def build_sheet(font, number, title, scale, func, x0=0.0, cad=None, size=A1):
     cad = cad or CAD(font=font)
     sh = cad.sheet(x0, 0.0)
-    draw_frame(sh, title, number, scale, G.PROJECT, G.SUBITEM)
+    draw_frame(sh, title, number, scale, G.PROJECT, G.SUBITEM, size=size)
     func(sh)
     return cad
 
 
-def render(cad, x0=0.0, png=None, pdf_pages=None, dpi=200):
-    fig = plt.figure(figsize=(A1[0] / 25.4, A1[1] / 25.4))
+def render(cad, x0=0.0, png=None, pdf_pages=None, dpi=200, size=A1):
+    fig = plt.figure(figsize=(size[0] / 25.4, size[1] / 25.4))
     ax = fig.add_axes([0, 0, 1, 1])
     ctx = RenderContext(cad.doc)
     cfg = Configuration(color_policy=ColorPolicy.BLACK,
                         background_policy=BackgroundPolicy.WHITE,
                         lineweight_scaling=1.0)
     Frontend(ctx, MatplotlibBackend(ax, adjust_figure=False), config=cfg).draw_layout(cad.msp, finalize=True)
-    ax.set_xlim(x0, x0 + A1[0] * SHEET_SCALE)
-    ax.set_ylim(0, A1[1] * SHEET_SCALE)
+    ax.set_xlim(x0, x0 + size[0] * SHEET_SCALE)
+    ax.set_ylim(0, size[1] * SHEET_SCALE)
     ax.set_aspect("equal")
     ax.axis("off")
     if png:
@@ -78,6 +78,11 @@ def main():
     os.makedirs(out, exist_ok=True)
     prev_dir = os.path.join(out, "preview")
     os.makedirs(prev_dir, exist_ok=True)
+
+    if only in (None, "一张图"):
+        build_combined(out, prev_dir)
+        if only:
+            return
 
     sel = [s for s in SHEETS if only is None or s[0] == only]
     # 1) 预览（PNG + 合并 PDF），使用本机中文字体
@@ -98,6 +103,18 @@ def main():
         build_sheet(DWG_FONT, number, title, scale, func, x0=i * GAP, cad=combined)
     combined.doc.saveas(os.path.join(out, "汽车衡基础施工图(全套).dxf"))
     print("saved dxf")
+
+
+def build_combined(out, prev_dir):
+    """全部内容合并为一张 A0 加长图。"""
+    import combined as C
+    args = ("结施-01", "汽车衡基础施工图", "见各图", C.sheet_all)
+    cad = build_sheet(PREVIEW_FONT, *args, size=C.SIZE)
+    with PdfPages(os.path.join(out, "汽车衡基础施工图(一张图).pdf")) as pdf:
+        render(cad, png=os.path.join(prev_dir, "一张图.png"), pdf_pages=pdf, dpi=150, size=C.SIZE)
+    cad = build_sheet(DWG_FONT, *args, size=C.SIZE)
+    cad.doc.saveas(os.path.join(out, "汽车衡基础施工图(一张图).dxf"))
+    print("saved combined")
 
 
 if __name__ == "__main__":

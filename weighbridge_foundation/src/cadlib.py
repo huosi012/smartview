@@ -510,10 +510,10 @@ class View:
         return y - Ht
 
 
-def draw_frame(sheet, title, number, scale_str, project, subitem, date="2026.10"):
-    """A1 图框 + 标题栏（图纸毫米坐标）。"""
+def draw_frame(sheet, title, number, scale_str, project, subitem, date="2026.10", size=A1):
+    """图框 + 标题栏（图纸毫米坐标），size 为图幅 (宽, 高)。"""
     v = sheet.paper
-    W, H = A1
+    W, H = size
     v.rect(0, 0, W, H, "S-THIN")
     v.rect(25, 10, W - 10, H - 10, "S-FRAME")
     # 标题栏 220 x 62，右下角
