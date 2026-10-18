@@ -112,30 +112,47 @@ def tag(name, text, color=ST_BLUE):
 
 
 # ---------------------------------------------------------------- stage folder (bright)
-def folder(name, label, title, color, glyph, seed):
-    W, H = 1937, 290
+def folder(name, label, title, color, glyph, seed, pose=None):
+    """case folder banner; with a pose the character stands at the right end, popping out of the folder"""
+    W = 1937
+    dy = 90 if pose else 0
+    H = 290 + dy
     c = Canvas(W, H, k=2)
     tsz = 50
     tw = c.text_w(label, F_KUAILE, tsz)
-    tab = [40, 10, 40 + tw + 90, 104]
+    tab = [40, 10 + dy, 40 + tw + 90, 104 + dy]
     c.rrect(tab, 26, fill=rgba(color))
-    c.text(((tab[0] + tab[2]) / 2, 52), label, F_KUAILE, tsz, rgba(WHITE), anchor='mm')
-    # paper peeking out
-    c.rrect([tab[2] + 36, 34, 1470, 140], 10, fill=rgba(WHITE), outline=rgba(tint(color, 0.6)), width=2)
+    c.text(((tab[0] + tab[2]) / 2, 52 + dy), label, F_KUAILE, tsz, rgba(WHITE), anchor='mm')
+    paper_end = 1100 if pose else 1470
+    c.rrect([tab[2] + 36, 34 + dy, paper_end, 140 + dy], 10, fill=rgba(WHITE), outline=rgba(tint(color, 0.6)), width=2)
     for yy in (62, 88, 114):
-        c.line([(tab[2] + 76, yy), (1430, yy)], rgba(tint(color, 0.7)), 3)
-    body = [16, 90, W - 16, H - 14]
+        c.line([(tab[2] + 76, yy + dy), (paper_end - 40, yy + dy)], rgba(tint(color, 0.7)), 3)
+    body = [16, 90 + dy, W - 16, H - 14]
     c.shadow(body, 34, color=color + (60,), blur=8, off=(0, 6))
     c.rrect(body, 34, fill=rgba(tint(color, 0.8)))
     c.rrect([body[0] + 12, body[1] + 12, body[2] - 12, body[3] - 12], 26, outline=rgba(tint(color, 0.35)), width=3)
     size = 84
-    while c.text_w(title, F_KUAILE, size) > 1460:
+    maxw = 1120 if pose else 1460
+    while c.text_w(title, F_KUAILE, size) > maxw:
         size -= 2
-    c.text((86, (body[1] + body[3]) / 2 + 4), title, F_KUAILE, size, rgba(shade(color, 0.45)), anchor='lm')
-    paperclip(c, 1560, 36, 128, color=(160, 170, 182))
-    stamp(c, 1772, 190, 78, glyph, color=shade(color, 0.05), rot=-12, seed=seed)
-    c.sparkle(1880, 120, 16, rgba(YELLOW))
+    cy = (body[1] + body[3]) / 2 + 4
+    c.text((86, cy), title, F_KUAILE, size, rgba(shade(color, 0.45)), anchor='lm')
+    if pose:
+        paperclip(c, 1150, 36 + dy, 128, color=(160, 170, 182))
+        stamp(c, 1330, cy - 4, 74, glyph, color=shade(color, 0.05), rot=-12, seed=seed)
+        img = Image.open(f'{OUT}/{pose}')
+        box_w, box_h = 500, body[3] - 10
+        sc = min(box_w / img.width, box_h / img.height)
+        pw, ph = img.width * sc, img.height * sc
+        # soft floor shadow on the folder
+        c.ellipse([1672 - pw * 0.42, body[3] - 30, 1672 + pw * 0.42, body[3] - 6], fill=shade(color, 0.3) + (70,))
+        c.paste(img, 1672 - pw / 2, body[3] - 14 - ph, w=pw, h=ph)
+    else:
+        paperclip(c, 1560, 36, 128, color=(160, 170, 182))
+        stamp(c, 1772, 190, 78, glyph, color=shade(color, 0.05), rot=-12, seed=seed)
+        c.sparkle(1880, 120, 16, rgba(YELLOW))
     c.export().save(f'{OUT}/v3_banner_{name}.png')
+    return W, H
 
 
 def icons():
@@ -156,9 +173,14 @@ if __name__ == '__main__':
                    ('bhgc', '【班会过程】'), ('yshd', '【班会后延伸教育活动】'),
                    ('bssj', '【板书设计】'), ('bhfs', '【班会反思】')]:
         tag(nm, tx)
-    folder('dr', '导入：', '侦探集结令——初识队伍一条线', (88, 140, 220), '★', 1)
-    folder('h1', '环节一', '循线索·辨队列之乱', ST_BLUE, '知', 2)
-    folder('h2', '环节二', '探现场·察隐患之危', ST_ORANGE, '情', 3)
-    folder('h3', '环节三', '解密码·立守护之法', ST_GREEN, '意', 4)
-    folder('h4', '环节四', '守勋章·践文明之美', ST_CORAL, '行', 5)
+    def pose(f):
+        return f if os.path.exists(f'{OUT}/{f}') else None
+    sizes = {
+        'dr': folder('dr', '导入：', '侦探集结令——初识队伍一条线', (88, 140, 220), '★', 1, pose('char_intro.png')),
+        'h1': folder('h1', '环节一', '循线索·辨队列之乱', ST_BLUE, '知', 2, pose('char_C.png')),
+        'h2': folder('h2', '环节二', '探现场·察隐患之危', ST_ORANGE, '情', 3, pose('char_D.png')),
+        'h3': folder('h3', '环节三', '解密码·立守护之法', ST_GREEN, '意', 4, pose('char_E.png')),
+        'h4': folder('h4', '环节四', '守勋章·践文明之美', ST_CORAL, '行', 5, pose('char_F.png')),
+    }
+    print('banner sizes', sizes)
     icons()

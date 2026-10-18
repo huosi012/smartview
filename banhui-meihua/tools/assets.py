@@ -56,9 +56,10 @@ def hero():
     c.star(1860, 640, 22, rgba(YELLOW), outline=rgba(NAVY), width=3)
     c.text((1280, 160), '?', F_SANS_K, 80, rgba(NAVY, 80), anchor='mm')
     # character
+    hero_char = Image.open(f'{OUT}/char_A.png')
     ch_h = 770
-    ch_w = CHAR.width * ch_h / CHAR.height
-    c.paste(CHAR, 1600 - ch_w / 2, H - 10 - ch_h - 6, h=ch_h)
+    ch_w = hero_char.width * ch_h / hero_char.height
+    c.paste(hero_char, 1600 - ch_w / 2, H - 10 - ch_h - 6, h=ch_h)
     out = c.export()
     out.save(f'{OUT}/hero.png')
 

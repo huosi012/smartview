@@ -95,9 +95,11 @@ function tag(i) {
   return imgPara(assetImg(TAGS[t], 1937, 124, t), { align: AlignmentType.LEFT, before: 220, after: 100, keepNext: true });
 }
 const BANNERS = { 18: 'v3_banner_dr.png', 23: 'v3_banner_h1.png', 30: 'v3_banner_h2.png', 43: 'v3_banner_h3.png', 53: 'v3_banner_h4.png' };
+const pngSize = (f) => { const b = A(f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
 function banner(i) {
   const t = take(i);
-  return imgPara(assetImg(BANNERS[i], 1937, 290, t, 0.88), { before: 260, after: 120, keepNext: true });
+  const [bw, bh] = pngSize(BANNERS[i]);
+  return imgPara(assetImg(BANNERS[i], bw, bh, t, 0.88), { before: 240, after: 120, keepNext: true });
 }
 
 function subhead(i) {                       // （一）主题解析

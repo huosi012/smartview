@@ -148,7 +148,8 @@ def survey():
     # character at bottom right
     ch_h = 640
     c.circle(1675, 1800, 210, fill=rgba(YELLOW_L))
-    c.paste(CHAR, 1675 - CHAR.width * ch_h / CHAR.height / 2, H - 40 - ch_h, h=ch_h)
+    pose = Image.open(f'{OUT}/char_B.png')
+    c.paste(pose, 1675 - pose.width * ch_h / pose.height / 2, H - 40 - ch_h, h=ch_h)
     c.export().save(f'{OUT}/img_survey.png')
 
 
