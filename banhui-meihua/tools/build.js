@@ -95,6 +95,11 @@ function tag(i) {
   return imgPara(assetImg(TAGS[t], 1937, 124, t), { align: AlignmentType.LEFT, before: 220, after: 100, keepNext: true });
 }
 const BANNERS = { 18: 'v3_banner_dr.png', 23: 'v3_banner_h1.png', 30: 'v3_banner_h2.png', 43: 'v3_banner_h3.png', 53: 'v3_banner_h4.png' };
+// activity illustration, centred; asset px scaled like the other assets
+const actImg = (f, alt, scale = 1, o = {}) => {
+  const [w, h] = pngSize(f);
+  return imgPara(assetImg(f, w, h, alt, scale), { before: o.before ?? 100, after: o.after ?? 140, keepNext: !!o.keepNext });
+};
 const pngSize = (f) => { const b = A(f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
 function banner(i) {
   const t = take(i);
@@ -351,7 +356,8 @@ C.push(banner(23));
 C.push(activity(24, 0));
 C.push(plain(25));
 C.push(activity(26, 0));
-C.push(plain(27));
+C.push(plain(27, { keepNext: true }));
+C.push(actImg('act_clues.png', '奇怪线条线索卡'));
 C.push(summary(28, '小结：'));
 C.push(intent(29));
 
@@ -359,13 +365,16 @@ C.push(intent(29));
 C.push(banner(30));
 C.push(activity(31, 1));
 C.push(numbered(32, { keepNext: true }));
+C.push(actImg('act_domino.png', '多米诺骨牌实验示意', 1, { keepNext: true, after: 120 }));
 C.push(experimentTable(33));
 C.push(spacer(60));
 C.push(summary(34, '教师小结：'));
-C.push(numbered(35));
+C.push(numbered(35, { keepNext: true }));
+C.push(actImg('act_palms.png', '对掌受力体验', 0.8));
 C.push(news(36));
 C.push(activity(37, 1));
-C.push(numbered(38));
+C.push(numbered(38, { keepNext: true }));
+C.push(actImg('act_train.png', '小火车行进体验', 0.8));
 C.push(numbered(39));
 C.push(news(40));
 C.push(summary(41, '小结：'));
@@ -408,7 +417,8 @@ C.push(spacer(60));
 C.push(labelled(64, '教师点拨：'));
 C.push(labelled(65, '引导学生认识：'));
 C.push(activity(66, 3));
-C.push(plain(67));
+C.push(plain(67, { keepNext: true }));
+C.push(actImg('act_promise.png', '排队承诺卡样卡', 0.85));
 C.push(labelled(68, '板书生成：'));
 C.push(labelled(69, '侦探进阶思辨：'));
 C.push(summary(70, '小结：'));
