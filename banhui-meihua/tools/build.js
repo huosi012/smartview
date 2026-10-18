@@ -12,8 +12,8 @@ const items = JSON.parse(fs.readFileSync(itemsPath, 'utf8'));
 const A = (f) => fs.readFileSync(path.join(assetDir, f));
 
 // ------------------------------------------------------------------ palette & fonts
-const NAVY = '0B4B9B', NAVY_D = '12346E', ORANGE = 'D9700F', INK = '2B2B2B', KAI_INK = '4A3B2A';
-const ST = ['3D8BE0', 'F2994A', '34B37E', 'EE6A5F'];
+const NAVY = '1E3460', NAVY_D = '1E3460', ROYAL = '0B4B9B', ORANGE = 'C8423B', MUSTARD = 'F2B705', INK = '2B2B2B', KAI_INK = '3D3D3D';
+const ST = ['2F6FD0', 'D9534F', '2A9D8F', 'E89B0C'];
 const SONG = { ascii: 'Times New Roman', hAnsi: 'Times New Roman', eastAsia: '宋体', cs: 'Times New Roman' };
 const HEI = { ascii: '微软雅黑', hAnsi: '微软雅黑', eastAsia: '微软雅黑', cs: '微软雅黑' };
 const KAI = { ascii: 'Times New Roman', hAnsi: 'Times New Roman', eastAsia: '楷体', cs: 'Times New Roman' };
@@ -86,19 +86,18 @@ const imgPara = (image, o = {}) => new Paragraph({
 });
 
 const TAGS = {
-  '【背景分析】': ['tag_bjfx.png', 503], '【班会目标】': ['tag_bhmb.png', 503], '【班会准备】': ['tag_bhzb.png', 503],
-  '【班会过程】': ['tag_bhgc.png', 503], '【班会后延伸教育活动】': ['tag_yshd.png', 797],
-  '【板书设计】': ['tag_bssj.png', 503], '【班会反思】': ['tag_bhfs.png', 503],
+  '【背景分析】': 'v2_tag_bjfx.png', '【班会目标】': 'v2_tag_bhmb.png', '【班会准备】': 'v2_tag_bhzb.png',
+  '【班会过程】': 'v2_tag_bhgc.png', '【班会后延伸教育活动】': 'v2_tag_yshd.png',
+  '【板书设计】': 'v2_tag_bssj.png', '【班会反思】': 'v2_tag_bhfs.png',
 };
 function tag(i) {
   const t = take(i);
-  const [f, w] = TAGS[t];
-  return imgPara(assetImg(f, w, 128, t, 0.92), { align: AlignmentType.LEFT, before: 220, after: 100, keepNext: true });
+  return imgPara(assetImg(TAGS[t], 1937, 112, t), { align: AlignmentType.LEFT, before: 240, after: 120, keepNext: true });
 }
-const BANNERS = { 18: 'banner_dr.png', 23: 'banner_h1.png', 30: 'banner_h2.png', 43: 'banner_h3.png', 53: 'banner_h4.png' };
+const BANNERS = { 18: 'v2_banner_dr.png', 23: 'v2_banner_h1.png', 30: 'v2_banner_h2.png', 43: 'v2_banner_h3.png', 53: 'v2_banner_h4.png' };
 function banner(i) {
   const t = take(i);
-  return imgPara(assetImg(BANNERS[i], 1830, 236, t), { before: 320, after: 160, keepNext: true });
+  return imgPara(assetImg(BANNERS[i], 1937, 300, t, 0.94), { before: 300, after: 140, keepNext: true });
 }
 
 function subhead(i) {                       // （一）主题解析
@@ -107,7 +106,7 @@ function subhead(i) {                       // （一）主题解析
   return new Paragraph({
     children: [run(m[1], { font: HEI, bold: true, color: ORANGE, size: 26 }), run(m[2], { font: HEI, bold: true, color: NAVY_D, size: 26 })],
     spacing: { before: 160, after: 80, line: 300, lineRule: LineRuleType.AUTO },
-    border: { left: { style: BorderStyle.SINGLE, size: 36, color: 'FFCC39', space: 6 } },
+    border: { left: { style: BorderStyle.SINGLE, size: 36, color: MUSTARD, space: 6 } },
     indent: { left: 120 }, keepNext: true,
   });
 }
@@ -117,12 +116,12 @@ function activity(i, stage) {               // 活动一：xxx
   const ci = t.indexOf('：');
   return new Paragraph({
     children: [
-      img('ic_mag.png', 22, 22, '活动'),
+      img('v2_ic_pin.png', 20, 20, '活动'),
       run(' ' + t.slice(0, ci + 1), { font: HEI, bold: true, color: ST[stage] === undefined ? ORANGE : ST[stage], size: 26 }),
       run(t.slice(ci + 1), { font: HEI, bold: true, color: NAVY_D, size: 26 }),
     ],
     spacing: { before: 220, after: 100, line: 300, lineRule: LineRuleType.AUTO },
-    border: { bottom: { style: BorderStyle.DOTTED, size: 12, color: 'FFCC39', space: 3 } },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: 'C9D3E3', space: 3 } },
     keepNext: true,
   });
 }
@@ -130,7 +129,7 @@ function activity(i, stage) {               // 活动一：xxx
 function subsub(i) {                        // 1. 情境导入
   const t = take(i);
   return new Paragraph({
-    children: [img('ic_dot.png', 14, 14, '要点'), run(' ' + t, { font: HEI, bold: true, color: ORANGE, size: 24 })],
+    children: [img('v2_ic_sq.png', 13, 13, '要点'), run(' ' + t, { font: HEI, bold: true, color: NAVY, size: 24 })],
     spacing: { before: 140, after: 60, line: 300, lineRule: LineRuleType.AUTO }, indent: { left: 240 }, keepNext: true,
   });
 }
@@ -145,14 +144,14 @@ function summary(i, label) {                // 小结 / 教师小结
 
 function intent(i) {                        // 【设计意图】 box
   const t = take(i, '【设计意图】');
-  const bd = { style: BorderStyle.DASHED, size: 8, color: 'F5B041', space: 6 };
+  const pad = { style: BorderStyle.SINGLE, size: 4, color: 'FFF6D5', space: 5 };
   return new Paragraph({
     children: [run('【设计意图】', { font: KAI, bold: true, color: ORANGE }), run(t.slice(6), { font: KAI, color: KAI_INK })],
     alignment: AlignmentType.JUSTIFIED,
     spacing: { ...EXACT(22), before: 200, after: 160 },
-    indent: { left: 140, right: 140 },
-    shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'FFF7E1' },
-    border: { top: bd, bottom: bd, left: bd, right: bd },
+    indent: { left: 200, right: 120 },
+    shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'FFF6D5' },
+    border: { left: { style: BorderStyle.SINGLE, size: 36, color: MUSTARD, space: 10 }, top: pad, bottom: pad, right: pad },
   });
 }
 
@@ -161,7 +160,7 @@ function news(i) {                          // 3. 播放新闻档案案例：...
   const m = t.match(/^(\d\.\s*)(.*?：)(.*)$/);
   return new Paragraph({
     children: [
-      img('ic_news.png', 24, 24, '新闻'),
+      img('v2_ic_paper.png', 26, 22, '新闻'),
       run(' ' + m[1], { bold: true, color: ORANGE, font: HEI }),
       run(m[2], { bold: true, color: NAVY }),
       run(m[3]),
@@ -169,24 +168,23 @@ function news(i) {                          // 3. 播放新闻档案案例：...
     alignment: AlignmentType.JUSTIFIED,
     spacing: { before: 100, after: 120, line: 340, lineRule: LineRuleType.AUTO },
     indent: { left: 140, right: 140 },
-    shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'EDF4FD' },
+    shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'F3F2EE' },
     border: {
-      left: { style: BorderStyle.SINGLE, size: 36, color: NAVY, space: 8 },
-      top: { style: BorderStyle.SINGLE, size: 4, color: 'EDF4FD', space: 4 },
-      bottom: { style: BorderStyle.SINGLE, size: 4, color: 'EDF4FD', space: 4 },
+      top: { style: BorderStyle.DOUBLE, size: 6, color: '6E6E6E', space: 4 },
+      bottom: { style: BorderStyle.DOUBLE, size: 6, color: '6E6E6E', space: 4 },
     },
   });
 }
 
 function chant(lines) {                     // 口诀 card; lines joined must equal the source text
-  const bd = { style: BorderStyle.DASHED, size: 12, color: 'F08A24', space: 8 };
+  const bd = { style: BorderStyle.SINGLE, size: 4, color: NAVY, space: 8 };
   const children = [];
-  lines.forEach((l, k) => children.push(run(l, { font: KAI, bold: true, color: NAVY_D, size: 28, ...(k ? { break: 1 } : {}) })));
+  lines.forEach((l, k) => children.push(run(l, { font: KAI, bold: true, color: MUSTARD, size: 28, ...(k ? { break: 1 } : {}) })));
   return new Paragraph({
     children, alignment: AlignmentType.CENTER,
     spacing: { ...EXACT(30), before: 160, after: 200 },
     indent: { left: 700, right: 700 },
-    shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'FFF3C4' },
+    shading: { type: ShadingType.CLEAR, color: 'auto', fill: NAVY },
     border: { top: bd, bottom: bd, left: bd, right: bd },
   });
 }
@@ -214,12 +212,12 @@ function experimentTable(idx) {
   used.add(idx);
   const rows = items[idx].rows;
   const widths = [2500, 2200, 2200, 2398];
-  const bd = allB(cellB('BCD3F0'));
+  const bd = allB(cellB('C3CEDF'));
   const out = [new TableRow({
     tableHeader: true, height: { value: 620, rule: HeightRule.ATLEAST },
     children: rows[0].map((t, k) => cell([cp(t.trim(), { bold: true, color: 'FFFFFF', font: HEI, size: 21 })], widths[k], { fill: NAVY, borders: bd })),
   })];
-  const tints = [['FDE4E1', 'C0392B'], ['E3EEFB', NAVY]];
+  const tints = [['FBE3E1', 'B03A2E'], ['E3ECF8', ROYAL]];
   rows.slice(1).forEach((r, ri) => out.push(new TableRow({
     height: { value: 860, rule: HeightRule.ATLEAST },
     children: r.map((t, k) => k === 0
@@ -233,16 +231,16 @@ function situationTable(idx) {
   used.add(idx);
   const rows = items[idx].rows;
   const widths = [3500, 3900, 1898];
-  const bd = allB(cellB('F5D6A8'));
+  const bd = allB(cellB('E8D9B8'));
   const out = [new TableRow({
     tableHeader: true, height: { value: 600, rule: HeightRule.ATLEAST },
-    children: rows[0].map((t, k) => cell([cp(t.trim(), { bold: true, color: 'FFFFFF', font: HEI, size: 22 })], widths[k], { fill: 'F08A24', borders: bd })),
+    children: rows[0].map((t, k) => cell([cp(t.trim(), { bold: true, color: 'FFFFFF', font: HEI, size: 22 })], widths[k], { fill: ST[3], borders: bd })),
   })];
   rows.slice(1).forEach((r, ri) => out.push(new TableRow({
     height: { value: 560, rule: HeightRule.ATLEAST },
     children: r.map((t, k) => k === 2
-      ? cell([cp(t.trim(), { bold: true, color: ORANGE, font: HEI, size: 22 })], widths[k], { fill: 'FFEFD2', borders: bd })
-      : cell([cp(t.trim(), { align: AlignmentType.LEFT })], widths[k], { fill: ri % 2 ? 'FFF9EF' : 'FFFFFF', borders: bd })),
+      ? cell([cp(t.trim(), { bold: true, color: ORANGE, font: HEI, size: 22 })], widths[k], { fill: 'FFF4D6', borders: bd })
+      : cell([cp(t.trim(), { align: AlignmentType.LEFT })], widths[k], { fill: ri % 2 ? 'FBF8F0' : 'FFFFFF', borders: bd })),
   })));
   return new Table({ rows: out, width: { size: CONTENT_W, type: WidthType.DXA }, columnWidths: widths, layout: TableLayoutType.FIXED, alignment: AlignmentType.CENTER });
 }
@@ -252,7 +250,7 @@ const spacer = (after = 120) => new Paragraph({ children: [], spacing: { before:
 function closingCard(iTitle, iText) {       // 班主任结语
   const title = take(iTitle, '班主任结语');
   const text = take(iText);
-  const bd = { style: BorderStyle.DASHED, size: 12, color: NAVY, space: 0 };
+  const thin = { style: BorderStyle.SINGLE, size: 6, color: 'D5DCE6', space: 0 };
   const charW = 96, charH = charW * 1203 / 609;
   return new Table({
     width: { size: CONTENT_W, type: WidthType.DXA }, columnWidths: [2000, 7298], layout: TableLayoutType.FIXED,
@@ -264,18 +262,21 @@ function closingCard(iTitle, iText) {       // 班主任结语
           { borders: NOB, valign: VerticalAlign.BOTTOM, margins: { top: 0, bottom: 0, left: 0, right: 80 } }),
         cell([
           new Paragraph({ children: [run(title, { font: HEI, bold: true, color: NAVY, size: 26 })], spacing: { after: 80, line: 300, lineRule: LineRuleType.AUTO } }),
-          body([run(text, { color: NAVY_D })], { after: 0 }),
-        ], 7298, { fill: 'EAF3FF', borders: allB(bd), margins: { top: 220, bottom: 220, left: 260, right: 260 } }),
+          body([run(text, { color: INK })], { after: 0 }),
+        ], 7298, {
+          fill: 'FFFDF6', margins: { top: 220, bottom: 220, left: 320, right: 260 },
+          borders: { top: { style: BorderStyle.SINGLE, size: 24, color: NAVY, space: 0 }, left: { style: BorderStyle.DOUBLE, size: 6, color: 'E07A73', space: 0 }, bottom: thin, right: thin },
+        }),
       ],
     })],
   });
 }
 
 function extensionCards(ids) {
-  const fills = ['E3EEFB', 'FFF1D6', 'E1F5EA', 'FDE6E4'];
   const icons = ['ic_school.png', 'ic_medal.png', 'ic_home.png', 'ic_mega.png'];
-  const nameColor = [NAVY, ORANGE, '1E8A5A', 'C9463C'];
-  const gap = { style: BorderStyle.SINGLE, size: 48, color: 'FFFEFA' };
+  const nameColor = ['2458A8', 'B8423C', '1F7F73', 'A86C05'];
+  const thin = { style: BorderStyle.SINGLE, size: 6, color: 'D5DCE6' };
+  const GW = 220, CW = (CONTENT_W - GW) / 2;
   const cells = ids.map((i, k) => {
     const t = take(i);
     const m = t.match(/^(\d\.\s*)([^：]+：[^：]+：)(.*)$/);
@@ -286,11 +287,20 @@ function extensionCards(ids) {
         alignment: AlignmentType.CENTER, spacing: { after: 60, line: 300, lineRule: LineRuleType.AUTO },
       }),
       new Paragraph({ children: [run(m[3], { size: 22 })], alignment: AlignmentType.JUSTIFIED, spacing: EXACT(20) }),
-    ], CONTENT_W / 2, { fill: fills[k], borders: allB(gap), valign: VerticalAlign.TOP, margins: { top: 200, bottom: 200, left: 240, right: 240 } });
+    ], CW, {
+      fill: 'FFFFFF', valign: VerticalAlign.TOP, margins: { top: 200, bottom: 200, left: 240, right: 240 },
+      borders: { top: { style: BorderStyle.SINGLE, size: 36, color: ST[k] }, left: thin, right: thin, bottom: thin },
+    });
   });
+  const gapCell = (w) => cell([new Paragraph({ children: [] })], w, { borders: NOB, margins: { top: 0, bottom: 0, left: 0, right: 0 } });
   return new Table({
-    width: { size: CONTENT_W, type: WidthType.DXA }, columnWidths: [CONTENT_W / 2, CONTENT_W / 2], layout: TableLayoutType.FIXED,
-    rows: [new TableRow({ children: cells.slice(0, 2), cantSplit: true }), new TableRow({ children: cells.slice(2, 4), cantSplit: true })],
+    width: { size: CONTENT_W, type: WidthType.DXA }, columnWidths: [CW, GW, CW], layout: TableLayoutType.FIXED,
+    borders: { ...NOB, insideHorizontal: NOB.top, insideVertical: NOB.top },
+    rows: [
+      new TableRow({ children: [cells[0], gapCell(GW), cells[1]], cantSplit: true }),
+      new TableRow({ children: [gapCell(CW), gapCell(GW), gapCell(CW)], height: { value: 200, rule: HeightRule.EXACT } }),
+      new TableRow({ children: [cells[2], gapCell(GW), cells[3]], cantSplit: true }),
+    ],
   });
 }
 
@@ -303,7 +313,7 @@ function reflection(i) {                    // 第一，xxx。rest
 // ------------------------------------------------------------------ document flow
 const C = [];
 used.add(0); used.add(1);
-C.push(imgPara(assetImg('hero.png', 1937, 820, T(0).trim() + ' ' + T(1)), { before: 0, after: 80 }));
+C.push(imgPara(assetImg('v2_hero.png', 1937, 800, T(0).trim() + ' ' + T(1)), { before: 0, after: 80 }));
 
 // 背景分析
 C.push(tag(2));
@@ -326,13 +336,13 @@ used.add(11);
 C.push(tag(12));
 C.push(labelled(13, '教师准备：'));
 C.push(labelled(14, '学生准备：'));
-C.push(imgPara(assetImg('img_survey.png', 1937, 2150, '队伍侦探社·课前小调查'), { before: 160, after: 80 }));
+C.push(imgPara(assetImg('v2_img_survey.png', 1937, 2150, '队伍侦探社·课前小调查'), { before: 160, after: 80 }));
 used.add(15);
 
 // 班会过程
 C.push(tag(16));
 used.add(17);
-C.push(imgPara(assetImg('img_overview.png', 1937, 1110, '班会过程总览：导入 侦探集结令——初识队伍一条线；知 情 意 行 四个环节'), { before: 80, after: 80 }));
+C.push(imgPara(assetImg('v2_img_overview.png', 1937, 1180, '班会过程总览：导入 侦探集结令——初识队伍一条线；知 情 意 行 四个环节'), { before: 80, after: 80 }));
 
 // 导入
 C.push(banner(18));
@@ -421,7 +431,7 @@ C.push(extensionCards([76, 77, 78, 79]));
 // 板书设计
 C.push(tag(80));
 used.add(81);
-C.push(imgPara(assetImg('img_board.png', 1937, 1100, '板书设计：队伍侦探社 寻回最美一条线', 0.9), { before: 60, after: 60 }));
+C.push(imgPara(assetImg('v2_img_board.png', 1937, 1100, '板书设计：队伍侦探社 寻回最美一条线', 0.9), { before: 60, after: 60 }));
 
 // 班会反思
 C.push(tag(82));
@@ -434,7 +444,7 @@ if (missing.length) throw new Error('unplaced items: ' + missing.join(','));
 
 // ------------------------------------------------------------------ page frame & document
 const bgRun = new ImageRun({
-  type: 'jpg', data: A('page_bg.jpg'), transformation: { width: 794, height: 1123 },
+  type: 'jpg', data: A('v2_page_bg.jpg'), transformation: { width: 794, height: 1123 },
   altText: { title: '页面背景', description: '页面背景', name: '页面背景' },
   floating: {
     horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: 0 },
@@ -455,7 +465,7 @@ const doc = new Document({
     properties: {
       page: {
         size: { width: 11906, height: 16838 },
-        margin: { top: 1420, bottom: 1300, left: 1304, right: 1304, header: 560, footer: 780 },
+        margin: { top: 1300, bottom: 1250, left: 1418, right: 1190, header: 500, footer: 620 },
       },
     },
     headers: { default: new Header({ children: [new Paragraph({ children: [bgRun], spacing: { line: 240, lineRule: LineRuleType.AUTO } })] }) },
