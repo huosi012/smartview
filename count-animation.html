@@ -223,8 +223,6 @@ kbd {
   const PANEL_PAD = 36;
 
   const C = {
-    panelStops: [[0, 'rgba(16,48,196,0.84)'], [1, 'rgba(4,20,112,0.9)']],
-    panelEdge: 'rgba(160,205,255,0.95)',
     orange: '#f89e02',
     white: [[0, '#ffffff'], [0.55, '#f1f6ff'], [1, '#bfd3ff']],
     plus: [[0, '#ffd27a'], [1, '#f88c02']],
@@ -822,24 +820,7 @@ kbd {
     g.setTransform(res, 0, 0, res, PANEL_PAD * res, PANEL_PAD * res);
     g.imageSmoothingQuality = 'high';
 
-    // 玻璃
-    g.save();
-    g.shadowColor = 'rgba(40,110,255,0.7)';
-    g.shadowBlur = 28 * res;
-    roundRectPath(g, 0, 0, pn.w, pn.h, 18);
-    g.fillStyle = addStops(g.createLinearGradient(0, 0, 0, pn.h), C.panelStops);
-    g.fill();
-    g.restore();
-    g.save();
-    roundRectPath(g, 0, 0, pn.w, pn.h, 18);
-    g.clip();
-    g.fillStyle = addStops(g.createLinearGradient(0, 0, 0, pn.h * 0.5), [[0, 'rgba(255,255,255,0.13)'], [1, 'rgba(255,255,255,0)']]);
-    g.fillRect(0, 0, pn.w, pn.h * 0.5);
-    g.restore();
-    g.lineWidth = 1.6;
-    g.strokeStyle = C.panelEdge;
-    roundRectPath(g, 0, 0, pn.w, pn.h, 18);
-    g.stroke();
+    // 玻璃本身在着色器里画（毛玻璃），这里只画四角标记和文字
     const L = 26, inset = 10;
     g.strokeStyle = C.orange;
     g.lineWidth = 3;
@@ -981,18 +962,40 @@ void main() { vUV = vec2(aQ.x, 1.0 - aQ.y); gl_Position = uVP * vec4(uRect.x + (
     panelFS: `#version 300 es
 precision highp float;
 uniform sampler2D uTex;
+uniform sampler2D uFrost;
+uniform vec2 uRes;
+uniform vec4 uBox;
 uniform float uSheen;
 in vec2 vUV;
 layout(location=0) out vec4 o;
 layout(location=1) out vec4 oG;
 void main() {
-  vec4 c = texture(uTex, vUV);
-  float glass = smoothstep(0.55, 0.85, c.a) * (1.0 - smoothstep(0.75, 0.95, max(c.r, max(c.g, c.b))));
-  float sh = 0.16 * exp(-pow((vUV.x + vUV.y * 0.45 - uSheen) / 0.09, 2.0)) * glass;
-  vec3 col = c.rgb + sh;
-  float l = dot(col, vec3(0.299, 0.587, 0.114));
-  o = vec4(col, c.a);
-  oG = vec4(col * smoothstep(0.86, 1.0, l) * 0.3, c.a);
+  // 面板本地坐标（版面像素），圆角矩形距离场
+  vec2 p = vUV * (uBox.xy + 2.0 * uBox.z) - uBox.z;
+  vec2 q = abs(p - uBox.xy * 0.5) - (uBox.xy * 0.5 - uBox.w);
+  float sdf = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - uBox.w;
+  float aa = max(fwidth(sdf), 1e-3);
+  float inside = 1.0 - smoothstep(-aa, aa, sdf);
+
+  // 毛玻璃：取墙面模糊后的颜色，压成深蓝
+  vec3 frost = texture(uFrost, gl_FragCoord.xy / uRes).rgb;
+  vec3 glass = mix(frost * vec3(0.55, 0.66, 0.95), vec3(0.02, 0.06, 0.25), 0.66);
+  float gy = clamp(p.y / uBox.y, 0.0, 1.0);
+  glass += vec3(0.08, 0.12, 0.22) * (1.0 - smoothstep(0.0, 0.55, gy));
+  glass += vec3(0.4, 0.58, 1.0) * exp(min(sdf, 0.0) / 4.0) * 0.16;
+  glass += 0.08 * exp(-pow((vUV.x + vUV.y * 0.45 - uSheen) / 0.09, 2.0));
+  float border = 1.0 - smoothstep(0.5 * aa, 1.2 * aa + 0.7, abs(sdf + 0.7));
+  vec3 col = mix(glass, vec3(0.8, 0.88, 1.0), border * 0.75);
+  vec4 t = texture(uTex, vUV);
+  col = mix(col, t.rgb, t.a);
+
+  // 外面一圈柔和的投影，让面板浮在墙上
+  float alpha = max(inside, border * 0.75);
+  float sh = 0.55 * exp(-max(sdf, 0.0) / 12.0) * (1.0 - smoothstep(uBox.z * 0.55, uBox.z, sdf)) * (1.0 - alpha);
+  vec3 rgb = (col * alpha + vec3(0.0, 0.01, 0.05) * sh) / max(alpha + sh, 1e-4);
+  o = vec4(rgb, alpha + sh);
+  float l = dot(t.rgb, vec3(0.299, 0.587, 0.114));
+  oG = vec4(t.rgb * t.a * smoothstep(0.86, 1.0, l) * 0.3 + vec3(0.55, 0.72, 1.0) * border * 0.2, alpha + sh);
 }`,
     dustVS: `#version 300 es
 layout(location=0) in vec4 aP;
@@ -1373,22 +1376,62 @@ void main() {
     gl.depthMask(true);
     gl.drawElementsInstanced(gl.TRIANGLES, G.nIdx, gl.UNSIGNED_SHORT, 0, solid.length);
 
-    // 面板（半透明玻璃，写深度，挡住它后面的残影）
+    // —— 毛玻璃：先把面板后面的画面解析出来、模糊 ——
+    const pass = (prog, src, dst, setup) => {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, dst ? dst.fb : null);
+      gl.viewport(0, 0, dst ? dst.w : T.w, dst ? dst.h : T.h);
+      gl.useProgram(prog.p);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, src.tex);
+      gl.uniform1i(prog.u.uTex, 0);
+      if (setup) setup(prog.u);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    const blur = (a, b, spread) => {
+      pass(P.blur, a, b, (u) => gl.uniform2f(u.uDir, spread / a.w, 0));
+      pass(P.blur, b, a, (u) => gl.uniform2f(u.uDir, 0, spread / a.h));
+    };
+    gl.disable(gl.DEPTH_TEST);
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, T.ms);
+    gl.readBuffer(gl.COLOR_ATTACHMENT0);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, T.scene.fb);
+    gl.blitFramebuffer(0, 0, T.w, T.h, 0, 0, T.w, T.h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+    gl.bindVertexArray(G.emptyVAO);
+    pass(P.copy, T.scene, T.h1);
+    blur(T.h1, T.h2, 1.5);
+    pass(P.copy, T.h1, T.q1);
+    blur(T.q1, T.q2, 2.0);
+    blur(T.q1, T.q2, 3.0);
+
+    // 面板：浮在墙前的毛玻璃，写深度，挡住它后面的残影
+    gl.bindFramebuffer(gl.FRAMEBUFFER, T.ms);
+    gl.viewport(0, 0, T.w, T.h);
+    gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.useProgram(P.panel.p);
     const pn = plan.panel;
     const shrink = (DIST - PANEL_Z) / DIST;   // 正面看时面板边缘刚好对齐格子线
-    gl.uniformMatrix4fv(P.panel.u.uVP, false, vp);
-    gl.uniform4f(P.panel.u.uRect, (pn.x + pn.w / 2 - CX) * shrink, (CY - pn.y - pn.h / 2) * shrink, (pn.w + PANEL_PAD * 2) * shrink, (pn.h + PANEL_PAD * 2) * shrink);
-    gl.uniform1f(P.panel.u.uSheen, lerp(-0.3, 1.35, clamp01((cam.eye[0] + 420) / 840)));
-    gl.uniform1i(P.panel.u.uTex, 1);
+    const pu = P.panel.u;
+    gl.uniformMatrix4fv(pu.uVP, false, vp);
+    gl.uniform4f(pu.uRect, (pn.x + pn.w / 2 - CX) * shrink, (CY - pn.y - pn.h / 2) * shrink, (pn.w + PANEL_PAD * 2) * shrink, (pn.h + PANEL_PAD * 2) * shrink);
+    gl.uniform4f(pu.uBox, pn.w, pn.h, PANEL_PAD, 18);
+    gl.uniform2f(pu.uRes, T.w, T.h);
+    gl.uniform1f(pu.uSheen, lerp(-0.3, 1.35, clamp01((cam.eye[0] + 420) / 840)));
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, G.panelTex);
+    gl.uniform1i(pu.uTex, 1);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, T.q1.tex);
+    gl.uniform1i(pu.uFrost, 2);
     gl.bindVertexArray(G.quadVAO);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
     // 残影、淡入中的卡片
     if (trans.length) {
       gl.useProgram(P.card.p);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, G.atlasTex);
       gl.bindVertexArray(G.cardVAO);
       gl.depthMask(false);
       gl.bindBuffer(gl.ARRAY_BUFFER, G.inst);
@@ -1421,20 +1464,6 @@ void main() {
 
     // —— 泛光：只让发光层（数字、闪光、高光、光点）发光 ——
     gl.bindVertexArray(G.emptyVAO);
-    const pass = (prog, src, dst, setup) => {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, dst ? dst.fb : null);
-      gl.viewport(0, 0, dst ? dst.w : T.w, dst ? dst.h : T.h);
-      gl.useProgram(prog.p);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, src.tex);
-      gl.uniform1i(prog.u.uTex, 0);
-      if (setup) setup(prog.u);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-    };
-    const blur = (a, b, spread) => {
-      pass(P.blur, a, b, (u) => gl.uniform2f(u.uDir, spread / a.w, 0));
-      pass(P.blur, b, a, (u) => gl.uniform2f(u.uDir, 0, spread / a.h));
-    };
     pass(P.copy, T.glow, T.h1);
     blur(T.h1, T.h2, 1.2);
     pass(P.copy, T.h1, T.q1);
