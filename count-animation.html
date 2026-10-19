@@ -185,7 +185,8 @@ kbd {
 
     <div class="checks">
       <label class="check"><input id="plus" type="checkbox" checked> 数字后加 “+”</label>
-      <label class="check"><input id="fx" type="checkbox" checked> 光效（光束、光点、闪烁）</label>
+      <label class="check"><input id="spot" type="checkbox" checked> 聚光灯</label>
+      <label class="check"><input id="fx" type="checkbox" checked> 光点与闪烁</label>
       <label class="check"><input id="physical" type="checkbox" checked> 按屏幕实际像素</label>
       <label class="check"><input id="loop" type="checkbox"> 循环播放</label>
     </div>
@@ -265,6 +266,7 @@ kbd {
     english: 'HELPING STUDENTS REACH THEIR DREAM UNIVERSITIES',
     plus: true,
     fx: true,
+    spot: true,
     loop: false,
     span: SPANS.normal,
     out: { w: 1280, h: 720 },
@@ -820,18 +822,7 @@ kbd {
     g.setTransform(res, 0, 0, res, PANEL_PAD * res, PANEL_PAD * res);
     g.imageSmoothingQuality = 'high';
 
-    // 玻璃本身在着色器里画（毛玻璃），这里只画四角标记和文字
-    const L = 26, inset = 10;
-    g.strokeStyle = C.orange;
-    g.lineWidth = 3;
-    g.lineCap = 'square';
-    g.beginPath();
-    for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
-      const x = sx > 0 ? inset : pn.w - inset, y = sy > 0 ? inset : pn.h - inset;
-      g.moveTo(x, y + sy * L); g.lineTo(x, y); g.lineTo(x + sx * L, y);
-    }
-    g.stroke();
-
+    // 底下的虚化压暗在着色器里做，这里只画文字
     const cx = pn.w / 2;
     // 顶部小字
     if (state.eyebrow.trim()) {
@@ -907,6 +898,10 @@ uniform vec3 uEye;
 uniform vec3 uKey;
 uniform vec4 uPoint;
 uniform vec3 uSweep;
+uniform vec3 uSpotPos[3];
+uniform vec3 uSpotDir[3];
+uniform vec3 uSpotCfg[3];
+uniform float uAmb;
 in vec3 vW; in vec3 vN; in vec2 vUV; in vec2 vL; in vec2 vSize; in float vFace; in float vA; in float vE;
 layout(location=0) out vec4 o;
 layout(location=1) out vec4 oG;
@@ -929,13 +924,21 @@ void main() {
   vec3 Lp = normalize(uPoint.xyz - vW);
   float spec2 = pow(max(dot(N, normalize(Lp + V)), 0.0), 28.0) * uPoint.w;
   float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 4.0) * 0.22;
-  vec3 sheen = vec3(0.85, 0.92, 1.0) * (spec + spec2 + fres);
-  vec3 col = base * min(diff, 0.97) + sheen + edge * 0.2;
+  // 聚光灯：圆锥范围内照亮，卡片转到迎光方向时出现高光
+  float spot = 0.0, spotSpec = 0.0;
+  for (int i = 0; i < 3; i++) {
+    vec3 L = normalize(vW - uSpotPos[i]);
+    float cone = smoothstep(uSpotCfg[i].x, uSpotCfg[i].y, dot(L, uSpotDir[i])) * uSpotCfg[i].z;
+    spot += cone * max(dot(N, -L), 0.0);
+    spotSpec += cone * pow(max(dot(N, normalize(V - L)), 0.0), 50.0);
+  }
+  vec3 sheen = vec3(0.85, 0.92, 1.0) * (spec + spec2 + fres + spotSpec * 0.45);
+  vec3 col = base * (min(diff, 0.97) * uAmb + spot * 0.75) + sheen + edge * 0.2;
   float band = uSweep.z * exp(-pow((vW.x - vW.y * 0.35 - uSweep.x) / uSweep.y, 2.0));
   float glow = clamp(vE + band, 0.0, 1.0);
   col = mix(col, vec3(0.9, 0.95, 1.0), glow * 0.75);
   o = vec4(col, vA);
-  oG = vec4(vec3(0.85, 0.92, 1.0) * (spec + spec2) * 0.6 + vec3(0.5, 0.68, 1.0) * glow * 0.7, vA);
+  oG = vec4(vec3(0.85, 0.92, 1.0) * (spec + spec2 + spotSpec * 0.5) * 0.6 + vec3(0.5, 0.68, 1.0) * glow * 0.7, vA);
 }`,
     fsVS: `#version 300 es
 out vec2 vUV;
@@ -959,43 +962,36 @@ uniform mat4 uVP;
 uniform vec4 uRect;
 out vec2 vUV;
 void main() { vUV = vec2(aQ.x, 1.0 - aQ.y); gl_Position = uVP * vec4(uRect.x + (aQ.x - 0.5) * uRect.z, uRect.y + (aQ.y - 0.5) * uRect.w, ${PANEL_Z.toFixed(1)}, 1.0); }`,
-    panelFS: `#version 300 es
+    hazeFS: `#version 300 es
 precision highp float;
-uniform sampler2D uTex;
 uniform sampler2D uFrost;
 uniform vec2 uRes;
-uniform vec4 uBox;
-uniform float uSheen;
+uniform vec4 uAxes;
 in vec2 vUV;
 layout(location=0) out vec4 o;
 layout(location=1) out vec4 oG;
 void main() {
-  // 面板本地坐标（版面像素），圆角矩形距离场
-  vec2 p = vUV * (uBox.xy + 2.0 * uBox.z) - uBox.z;
-  vec2 q = abs(p - uBox.xy * 0.5) - (uBox.xy * 0.5 - uBox.w);
-  float sdf = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - uBox.w;
-  float aa = max(fwidth(sdf), 1e-3);
-  float inside = 1.0 - smoothstep(-aa, aa, sdf);
-
-  // 毛玻璃：取墙面模糊后的颜色，压成深蓝
+  // 文字后面的墙面：虚化、压暗，向外柔和过渡，没有边框
+  vec2 p = (vUV - 0.5) * uAxes.zw;
+  vec2 r = abs(p) / uAxes.xy;
+  float e = pow(pow(r.x, 4.0) + pow(r.y, 4.0), 0.25);
+  float m = 1.0 - smoothstep(0.58, 1.0, e);
   vec3 frost = texture(uFrost, gl_FragCoord.xy / uRes).rgb;
-  vec3 glass = mix(frost * vec3(0.55, 0.66, 0.95), vec3(0.02, 0.06, 0.25), 0.66);
-  float gy = clamp(p.y / uBox.y, 0.0, 1.0);
-  glass += vec3(0.08, 0.12, 0.22) * (1.0 - smoothstep(0.0, 0.55, gy));
-  glass += vec3(0.4, 0.58, 1.0) * exp(min(sdf, 0.0) / 4.0) * 0.16;
-  glass += 0.08 * exp(-pow((vUV.x + vUV.y * 0.45 - uSheen) / 0.09, 2.0));
-  float border = 1.0 - smoothstep(0.5 * aa, 1.2 * aa + 0.7, abs(sdf + 0.7));
-  vec3 col = mix(glass, vec3(0.8, 0.88, 1.0), border * 0.75);
+  vec3 col = mix(frost * vec3(0.5, 0.6, 0.9), vec3(0.015, 0.045, 0.18), 0.6);
+  o = vec4(col, m * 0.9);
+  oG = vec4(0.0, 0.0, 0.0, m * 0.9);
+}`,
+    panelFS: `#version 300 es
+precision highp float;
+uniform sampler2D uTex;
+in vec2 vUV;
+layout(location=0) out vec4 o;
+layout(location=1) out vec4 oG;
+void main() {
   vec4 t = texture(uTex, vUV);
-  col = mix(col, t.rgb, t.a);
-
-  // 外面一圈柔和的投影，让面板浮在墙上
-  float alpha = max(inside, border * 0.75);
-  float sh = 0.55 * exp(-max(sdf, 0.0) / 12.0) * (1.0 - smoothstep(uBox.z * 0.55, uBox.z, sdf)) * (1.0 - alpha);
-  vec3 rgb = (col * alpha + vec3(0.0, 0.01, 0.05) * sh) / max(alpha + sh, 1e-4);
-  o = vec4(rgb, alpha + sh);
   float l = dot(t.rgb, vec3(0.299, 0.587, 0.114));
-  oG = vec4(t.rgb * t.a * smoothstep(0.86, 1.0, l) * 0.3 + vec3(0.55, 0.72, 1.0) * border * 0.2, alpha + sh);
+  o = t;
+  oG = vec4(t.rgb * smoothstep(0.86, 1.0, l) * 0.3, t.a);
 }`,
     dustVS: `#version 300 es
 layout(location=0) in vec4 aP;
@@ -1004,6 +1000,9 @@ uniform mat4 uVP;
 uniform float uScale;
 uniform float uTime;
 uniform float uFade;
+uniform vec3 uSpotPos[3];
+uniform vec3 uSpotDir[3];
+uniform vec3 uSpotCfg[3];
 out float vA;
 void main() {
   vec3 p = aP.xyz;
@@ -1012,7 +1011,9 @@ void main() {
   vec4 c = uVP * vec4(p, 1.0);
   gl_Position = c;
   gl_PointSize = clamp(aP.w * uScale / c.w, 1.0, 90.0);
-  vA = (0.25 + 0.5 * aT.y) * (0.55 + 0.45 * sin(uTime * (0.8 + aT.y) + aT.x * 6.28)) * smoothstep(60.0, 420.0, c.w) * uFade;
+  float lit = 0.0;
+  for (int i = 0; i < 3; i++) lit += smoothstep(uSpotCfg[i].x, uSpotCfg[i].y, dot(normalize(p - uSpotPos[i]), uSpotDir[i])) * uSpotCfg[i].z;
+  vA = (0.25 + 0.5 * aT.y) * (0.55 + 0.45 * sin(uTime * (0.8 + aT.y) + aT.x * 6.28)) * smoothstep(60.0, 420.0, c.w) * uFade * (0.45 + 2.2 * lit);
 }`,
     dustFS: `#version 300 es
 precision highp float;
@@ -1085,7 +1086,7 @@ void main() {
       return { p, u };
     };
     const P = {
-      card: prog(SH.cardVS, SH.cardFS), bg: prog(SH.fsVS, SH.bgFS), panel: prog(SH.panelVS, SH.panelFS),
+      card: prog(SH.cardVS, SH.cardFS), bg: prog(SH.fsVS, SH.bgFS), panel: prog(SH.panelVS, SH.panelFS), haze: prog(SH.panelVS, SH.hazeFS),
       dust: prog(SH.dustVS, SH.dustFS), copy: prog(SH.fsVS, SH.copyFS), blur: prog(SH.fsVS, SH.blurFS), comp: prog(SH.fsVS, SH.compFS),
     };
 
@@ -1366,6 +1367,15 @@ void main() {
     const sweepOn = sw > 0 && sw < 1 ? Math.sin(Math.PI * sw) : 0;
     gl.uniform4f(cu.uPoint, sweepX, 160, 340, 0.85 * sweepOn);
     gl.uniform3f(cu.uSweep, sweepX, 120, 0.55 * sweepOn);
+    const spots = spotsAt(t);
+    G.spots = spots;
+    const setSpots = (u) => {
+      gl.uniform3fv(u['uSpotPos[0]'], spots.flatMap((sp) => sp.src));
+      gl.uniform3fv(u['uSpotDir[0]'], spots.flatMap((sp) => sp.dir));
+      gl.uniform3fv(u['uSpotCfg[0]'], spots.flatMap((sp) => [Math.cos(sp.outer), Math.cos(sp.inner), sp.k]));
+    };
+    setSpots(cu);
+    gl.uniform1f(cu.uAmb, spots.amb);
     gl.uniform4fv(cu.uBack, G.uv.back);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, G.atlasTex);
@@ -1403,29 +1413,12 @@ void main() {
     blur(T.q1, T.q2, 2.0);
     blur(T.q1, T.q2, 3.0);
 
-    // 面板：浮在墙前的毛玻璃，写深度，挡住它后面的残影
     gl.bindFramebuffer(gl.FRAMEBUFFER, T.ms);
     gl.viewport(0, 0, T.w, T.h);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    gl.useProgram(P.panel.p);
-    const pn = plan.panel;
-    const shrink = (DIST - PANEL_Z) / DIST;   // 正面看时面板边缘刚好对齐格子线
-    const pu = P.panel.u;
-    gl.uniformMatrix4fv(pu.uVP, false, vp);
-    gl.uniform4f(pu.uRect, (pn.x + pn.w / 2 - CX) * shrink, (CY - pn.y - pn.h / 2) * shrink, (pn.w + PANEL_PAD * 2) * shrink, (pn.h + PANEL_PAD * 2) * shrink);
-    gl.uniform4f(pu.uBox, pn.w, pn.h, PANEL_PAD, 18);
-    gl.uniform2f(pu.uRes, T.w, T.h);
-    gl.uniform1f(pu.uSheen, lerp(-0.3, 1.35, clamp01((cam.eye[0] + 420) / 840)));
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, G.panelTex);
-    gl.uniform1i(pu.uTex, 1);
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, T.q1.tex);
-    gl.uniform1i(pu.uFrost, 2);
-    gl.bindVertexArray(G.quadVAO);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.depthMask(false);
 
     // 残影、淡入中的卡片
     if (trans.length) {
@@ -1433,11 +1426,36 @@ void main() {
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, G.atlasTex);
       gl.bindVertexArray(G.cardVAO);
-      gl.depthMask(false);
       gl.bindBuffer(gl.ARRAY_BUFFER, G.inst);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, G.instData.subarray(solid.length * 16, all.length * 16));
       gl.drawElementsInstanced(gl.TRIANGLES, G.nIdx, gl.UNSIGNED_SHORT, 0, trans.length);
     }
+
+    // 文字后面的虚化压暗区（浮在墙前），再贴文字
+    const pn = plan.panel;
+    const shrink = (DIST - PANEL_Z) / DIST;
+    const pcx = (pn.x + pn.w / 2 - CX) * shrink, pcy = (CY - pn.y - pn.h / 2) * shrink;
+    const hw = pn.w + 360, hh = pn.h + 260;
+    gl.useProgram(P.haze.p);
+    const hu = P.haze.u;
+    gl.uniformMatrix4fv(hu.uVP, false, vp);
+    gl.uniform4f(hu.uRect, pcx, pcy, hw * shrink, hh * shrink);
+    gl.uniform4f(hu.uAxes, pn.w / 2 + 150, pn.h / 2 + 105, hw, hh);
+    gl.uniform2f(hu.uRes, T.w, T.h);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, T.q1.tex);
+    gl.uniform1i(hu.uFrost, 2);
+    gl.bindVertexArray(G.quadVAO);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.useProgram(P.panel.p);
+    const pu = P.panel.u;
+    gl.uniformMatrix4fv(pu.uVP, false, vp);
+    gl.uniform4f(pu.uRect, pcx, pcy, (pn.w + PANEL_PAD * 2) * shrink, (pn.h + PANEL_PAD * 2) * shrink);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, G.panelTex);
+    gl.uniform1i(pu.uTex, 1);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 
     // 光点
     if (state.fx) {
@@ -1447,6 +1465,7 @@ void main() {
       gl.uniform1f(P.dust.u.uScale, T.h / (2 * Math.tan(FOV / 2)));
       gl.uniform1f(P.dust.u.uTime, t);
       gl.uniform1f(P.dust.u.uFade, clamp01(t / T0));
+      setSpots(P.dust.u);
       gl.bindVertexArray(G.dustVAO);
       gl.drawArrays(gl.POINTS, 0, G.NDUST);
     }
@@ -1484,6 +1503,16 @@ void main() {
     gl.uniform2f(P.comp.u.uI, 0.5 + 0.35 * boost, 0.55 + 0.45 * boost);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindVertexArray(null);
+  }
+
+  // 世界坐标 → 版面坐标
+  function project(p) {
+    const m = G.vp;
+    const x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12];
+    const y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13];
+    const w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
+    if (w <= 1) return null;
+    return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H];
   }
 
   // ---- 二维叠加层：暗角、舞台光束、完成时的横向光和星光 ----
@@ -1524,30 +1553,64 @@ void main() {
     layers = { vignette, dotBlue: dot('200,222,255'), starBlue: star('150,195,255'), starOrange: star('255,170,60') };
   }
 
-  function drawBeams(t) {
+  // 聚光灯编排：开场两盏灯闪亮打开，计数时在墙上来回扫，到 1000 时分别停在标题左上、右上两侧，
+  // 同时第三盏主灯从上方打在标题后面；停留时轻轻摆动
+  function spotsAt(t) {
+    const on = state.spot ? 1 : 0;
     const d = t - plan.done;
-    const boost = d > 0 ? easeOutCubic(clamp01(d / 1.2)) : 0;
-    const a = (0.06 + 0.12 * boost) * clamp01(t / T0);
+    const conv = d > 0 ? easeInOutCubic(clamp01(d / 1.3)) : 0;
+    const power = easeOutCubic(clamp01((t - 0.35) / 0.9)) * (t < 1.25 ? 0.75 + 0.25 * Math.sign(Math.sin(t * 37)) : 1);
+    const sway = (amp, f, ph) => amp * Math.sin(t * f + ph);
+    const deg = Math.PI / 180;
+    const mk = (src, tgt, outer, inner, k) => {
+      const dir = V3.norm(V3.sub(tgt, src));
+      return { src, tgt, dir, outer: outer * deg, inner: inner * deg, k: k * on };
+    };
+    const list = [
+      mk([-980, 840, 520], [lerp(-320 + sway(380, 0.9, 0.3), -430 + sway(30, 0.5, 0), conv), lerp(60 + sway(150, 0.7, 1.2), 150 + sway(18, 0.6, 1), conv), 0],
+        lerp(9.5, 13, conv), lerp(5.5, 7.5, conv), 0.95 * power),
+      mk([980, 840, 520], [lerp(320 + sway(380, 0.8, 2.1), 430 + sway(30, 0.55, 2), conv), lerp(-30 + sway(150, 0.6, 0.4), 150 + sway(18, 0.5, 2.5), conv), 0],
+        lerp(9.5, 13, conv), lerp(5.5, 7.5, conv), 0.95 * power),
+      mk([0, 1050, 600], [sway(25, 0.4, 0), 30, 0], 16, 10, 0.4 * conv),
+    ];
+    list.amb = state.spot ? lerp(0.6, 0.68, conv) : 1;
+    return list;
+  }
+
+  // 光束：从画面上方的灯打到墙上的光斑，边缘柔和
+  function drawSpotBeams(spots) {
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
-    [0.1, 0.34, 0.66, 0.9].forEach((fx, i) => {
-      const sx = W * fx, sy = -80;
-      const tx = CX + (sx - CX) * 0.3 + Math.sin(t * 0.55 + i * 1.7) * 70, ty = H * 0.9;
-      const ang = Math.atan2(ty - sy, tx - sx), len = Math.hypot(tx - sx, ty - sy) * 1.1;
+    for (const sp of spots) {
+      if (sp.k <= 0.01) continue;
+      const a = project(sp.src), b = project(sp.tgt);
+      if (!a || !b) continue;
+      const dist = Math.hypot(...V3.sub(sp.tgt, sp.src));
+      const r = dist * Math.tan(sp.outer);
+      const b2 = project([sp.tgt[0] + r, sp.tgt[1], sp.tgt[2]]);
+      if (!b2) continue;
+      const rs = Math.hypot(b2[0] - b[0], b2[1] - b[1]);
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const alpha = 0.2 * sp.k;
       ctx.save();
-      ctx.translate(sx, sy);
-      ctx.rotate(ang);
-      const grad = ctx.createLinearGradient(0, 0, len, 0);
-      grad.addColorStop(0, `rgba(160,200,255,${a})`);
-      grad.addColorStop(0.7, `rgba(120,170,255,${a * 0.35})`);
-      grad.addColorStop(1, 'rgba(120,170,255,0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.moveTo(0, -6); ctx.lineTo(len, -150); ctx.lineTo(len, 150); ctx.lineTo(0, 6);
-      ctx.closePath();
-      ctx.fill();
+      ctx.translate(a[0], a[1]);
+      ctx.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
+      for (const [wm, am] of [[1.3, 0.3], [1.0, 0.45], [0.65, 0.6]]) {
+        const grad = ctx.createLinearGradient(0, 0, len, 0);
+        grad.addColorStop(0, `rgba(215,230,255,${alpha * am})`);
+        grad.addColorStop(0.8, `rgba(180,205,255,${alpha * am * 0.5})`);
+        grad.addColorStop(1, 'rgba(180,205,255,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, -5 * wm); ctx.lineTo(len, -rs * wm); ctx.lineTo(len, rs * wm); ctx.lineTo(0, 5 * wm);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
-    });
+      ctx.globalAlpha = 0.3 * sp.k;
+      ctx.drawImage(layers.dotBlue, b[0] - rs * 1.2, b[1] - rs * 0.9, rs * 2.4, rs * 1.8);
+      ctx.globalAlpha = 1;
+    }
     ctx.restore();
   }
 
@@ -1594,7 +1657,7 @@ void main() {
     ctx.drawImage(G.glc, 0, 0);
     ctx.drawImage(layers.vignette, 0, 0);
     ctx.setTransform(state.k, 0, 0, state.k, 0, 0);
-    if (state.fx) drawBeams(t);
+    if (state.spot) drawSpotBeams(G.spots);
     drawFlare(t);
     drawSparks(t);
     const intro = clamp01(t / T0);
@@ -1770,6 +1833,7 @@ void main() {
   $('physical').addEventListener('change', (e) => { state.physical = e.target.checked; applySize(); });
   $('loop').addEventListener('change', (e) => { state.loop = e.target.checked; });
   $('fx').addEventListener('change', (e) => { state.fx = e.target.checked; if (!state.playing) render(state.t); });
+  $('spot').addEventListener('change', (e) => { state.spot = e.target.checked; if (!state.playing) render(state.t); });
   $('speed').addEventListener('change', (e) => { state.span = SPANS[e.target.value]; stopAt(0); rebuild(false); });
   $('rows').addEventListener('change', (e) => { state.rows = Number(e.target.value); stopAt(0); rebuild(false); });
   $('plus').addEventListener('change', (e) => { state.plus = e.target.checked; rebuild(true); });
