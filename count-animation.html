@@ -169,10 +169,10 @@ kbd {
           <option value="10">超密（10 行）</option>
         </select>
       </label>
-      <label class="field">墙面色调
-        <select id="tone">
-          <option value="brand" selected>品牌蓝调（推荐）</option>
-          <option value="natural">照片原色</option>
+      <label class="field">整体风格
+        <select id="theme">
+          <option value="light" selected>明亮（推荐）</option>
+          <option value="dark">深色舞台</option>
         </select>
       </label>
       <label class="field">计数到
@@ -229,16 +229,33 @@ kbd {
   const PANEL_Z = 40;                    // 玻璃面板浮在墙前，镜头移动时有前后层次
   const PANEL_PAD = 36;
 
-  const C = {
-    orange: '#f89e02',
-    white: [[0, '#ffffff'], [0.55, '#f1f6ff'], [1, '#bfd3ff']],
-    plus: [[0, '#ffd27a'], [1, '#f88c02']],
-    numGlow: 'rgba(80,160,255,0.6)',
-    plusGlow: 'rgba(255,150,30,0.5)',
-    soft: '#a9c6ff',
-    track: 'rgba(150,195,255,0.22)',
-    vignette: '1,4,22',
+  // 两套整体风格。明亮：浅色舞台、照片原色、品牌蓝大字（和学生海报同一套配色）；深色：蓝色舞台、聚光灯
+  const THEMES = {
+    light: {
+      bg: [[0.975, 0.982, 0.992], [0.91, 0.935, 0.965], [0.78, 0.83, 0.9]],
+      slot: ['#dfe6ef', '#c9d4e2'],
+      haze: { mul: [1, 1, 1], tint: [0.97, 0.978, 0.995], amt: 0.8, a: 0.93 },
+      num: [[0, '#3a5bff'], [0.5, '#1733d6'], [1, '#0418a8']], numShadow: { color: 'rgba(3,21,167,0.22)', blur: 18, y: 8 },
+      plus: [[0, '#ffc35a'], [1, '#f88c02']], plusShadow: { color: 'rgba(240,130,0,0.28)', blur: 14, y: 6 },
+      tag: [[0, '#13238f'], [1, '#0a1670']], tagShadow: null,
+      eyebrow: '#2b3f94', en: '#5a6b9e', track: 'rgba(3,21,167,0.14)',
+      vignette: ['110,130,170', 0.1, 0.36], fade: '246,249,252',
+      grade: 0, amb: [0.98, 0.98], spot: 0.32, beam: 0.35, dust: 0.25, bloom: 0.35, flare: 0,
+    },
+    dark: {
+      bg: [[0.05, 0.17, 0.6], [0.025, 0.08, 0.35], [0.006, 0.025, 0.12]],
+      slot: ['#081650', '#183080'],
+      haze: { mul: [0.45, 0.55, 0.9], tint: [0.012, 0.04, 0.16], amt: 0.62, a: 0.85 },
+      num: [[0, '#ffffff'], [0.55, '#f1f6ff'], [1, '#bfd3ff']], numShadow: { color: 'rgba(80,160,255,0.6)', blur: 22, y: 0 },
+      plus: [[0, '#ffd27a'], [1, '#f88c02']], plusShadow: { color: 'rgba(255,150,30,0.5)', blur: 22, y: 0 },
+      tag: [[0, '#ffffff'], [0.55, '#f1f6ff'], [1, '#bfd3ff']], tagShadow: { color: 'rgba(20,60,200,0.8)', blur: 12, y: 2 },
+      eyebrow: '#a9c6ff', en: '#a9c6ff', track: 'rgba(150,195,255,0.22)',
+      vignette: ['1,4,22', 0.35, 0.85], fade: '0,0,0',
+      grade: 0.88, amb: [0.74, 0.8], spot: 1, beam: 1, dust: 1, bloom: 1, flare: 1,
+    },
   };
+  const C = { orange: '#f89e02' };
+  let TH = THEMES.light;
   const FONT_NUM = '"SV Num", "Arial Black", sans-serif';
   const FONT_TEXT = '"SV Latin", "SV Sans", "Microsoft YaHei", "PingFang SC", sans-serif';
 
@@ -273,7 +290,7 @@ kbd {
     plus: true,
     fx: true,
     spot: true,
-    tone: 'brand',
+    theme: 'light',
     loop: false,
     span: SPANS.normal,
     out: { w: 1280, h: 720 },
@@ -715,7 +732,7 @@ kbd {
     const m = probe.measureText(ch);
     const asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
     const left = m.actualBoundingBoxLeft, right = m.actualBoundingBoxRight;
-    const pad = (o.shadow ? o.shadow.blur * 1.6 + Math.abs(o.shadow.y) : 0) + 4;
+    const pad = (o.shadow ? o.shadow.blur * 1.6 + Math.abs(o.shadow.y) : 0) + 4 + size * 0.12;   // 多留一点边，有些系统量出的字形边界偏小，会切掉笔画
     const w = left + right + pad * 2, h = asc + desc + pad * 2;
     const c = makeCanvas(w * res, h * res);
     const g = c.getContext('2d');
@@ -773,19 +790,19 @@ kbd {
 
   function buildSprites() {
     const pn = plan.panel;
-    const res = state.k * 1.35;   // 开场镜头离得近，面板文字按略高的分辨率准备
+    const res = state.k;   // 最后一帧面板正好 1:1 显示；开场镜头更近时只放大，不会因为缩小丢笔画
     const probe = makeCanvas(4, 4).getContext('2d');
     probe.font = `900 ${NUM_SIZE}px ${FONT_NUM}`;
     const capH = probe.measureText('0').actualBoundingBoxAscent;
     const num = {};
-    for (const ch of '0123456789') num[ch] = makeGlyph(ch, FONT_NUM, NUM_SIZE, res, { weight: 900, stops: C.white, capH, shadow: { color: C.numGlow, blur: 22, y: 0 } });
-    num['+'] = makeGlyph('+', FONT_NUM, NUM_SIZE, res, { weight: 900, stops: C.plus, shadow: { color: C.plusGlow, blur: 22, y: 0 } });
+    for (const ch of '0123456789') num[ch] = makeGlyph(ch, FONT_NUM, NUM_SIZE, res, { weight: 900, stops: TH.num, capH, shadow: TH.numShadow });
+    num['+'] = makeGlyph('+', FONT_NUM, NUM_SIZE, res, { weight: 900, stops: TH.plus, shadow: TH.plusShadow });
 
     sprites = {
       num, capH, res,
-      eyebrow: makeLine(state.eyebrow, FONT_TEXT, 15, 700, res, { fill: C.soft }),
-      tag: makeLine(state.tagline, FONT_TEXT, Math.round(pn.h * 0.095), 900, res, { stops: C.white, shadow: { color: 'rgba(20,60,200,0.8)', blur: 12, y: 2 } }),
-      en: makeLine(state.english, FONT_TEXT, 12.5, 600, res, { fill: C.soft }),
+      eyebrow: makeLine(state.eyebrow, FONT_TEXT, 15, 600, res, { fill: TH.eyebrow }),
+      tag: makeLine(state.tagline, FONT_TEXT, Math.round(pn.h * 0.095), 900, res, { stops: TH.tag, shadow: TH.tagShadow }),
+      en: makeLine(state.english, FONT_TEXT, 12.5, 600, res, { fill: TH.en }),
     };
     const D = String(state.target).length;
     const lead = Number(String(state.target)[0]);
@@ -866,7 +883,7 @@ kbd {
     // 进度条：随卡片落位填满，完成后变成分隔线
     const by = pn.h * 0.655, bw = pn.w * 0.5;
     g.globalAlpha = intro;
-    g.fillStyle = C.track;
+    g.fillStyle = TH.track;
     g.fillRect(cx - bw / 2, by - 1, bw, 2);
     g.fillStyle = addStops(g.createLinearGradient(cx - bw / 2, 0, cx + bw / 2, 0), [[0, 'rgba(248,158,2,0.2)'], [1, C.orange]]);
     g.fillRect(cx - bw / 2, by - 1.5, bw * prog, 3);
@@ -965,11 +982,12 @@ precision highp float;
 in vec2 vUV;
 layout(location=0) out vec4 o;
 layout(location=1) out vec4 oG;
+uniform vec3 uBg[3];
 void main() {
   vec2 d = (vUV - vec2(0.5, 0.52)) * vec2(1.0, 0.62);
   float r = length(d) * 1.9;
-  vec3 c = mix(vec3(0.05, 0.17, 0.6), vec3(0.025, 0.08, 0.35), smoothstep(0.0, 0.55, r));
-  c = mix(c, vec3(0.006, 0.025, 0.12), smoothstep(0.45, 1.15, r));
+  vec3 c = mix(uBg[0], uBg[1], smoothstep(0.0, 0.55, r));
+  c = mix(c, uBg[2], smoothstep(0.45, 1.15, r));
   o = vec4(c, 1.0);
   oG = vec4(0.0);
 }`,
@@ -984,19 +1002,20 @@ precision highp float;
 uniform sampler2D uFrost;
 uniform vec2 uRes;
 uniform vec4 uAxes;
+uniform vec3 uHaze[3];
 in vec2 vUV;
 layout(location=0) out vec4 o;
 layout(location=1) out vec4 oG;
 void main() {
-  // 文字后面的墙面：虚化、压暗，向外柔和过渡，没有边框
+  // 文字后面的墙面：虚化后压成深色（深色风格）或提成白雾（明亮风格），向外柔和过渡，没有边框
   vec2 p = (vUV - 0.5) * uAxes.zw;
   vec2 r = abs(p) / uAxes.xy;
   float e = pow(pow(r.x, 4.0) + pow(r.y, 4.0), 0.25);
   float m = 1.0 - smoothstep(0.58, 1.0, e);
   vec3 frost = texture(uFrost, gl_FragCoord.xy / uRes).rgb;
-  vec3 col = mix(frost * vec3(0.45, 0.55, 0.9), vec3(0.012, 0.04, 0.16), 0.62);
-  o = vec4(col, m * 0.85);
-  oG = vec4(0.0, 0.0, 0.0, m * 0.85);
+  vec3 col = mix(frost * uHaze[0], uHaze[1], uHaze[2].x);
+  o = vec4(col, m * uHaze[2].y);
+  oG = vec4(0.0, 0.0, 0.0, m * uHaze[2].y);
 }`,
     panelFS: `#version 300 es
 precision highp float;
@@ -1206,7 +1225,7 @@ void main() {
   function buildAtlas() {
     const gl = G.gl;
     const items = [...state.students.map((it) => ({ it, focus: 0.3 })), ...state.sheets.map((it) => ({ it, focus: 0.12 }))];
-    const count = items.length + 2;
+    const count = items.length + 3;
     const max = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE));
     const gut = 4;
     let tw = 256, th, cols, rows;
@@ -1235,13 +1254,15 @@ void main() {
       if (i >= state.students.length) { g.fillStyle = 'rgba(14,28,90,0.16)'; g.fillRect(x, y, tw, th); }
     }));
     place(items.length, (x, y) => g.drawImage(makeCardBack(tw, th), x, y));
-    place(items.length + 1, (x, y) => {
-      g.fillStyle = '#081650';
-      g.fillRect(x, y, tw, th);
-      g.strokeStyle = '#183080';
-      g.lineWidth = Math.max(2, tw * 0.02);
-      g.strokeRect(x + g.lineWidth / 2, y + g.lineWidth / 2, tw - g.lineWidth, th - g.lineWidth);
-    });
+    for (const [i, th2] of [[items.length + 1, THEMES.dark], [items.length + 2, THEMES.light]]) {
+      place(i, (x, y) => {
+        g.fillStyle = th2.slot[0];
+        g.fillRect(x, y, tw, th);
+        g.strokeStyle = th2.slot[1];
+        g.lineWidth = Math.max(2, tw * 0.02);
+        g.strokeRect(x + g.lineWidth / 2, y + g.lineWidth / 2, tw - g.lineWidth, th - g.lineWidth);
+      });
+    }
 
     if (G.atlasTex) gl.deleteTexture(G.atlasTex);
     const tex = gl.createTexture();
@@ -1254,11 +1275,11 @@ void main() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     if (G.aniso) gl.texParameterf(gl.TEXTURE_2D, G.aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, gl.getParameter(G.aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     G.atlasTex = tex;
-    const sl = uvs[items.length + 1];
-    const cx = (sl[0] + sl[2]) / 2, cy = (sl[1] + sl[3]) / 2;
+    const centre = (u) => { const cx = (u[0] + u[2]) / 2, cy = (u[1] + u[3]) / 2; return [cx - 0.0005, cy - 0.0005, cx + 0.0005, cy + 0.0005]; };
+    const sl = uvs[items.length + 1], slL = uvs[items.length + 2];
     G.uv = {
       student: uvs.slice(0, state.students.length), sheet: uvs.slice(state.students.length, items.length),
-      back: uvs[items.length], slot: sl, wall: [cx - 0.0005, cy - 0.0005, cx + 0.0005, cy + 0.0005],
+      back: uvs[items.length], slot: sl, wall: centre(sl), slotLight: slL, wallLight: centre(slL),
     };
     G.atlasFor = [state.students, state.sheets];
   }
@@ -1326,10 +1347,12 @@ void main() {
 
     // —— 本帧要画的卡片：不透明的一批 + 半透明的一批（残影、淡入） ——
     const solid = [], trans = [];
-    const tone = state.tone === 'brand' ? 0.88 : 0;   // 墙面调色强度；飞行中保留大部分原色，落墙后融进蓝调
+    const tone = TH.grade;   // 墙面调色强度（深色风格调成蓝调）；飞行中保留大部分原色，落墙后融进去
     const flyTone = tone * 0.45;
-    solid.push([[0, 0, -11], 1, IDQ, W + 16, H + 16, 18, 0, G.uv.wall, 0]);   // 墙体：有厚度的深色大屏
-    for (const c of plan.cells) solid.push([[c.X, c.Y, -1.5], 1, IDQ, cw, ch, 0.6, 0, G.uv.slot, 0]);
+    const slot = state.theme === 'light' ? G.uv.slotLight : G.uv.slot;
+    const wallUV = state.theme === 'light' ? G.uv.wallLight : G.uv.wall;
+    solid.push([[0, 0, -11], 1, IDQ, W + 16, H + 16, 18, 0, wallUV, 0]);   // 墙体：有厚度的大屏
+    for (const c of plan.cells) solid.push([[c.X, c.Y, -1.5], 1, IDQ, cw, ch, 0.6, 0, slot, 0]);
     const sw = (t - plan.sweep) / 1.6;
     const sweepX = sw > 0 && sw < 1 ? lerp(-900, 900, easeInOutSine(sw)) : -5000;
     for (const cd of plan.cards) {
@@ -1374,6 +1397,7 @@ void main() {
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.useProgram(P.bg.p);
+    gl.uniform3fv(P.bg.u['uBg[0]'], TH.bg.flat());
     gl.bindVertexArray(G.emptyVAO);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
@@ -1462,6 +1486,7 @@ void main() {
     gl.uniform4f(hu.uRect, pcx, pcy, hw * shrink, hh * shrink);
     gl.uniform4f(hu.uAxes, pn.w / 2 + 150, pn.h / 2 + 105, hw, hh);
     gl.uniform2f(hu.uRes, T.w, T.h);
+    gl.uniform3fv(hu['uHaze[0]'], [...TH.haze.mul, ...TH.haze.tint, TH.haze.amt, TH.haze.a, 0]);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, T.q1.tex);
     gl.uniform1i(hu.uFrost, 2);
@@ -1484,7 +1509,7 @@ void main() {
       gl.uniformMatrix4fv(P.dust.u.uVP, false, vp);
       gl.uniform1f(P.dust.u.uScale, T.h / (2 * Math.tan(FOV / 2)));
       gl.uniform1f(P.dust.u.uTime, t);
-      gl.uniform1f(P.dust.u.uFade, clamp01(t / T0));
+      gl.uniform1f(P.dust.u.uFade, clamp01(t / T0) * TH.dust);
       setSpots(P.dust.u);
       gl.bindVertexArray(G.dustVAO);
       gl.drawArrays(gl.POINTS, 0, G.NDUST);
@@ -1520,7 +1545,7 @@ void main() {
       gl.bindTexture(gl.TEXTURE_2D, tex[i]);
       gl.uniform1i(P.comp.u[n], i);
     });
-    gl.uniform2f(P.comp.u.uI, 0.5 + 0.35 * boost, 0.55 + 0.45 * boost);
+    gl.uniform2f(P.comp.u.uI, (0.5 + 0.35 * boost) * TH.bloom, (0.55 + 0.45 * boost) * TH.bloom);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindVertexArray(null);
   }
@@ -1545,7 +1570,7 @@ void main() {
     g.translate(CX, CY);
     g.scale(1.55, 1);
     g.fillStyle = addStops(g.createRadialGradient(0, 0, 230, 0, 0, 560), [
-      [0, `rgba(${C.vignette},0)`], [0.6, `rgba(${C.vignette},0.35)`], [1, `rgba(${C.vignette},0.85)`],
+      [0, `rgba(${TH.vignette[0]},0)`], [0.6, `rgba(${TH.vignette[0]},${TH.vignette[1]})`], [1, `rgba(${TH.vignette[0]},${TH.vignette[2]})`],
     ]);
     g.fillRect(-W, -H, W * 2, H * 2);
 
@@ -1584,7 +1609,7 @@ void main() {
     const deg = Math.PI / 180;
     const mk = (src, tgt, outer, inner, k) => {
       const dir = V3.norm(V3.sub(tgt, src));
-      return { src, tgt, dir, outer: outer * deg, inner: inner * deg, k: k * on };
+      return { src, tgt, dir, outer: outer * deg, inner: inner * deg, k: k * on * TH.spot };
     };
     const list = [
       mk([-980, 840, 520], [lerp(-320 + sway(380, 0.9, 0.3), -430 + sway(30, 0.5, 0), conv), lerp(60 + sway(150, 0.7, 1.2), 150 + sway(18, 0.6, 1), conv), 0],
@@ -1593,7 +1618,7 @@ void main() {
         lerp(9.5, 13, conv), lerp(5.5, 7.5, conv), 0.95 * power),
       mk([0, 1050, 600], [sway(25, 0.4, 0), 30, 0], 16, 10, 0.4 * conv),
     ];
-    list.amb = state.spot ? lerp(0.74, 0.8, conv) : 0.95;
+    list.amb = state.spot ? lerp(TH.amb[0], TH.amb[1], conv) : 0.95;
     return list;
   }
 
@@ -1611,7 +1636,7 @@ void main() {
       if (!b2) continue;
       const rs = Math.hypot(b2[0] - b[0], b2[1] - b[1]);
       const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      const alpha = 0.2 * sp.k;
+      const alpha = 0.2 * sp.k * TH.beam / TH.spot;
       ctx.save();
       ctx.translate(a[0], a[1]);
       ctx.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
@@ -1678,11 +1703,11 @@ void main() {
     ctx.drawImage(layers.vignette, 0, 0);
     ctx.setTransform(state.k, 0, 0, state.k, 0, 0);
     if (state.spot) drawSpotBeams(G.spots);
-    drawFlare(t);
+    if (TH.flare) drawFlare(t);
     drawSparks(t);
     const intro = clamp01(t / T0);
     if (intro < 1) {
-      ctx.fillStyle = `rgba(0,0,0,${1 - easeInOutSine(intro)})`;
+      ctx.fillStyle = `rgba(${TH.fade},${1 - easeInOutSine(intro)})`;
       ctx.fillRect(0, 0, W, H);
     }
   }
@@ -1854,7 +1879,12 @@ void main() {
   $('loop').addEventListener('change', (e) => { state.loop = e.target.checked; });
   $('fx').addEventListener('change', (e) => { state.fx = e.target.checked; if (!state.playing) render(state.t); });
   $('spot').addEventListener('change', (e) => { state.spot = e.target.checked; if (!state.playing) render(state.t); });
-  $('tone').addEventListener('change', (e) => { state.tone = e.target.value; if (!state.playing) render(state.t); });
+  $('theme').addEventListener('change', (e) => {
+    state.theme = e.target.value;
+    TH = THEMES[state.theme];
+    buildLayers();
+    rebuild(true);
+  });
   $('speed').addEventListener('change', (e) => { state.span = SPANS[e.target.value]; stopAt(0); rebuild(false); });
   $('rows').addEventListener('change', (e) => { state.rows = Number(e.target.value); stopAt(0); rebuild(false); });
   $('plus').addEventListener('change', (e) => { state.plus = e.target.checked; rebuild(true); });
