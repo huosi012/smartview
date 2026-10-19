@@ -75,7 +75,7 @@ def draw_plan_body(v, show_platform=True, show_site=True, show_beams=True, label
     # 坑底分水线（中线）
     v.line((0, 0), (L, 0), "S-HIDE")
     if show_platform:
-        v.rect(25, -1585, L - 25, 1585, "S-HIDE2")
+        v.rect(25, -PLAT_Y, L - 25, PLAT_Y, "S-HIDE2")
     if not show_site:
         return
     # 引道板
@@ -92,18 +92,20 @@ def draw_plan_body(v, show_platform=True, show_site=True, show_beams=True, label
                   (REPL_X[1], APP_REPL_Y)], "S-HIDE2")
     # 集水坑排水管 DN150
     for s in (1, -1):
-        v.line((AX[2], s * SUMP[3]), (AX[2], s * 3550), "S-PIPE")
+        v.line((AX[2], s * SUMP[3]), (AX[2], s * (Y_OUT + 1200)), "S-PIPE")
     # 电缆穿线管（②轴 -Y 侧检修口）
-    cx, cy = AX[1] + 300, -1975
+    cx, cy = AX[1] + 300, -(Y_OPEN_OUT - 175)
     v.circle((cx, cy), 40, "S-STEEL")
-    v.pl([(cx, cy), (cx, -4300)], "S-PIPE")
+    v.pl([(cx, cy), (cx, -(Y_OUT + 1950))], "S-PIPE")
     # 接地极及接地扁钢
+    yj = -(Y_OUT + 1650)
     for xj, xw in ((-1200, X_LEFT), (L + 1200, X_RIGHT)):
-        v.circle((xj, -4000), 120, "S-STEEL")
-        v.line((xj - 120, -4000), (xj + 120, -4000), "S-STEEL")
-        v.line((xj, -4120), (xj, -3880), "S-STEEL")
+        v.circle((xj, yj), 120, "S-STEEL")
+        v.line((xj - 120, yj), (xj + 120, yj), "S-STEEL")
+        v.line((xj, yj - 120), (xj, yj + 120), "S-STEEL")
         xa = -60 if xw < 0 else L + 60
-        v.pl([(xj, -4000), (xj, -2600), (xw, -2600), (xw, -1500), (xa, -1500)], "S-HIDE2")
+        ya = ANGLE_Y[0] + 100
+        v.pl([(xj, yj), (xj, -(Y_OUT + 250)), (xw, -(Y_OUT + 250)), (xw, ya), (xa, ya)], "S-HIDE2")
 
 
 def end_dims(v, y, by):
@@ -115,7 +117,7 @@ def end_dims(v, y, by):
     v.dimh(L, X_RIGHT, y, by, ext=3, tx=X_RIGHT - 200)
 
 
-def plan_axes(v, y_bub=5300, y_bub_b=6200, x_bub_l=-8700, x_bub_r=28700, ext=4500):
+def plan_axes(v, y_bub=Y_OUT + 2950, y_bub_b=Y_OUT + 3850, x_bub_l=-8700, x_bub_r=28700, ext=Y_OUT + 2150):
     for x, lb in zip(AX, AX_LABEL):
         v.line((x, -ext), (x, ext), "S-AXIS")
         for s, yb in ((1, y_bub), (-1, y_bub_b)):
@@ -136,22 +138,23 @@ def plan_view(v):
 
     # ---------- 尺寸 ----------
     # 下方：第一道（端墙、传感器轴线），第二道（护边角钢间距、引道），第三道（总长）
-    end_dims(v, -Y_OUT, -4500)
-    v.dimh(0, L, -Y_OUT, -5000, "20050※(两护边角钢间距)", ext=3, tx=7000)
-    v.dimh(APP[0][0], APP[0][1], -APP_Y, -5000, ext=3)
-    v.dimh(APP[1][0], APP[1][1], -APP_Y, -5000, ext=3)
-    v.dimh(X_LEFT, X_RIGHT, -Y_OUT, -5500, ext=3, tx=7000)
+    d1, d2, d3 = -(Y_OUT + 2150), -(Y_OUT + 2650), -(Y_OUT + 3150)
+    end_dims(v, -Y_OUT, d1)
+    v.dimh(0, L, -Y_OUT, d2, "20050※(两护边角钢间距)", ext=3, tx=7000)
+    v.dimh(APP[0][0], APP[0][1], -APP_Y, d2, ext=3)
+    v.dimh(APP[1][0], APP[1][1], -APP_Y, d2, ext=3)
+    v.dimh(X_LEFT, X_RIGHT, -Y_OUT, d3, ext=3, tx=7000)
     # 上方：检修口定位、墩梁/凸出部分定位
     xs2 = [X_LEFT]
     for x1, x2 in OPEN:
         xs2 += [x1, x2]
     xs2 = sorted(set(xs2 + [X_RIGHT]))
-    v.chainh(xs2, Y_OUT, 4400, ext=3, avoid=AX)
+    v.chainh(xs2, Y_OUT, Y_OUT + 2050, ext=3, avoid=AX)
     xs3 = [X_LEFT, 1000, 4425, 5625, 9425, 10625, 14425, 15625, 19050, X_RIGHT]
-    v.chainh(xs3, Y_OUT, 3900, ext=3, avoid=AX)
+    v.chainh(xs3, Y_OUT, Y_OUT + 1550, ext=3, avoid=AX)
     # 左侧：横向
-    ys1 = [-Y_OUT, -Y_OPEN_OUT, -B_HALF, -1300, 1300, B_HALF, Y_OPEN_OUT, Y_OUT]
-    v.chainv(ys1, X_LEFT, -7700, [None, None, None, "2600※", None, None, None], ext=3)
+    ys1 = [-Y_OUT, -Y_OPEN_OUT, -B_HALF, AY[0], AY[1], B_HALF, Y_OPEN_OUT, Y_OUT]
+    v.chainv(ys1, X_LEFT, -7700, [None, None, None, f"{AY[1] - AY[0]}※", None, None, None], ext=3)
     v.chainv([-Y_WALL, -B_HALF, B_HALF, Y_WALL], X_LEFT, -8200, ext=3)
     # 右侧：换填范围
     v.chainv([-REPL_Y, -Y_OUT, Y_OUT, REPL_Y], REPL_X[1], 27800, ext=3)
@@ -163,7 +166,7 @@ def plan_view(v):
         d = -1 if x1 < 0 else 1
         v.arrow((xm - d * 1600, -500), (xm + d * 1600, -500))
         v.text(xm, -850, "i=0.8%", 2.5)
-        v.text(xm, -2050, "引道下换填(底-1.500)", 2.5)
+        v.text(xm, -(APP_Y + 250), "引道下换填(底-1.500)", 2.5)
     # 坑底横坡及沟底纵坡
     v.text(2650, 300, "坑底-0.450(中线)", 2.5)
     for xm in ((AX[0] + AX[1]) / 2, (AX[1] + AX[2]) / 2, (AX[2] + AX[3]) / 2, (AX[3] + AX[4]) / 2):
@@ -172,38 +175,43 @@ def plan_view(v):
         v.text(xm - 850, 700, "i=1%", 2.2, "ML", rot=90)
     for xm, d in (((AX[1] + AX[2]) / 2 + 800, 1), ((AX[2] + AX[3]) / 2 + 800, -1)):
         for s in (1, -1):
-            v.arrow((xm - d * 700, s * 1250), (xm + d * 700, s * 1250))
-            v.text(xm, s * 1020, "沟底i=0.5%", 2.2)
+            v.arrow((xm - d * 700, s * (GUT_Y[0] - 200)), (xm + d * 700, s * (GUT_Y[0] - 200)))
+            v.text(xm, s * (GUT_Y[0] - 430), "沟底i=0.5%", 2.2)
     # 引出标注
-    v.leader([(AX[2] - 1500, 1525), (AX[2] - 2300, 2950)], "排水沟 宽150，起点深40", 2.8, "L")
-    v.leader([(SUMP[0] + 100, SUMP[2] + 250), (AX[2] - 700, 2950)], "JSK-1 集水坑", 2.8, "L")
-    v.leader([(AX[2], 3250), (AX[2] + 700, 2950)], "DN150排水管 i≥0.5% 接室外雨水井", 2.8, "R")
-    v.leader([(AX[1] + 300, -3300), (AX[1] - 1100, -3700)], "φ40 PVC穿线管至秤房", 2.8, "L")
-    v.leader([(PLATES_X[1][0] + 100, -1200), (AX[1] - 1500, -900)], "M-1", 2.8, "L")
-    v.leader([(-8, 1500), (-800, 3750)], "M-2 限位预埋板", 2.8, "L")
-    v.leader([(-40, 700), (-1500, 2400)], "M-3 护边角钢", 2.8, "L")
+    yl = Y_OUT + 600
+    v.leader([(AX[2] - 1500, sum(GUT_Y) / 2), (AX[2] - 2300, yl)], "排水沟 宽150，起点深40", 2.8, "L")
+    v.leader([(SUMP[0] + 100, SUMP[2] + 250), (AX[2] - 700, yl)], "JSK-1 集水坑", 2.8, "L")
+    v.leader([(AX[2], Y_OUT + 900), (AX[2] + 700, yl)], "DN150排水管 i≥0.5% 接室外雨水井", 2.8, "R")
+    v.leader([(AX[1] + 300, -(Y_OUT + 950)), (AX[1] - 1100, -(Y_OUT + 1350))], "φ40 PVC穿线管至秤房", 2.8,
+             "L")
+    v.leader([(PLATES_X[1][0] + 100, PLATE_Y[0][1] - 100), (AX[1] - 1500, PLATE_Y[0][1] + 200)], "M-1", 2.8,
+             "L")
+    v.leader([(-8, LIMIT_C), (-800, Y_OUT + 1400)], "M-2 限位预埋板", 2.8, "L")
+    v.leader([(-40, 700), (-1500, Y_OUT + 50)], "M-3 护边角钢", 2.8, "L")
     v.leader([(-400, -800), (-1500, -1300)], "端墙Q2", 2.8, "L")
     v.leader([(1100, -900), (2200, -650)], "ZL-2", 2.8, "R")
     v.leader([(AX[3] + 600, -900), (AX[3] + 1700, -650)], "ZL-1", 2.8, "R")
-    v.leader([(AX[3] + 350, 1900), (AX[3] + 1300, 2950)], "检修口 GB-1", 2.8, "R")
-    v.leader([(AX[2] - 2800, 1700), (AX[2] - 3400, 2400)], "侧墙Q1", 2.8, "L")
-    v.text(13200, -3150, "级配砂石换填范围线(底标高-3.000，宽出基础外边线不小于1000)", 2.5)
-    v.leader([(-1200, -4000), (-2400, -3700)], "JD-1 接地极", 2.8, "L")
-    v.leader([(L + 1200, -4000), (L + 2400, -3700)], "JD-1 接地极", 2.8, "R")
+    v.leader([(AX[3] + 350, B_HALF + 300), (AX[3] + 1300, yl)], "检修口 GB-1", 2.8, "R")
+    v.leader([(AX[2] - 2800, B_HALF + 100), (AX[2] - 3400, Y_OUT + 50)], "侧墙Q1", 2.8, "L")
+    v.text(13200, -(Y_OUT + 800), "级配砂石换填范围线(底标高-3.000，宽出基础外边线不小于1000)", 2.5)
+    yj = -(Y_OUT + 1650)
+    v.leader([(-1200, yj), (-2400, yj + 300)], "JD-1 接地极", 2.8, "L")
+    v.leader([(L + 1200, yj), (L + 2400, yj + 300)], "JD-1 接地极", 2.8, "R")
     # 标高
-    v.leader([(2600, -1590), (3300, -2650)], "坑底墙边-0.466", 2.8, "R")
-    v.elev(-4500, 2550, "±0.000", "L")
-    v.elev(2800, 2250, "+0.050", "R")
+    v.leader([(2600, -(B_HALF - 10)), (3300, -(Y_OUT + 300))], f"坑底墙边{z_floor(B_HALF) / 1000:.3f}", 2.8, "R")
+    v.elev(-4500, APP_REPL_Y + 250, "±0.000", "L")
+    v.elev(2800, Y_WALL + 450, "+0.050", "R")
     # 剖切符号
-    v.section_mark((-7250, 1300), (27300, 1300), "1", (0, 1))
-    v.section_mark((AX[2], -3700), (AX[2], 3700), "2", (1, 0))
-    v.section_mark((7525, -3700), (7525, 3700), "3", (1, 0))
-    v.section_mark((200, -3700), (200, 3700), "4", (-1, 0))
+    ys = Y_OUT + 1350
+    v.section_mark((-7250, AY[1]), (27300, AY[1]), "1", (0, 1))
+    v.section_mark((AX[2], -ys), (AX[2], ys), "2", (1, 0))
+    v.section_mark((7525, -ys), (7525, ys), "3", (1, 0))
+    v.section_mark((200, -ys), (200, ys), "4", (-1, 0))
     # 索引
     v.index_mark(-2600, 300, "1", REF["detail"])
     v.line((-2600 + 250, 300), (-300, 50), "S-SYMB")
-    v.index_mark(AX[1] + 1500, -2900, "2", REF["detail"])
-    v.line((AX[1] + 1250, -2800), (AX[1] + 400, -2100), "S-SYMB")
+    v.index_mark(AX[1] + 1500, -(Y_OUT + 550), "2", REF["detail"])
+    v.line((AX[1] + 1250, -(Y_OUT + 450)), (AX[1] + 400, -(Y_OPEN_OUT - 50)), "S-SYMB")
 
 
 PLAN_NOTES = [
@@ -216,7 +224,8 @@ PLAN_NOTES = [
     "5. 检修口共10处(盖板GB-1，用户自备)；③轴两侧检修口内设集水坑JSK-1，经DN150排水管排出。",
     "6. 排水沟沿侧墙内侧布置，宽150，起点深40，沟底纵坡0.5%，过②、④轴时经检修口内绕开",
     "   传感器水泥台，坡向③轴集水坑；排水沟详图见结施-05。",
-    "7. 端部传感器预埋板紧贴端墙内侧放置，传感器中心距端墙内侧175※；秤台轮廓为示意。",
+    "7. 端部传感器预埋板紧贴端墙内侧放置，传感器中心距端墙内侧175※；秤台轮廓为示意。护边角钢长3500，",
+    "   两端各伸入端部检修口50，详见预埋件说明。",
     "8. 接地极JD-1位置可根据现场调整，接地电阻不大于4Ω。",
 ]
 
@@ -256,7 +265,7 @@ def plan_table(p, x, ytop):
         ["编号", "名称", "规格", "数量", "备注"],
         ["M-1", "传感器预埋板", "-400×400×20 Q235B", "10块", "1:1水泥砂浆座浆"],
         ["M-2", "限位预埋板", "-320×150×16 Q235B", "4块", "锚筋2C16"],
-        ["M-3", "护边角钢", "L75×75×7 L=3200", "2根", "锚筋9C16"],
+        ["M-3", "护边角钢", f"L75×75×7 L={ANGLE_Y[1] - ANGLE_Y[0]}", "2根", "锚筋9C16"],
         ["M-4", "检修口护口角钢", "L50×5", "10套", "锚筋C10"],
         ["GB-1", "检修口盖板", "900×600", "10块", "用户自备"],
         ["JSK-1", "集水坑", "400×400×400", "2个", "③轴两侧"],

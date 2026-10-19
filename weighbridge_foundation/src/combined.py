@@ -105,14 +105,14 @@ def _sheet_all(sh):
     b = place(sh, S3.long_section, 50, xa, b - 12, "1-1 剖面", th=6.0)
     b = row(sh, [(S3.section_22, 30, "2-2 剖面", None, None),
                  (S3.section_33, 30, "3-3 剖面", None, None),
-                 (S3.section_44, 30, "4-4 剖面(端墙内侧立面)", None, None)], xa, b - 12, gap=8)
+                 (S3.section_44, 30, "4-4 剖面(端墙内侧立面)", None, None)], xa, b - 12, gap=4)
     yb_a = b - 12
     place(sh, S4.raft_plan, 50, xa, yb_a, "底板配筋平面图", th=5.5)
     S2.plan_legend(p, 500, yb_a)
     S2.plan_table(p, 652, yb_a - 10)
 
-    # ======== B 列：配筋（x 822~1255）========
-    xb = 822.0
+    # ======== B 列：配筋（x 830~1255）========
+    xb = 830.0
     b = row(sh, [(S4.zl1_elev, 30, "ZL-1 立面配筋图", None, None),
                  (S4.zl1_section, 20, "ZL-1 截面", None, None)], xb, top, gap=22)
     b = row(sh, [(S4.zl2_section, 20, "ZL-2及端墙Q2 截面", None, None),
@@ -149,9 +149,9 @@ def _sheet_all(sh):
             ["基础混凝土", "C35 P6 F250", "m³", f"{c35:.1f}", "底板、墩梁、墙"],
             ["引道板混凝土", "C35 F250", "m³", f"{yb:.1f}", "2块"],
             ["垫层混凝土", "C15", "m³", f"{cush:.1f}", ""],
-            ["级配砂石换填", "λc≥0.97", "m³", "约440", "压实方，含引道下"],
+            ["级配砂石换填", "λc≥0.97", "m³", "约455", "压实方，含引道下"],
             ["钢筋", "HRB400", "t", f"{steel:.2f}", "见钢筋表"],
-            ["预埋件及盖板钢材", "Q235B", "t", "1.00", "见预埋件材料表"]]
+            ["预埋件及盖板钢材", "Q235B", "t", "0.99", "见预埋件材料表"]]
     y -= 14
     p.text(xc + 110, y, "主要工程量(参考，以实际为准)", 4.0, "TC")
     p.table(xc, y - 7, [44, 40, 20, 30, 86], rows, row_h=6.6, h=3.0)

@@ -104,76 +104,83 @@ def opening_plan(v):
     v.pl([(-450, B_HALF), (-450, Y_OPEN_OUT + REB), (450, Y_OPEN_OUT + REB), (450, B_HALF)], "S-STEEL")
     v.pl([(-405, B_HALF), (-405, Y_OPEN_OUT - 5), (405, Y_OPEN_OUT - 5), (405, B_HALF)], "S-STEEL")
     # 墩梁边线、预埋板
+    yb0 = B_HALF - 350                    # 断开处
+    pt = PLATE_Y[1][1]
     for x in (-600, 600):
-        v.line((x, 1250), (x, B_HALF), "S-HIDE")
-    v.rect(-250, 1250, 250, 1550, "S-HIDE")
-    v.pl([(-200, 1250), (-200, 1500), (200, 1500), (200, 1250)], "S-STEEL")
-    v.break_line((-900, 1250), (900, 1250))
+        v.line((x, yb0), (x, B_HALF), "S-HIDE")
+    v.rect(-250, yb0, 250, pt + PAD, "S-HIDE")
+    v.pl([(-200, yb0), (-200, pt), (200, pt), (200, yb0)], "S-STEEL")
+    v.break_line((-900, yb0), (900, yb0))
     # 集水坑与沟
     sx1, sx2, sy1, sy2 = SUMP
     a, b = sx1 - AX[2], sx2 - AX[2]
     v.rect(a, sy1, b, sy2, "S-THIN")
     v.line((a, sy1), (b, sy2), "S-THIN")
     v.line((a, sy2), (b, sy1), "S-THIN")
-    v.pl([(-900, 1450), (-260, 1450), (-260, 1600), (a, 1600)], "S-THIN")
-    v.pl([(900, 1450), (260, 1450), (260, 1600), (b, 1600)], "S-THIN")
-    v.pl([(-400, 1750), (a, 1750)], "S-THIN")
-    v.pl([(400, 1750), (b, 1750)], "S-THIN")
-    v.arrow((-800, 1525), (-450, 1525))
-    v.arrow((800, 1525), (450, 1525))
-    v.line((0, sy2), (0, 2700), "S-PIPE")
+    g0, g1, gj = GUT_Y[0], GUT_Y[1], B_HALF + GUT_W
+    gm = (g0 + g1) / 2
+    v.pl([(-900, g0), (-260, g0), (-260, g1), (a, g1)], "S-THIN")
+    v.pl([(900, g0), (260, g0), (260, g1), (b, g1)], "S-THIN")
+    v.pl([(-400, gj), (a, gj)], "S-THIN")
+    v.pl([(400, gj), (b, gj)], "S-THIN")
+    v.arrow((-800, gm), (-450, gm))
+    v.arrow((800, gm), (450, gm))
+    v.line((0, sy2), (0, Y_OUT + 350), "S-PIPE")
     v.rect(-450, B_HALF, 450, Y_OPEN_OUT + REB, "S-HIDE2")
     # 尺寸
-    v.chainh([-600, -400, 400, 600], Y_OUT, 2650, ext=3)
-    v.dimh(-450, 450, Y_OUT, 2900, "900(盖板)", ext=3)
+    v.chainh([-600, -400, 400, 600], Y_OUT, Y_OUT + 300, ext=3)
+    v.dimh(-450, 450, Y_OUT, Y_OUT + 550, "900(盖板)", ext=3)
     v.chainv([B_HALF, Y_OPEN_OUT, Y_OPEN_OUT + REB, Y_OUT], 600, 850, ["550", "50", "150"], ext=3)
-    v.chainv([B_HALF, 1750], -900, -1100, ["150"], ext=3)
-    v.leader([(b, 1900), (950, 1950)], "JSK-1 400×400", h=2.4, side="R")
-    v.leader([(-430, 2180), (-800, 2500)], "M-4 L50×5", h=2.4, side="L")
-    v.leader([(0, 2500), (300, 2800)], "DN150排水管", h=2.4, side="R")
-    v.leader([(-330, 1650), (-750, 2000)], "排水沟", h=2.4, side="L")
-    v.text(0, 1350, "M-1", 2.4, "MC")
+    v.chainv([B_HALF, gj], -900, -1100, ["150"], ext=3)
+    v.leader([(b, SUMP[2] + 200), (950, SUMP[2] + 250)], "JSK-1 400×400", h=2.4, side="R")
+    v.leader([(-430, Y_OPEN_OUT + 30), (-800, Y_OUT + 150)], "M-4 L50×5", h=2.4, side="L")
+    v.leader([(0, Y_OUT + 150), (300, Y_OUT + 450)], "DN150排水管", h=2.4, side="R")
+    v.leader([(-330, B_HALF + 50), (-750, B_HALF + 400)], "排水沟", h=2.4, side="L")
+    v.text(0, B_HALF - 250, "M-1", 2.4, "MC")
 
 
 def opening_section(v):
     """A-A 剖面：局部 x = Y，y = Z（取③轴，经集水坑中心）。"""
     sx1, sx2, sy1, sy2 = SUMP
-    low = [(1250, -1000), (Y_OUT, -1000), (Y_OUT, Z_PIPE), (sy2, Z_PIPE), (sy2, Z_SUMP), (sy1, Z_SUMP),
-           (sy1, Z_CAP), (1250, Z_CAP)]
+    y0 = B_HALF - 350                     # 断开处
+    ye = Y_OUT + 450                      # 视图外边
+    low = [(y0, -1000), (Y_OUT, -1000), (Y_OUT, Z_PIPE), (sy2, Z_PIPE), (sy2, Z_SUMP), (sy1, Z_SUMP),
+           (sy1, Z_CAP), (y0, Z_CAP)]
     up = [(sy2, Z_PIPE + 160), (Y_OUT, Z_PIPE + 160), (Y_OUT, Z_TOP), (Y_OPEN_OUT + REB, Z_TOP),
           (Y_OPEN_OUT + REB, Z_SEAT), (Y_OPEN_OUT, Z_SEAT), (Y_OPEN_OUT, Z_CAP), (sy2, Z_CAP)]
     v.rc_hatch(low)
     v.rc_hatch(up)
     v.pl(low[1:], "S-CONC")
     v.pl(up, "S-CONC", closed=True)
-    v.break_line((1250, -1050), (1250, Z_CAP + 50))
-    v.break_line((1200, -1000), (Y_OUT + 50, -1000))
-    gravel(v, [(Y_OUT, -1000), (2800, -1000), (2800, 0), (Y_OUT, 0)])
-    v.line((Y_OUT, 0), (2800, 0), "S-CONC")
+    v.break_line((y0, -1050), (y0, Z_CAP + 50))
+    v.break_line((y0 - 50, -1000), (Y_OUT + 50, -1000))
+    gravel(v, [(Y_OUT, -1000), (ye, -1000), (ye, 0), (Y_OUT, 0)])
+    v.line((Y_OUT, 0), (ye, 0), "S-CONC")
     # 管
-    v.line((sy2, Z_PIPE), (2800, Z_PIPE - 3), "S-THIN")
-    v.line((sy2, Z_PIPE + 160), (2800, Z_PIPE + 157), "S-THIN")
+    v.line((sy2, Z_PIPE), (ye, Z_PIPE - 3), "S-THIN")
+    v.line((sy2, Z_PIPE + 160), (ye, Z_PIPE + 157), "S-THIN")
     # 盖板与加劲肋
     steel_fill(v, [(B_HALF, Z_SEAT), (Y_OPEN_OUT + REB, Z_SEAT), (Y_OPEN_OUT + REB, Z_TOP), (B_HALF, Z_TOP)])
-    for yc in (1700, 1875, 2050):
+    for yc in COVER_RIBS:
         steel_fill(v, [(yc - 4, Z_SEAT - 60), (yc + 4, Z_SEAT - 60), (yc + 4, Z_SEAT), (yc - 4, Z_SEAT)])
     angle_L(v, Y_OPEN_OUT, Z_SEAT, 50, 5, dx=1, dy=-1)
     v.pl([(Y_OPEN_OUT + 25, Z_SEAT - 5), (Y_OPEN_OUT + 25, Z_SEAT - 150)], "S-STEEL", width=0.3)
     # 预埋板
-    v.pl([(1250, Z_CAP), (1550, Z_CAP), (1525, Z_PLATE_B), (1250, Z_PLATE_B)], "S-THIN")
-    steel_fill(v, [(1250, Z_PLATE_B), (1500, Z_PLATE_B), (1500, Z_PLATE), (1250, Z_PLATE)])
-    v.line((1585, Z_TOP), (1585, -250), "S-HIDE2")
+    pt = PLATE_Y[1][1]
+    v.pl([(y0, Z_CAP), (pt + PAD, Z_CAP), (pt + PAD - 25, Z_PLATE_B), (y0, Z_PLATE_B)], "S-THIN")
+    steel_fill(v, [(y0, Z_PLATE_B), (pt, Z_PLATE_B), (pt, Z_PLATE), (y0, Z_PLATE)])
+    v.line((PLAT_Y, Z_TOP), (PLAT_Y, -250), "S-HIDE2")
     # 尺寸
-    v.chainv([Z_SUMP, Z_CAP, Z_TOP], Y_OUT, 2650, ["400", "500"], ext=3)
+    v.chainv([Z_SUMP, Z_CAP, Z_TOP], Y_OUT, Y_OUT + 300, ["400", "500"], ext=3)
     v.chainh([B_HALF, sy1, sy2, Y_OPEN_OUT + REB, Y_OUT], Z_SUMP, -1250, ["100", "400", "100", "150"], ext=3)
-    v.elev(1350, Z_TOP, "+0.050", "L")
-    v.elev(2700, 0, "±0.000", "L")
-    v.elev(1850, Z_SUMP, "-0.850", "R")
-    v.leader([(1800, Z_TOP - 5), (1700, 330)], "GB-1 δ10花纹钢板", h=2.4, side="L")
-    v.leader([(1875, Z_SEAT - 40), (1600, -230)], "加劲肋-60×8", h=2.4, side="L")
-    v.leader([(Y_OPEN_OUT + 3, Z_SEAT - 30), (2600, 250)], "M-4 L50×5", h=2.4, side="R")
-    v.leader([(2450, Z_PIPE + 80), (2750, -950)], "DN150", h=2.4, side="R")
-    v.text(1585, -260, "秤台边", 2.2, "TC")
+    v.elev(B_HALF - 250, Z_TOP, "+0.050", "L")
+    v.elev(Y_OUT + 350, 0, "±0.000", "L")
+    v.elev(SUMP[2] + 150, Z_SUMP, "-0.850", "R")
+    v.leader([(B_HALF + 200, Z_TOP - 5), (B_HALF + 100, 330)], "GB-1 δ10花纹钢板", h=2.4, side="L")
+    v.leader([(COVER_RIBS[1], Z_SEAT - 40), (B_HALF, -230)], "加劲肋-60×8", h=2.4, side="L")
+    v.leader([(Y_OPEN_OUT + 3, Z_SEAT - 30), (Y_OUT + 250, 250)], "M-4 L50×5", h=2.4, side="R")
+    v.leader([(Y_OUT + 100, Z_PIPE + 80), (Y_OUT + 400, -950)], "DN150", h=2.4, side="R")
+    v.text(PLAT_Y, -260, "秤台边", 2.2, "TC")
 
 
 def gutter_cross(v):
@@ -185,24 +192,27 @@ def gutter_cross(v):
          "S-CONC")
     v.pl([(-1000, B_HALF), (-400, B_HALF), (-400, Y_OPEN_OUT), (400, Y_OPEN_OUT), (400, B_HALF),
           (1000, B_HALF)], "S-CONC")
+    yb0 = B_HALF - 350
+    pt = PLATE_Y[1][1]
+    g0, g1, gj = GUT_Y[0], GUT_Y[1], B_HALF + GUT_W
     for x in (-600, 600):
-        v.line((x, 1250), (x, B_HALF), "S-HIDE")
-    v.rect(-250, 1250, 250, 1550, "S-HIDE")
-    v.pl([(-200, 1250), (-200, 1500), (200, 1500), (200, 1250)], "S-STEEL")
-    inner = [(-1000, 1450), (-260, 1450), (-260, 1600), (260, 1600), (260, 1450), (1000, 1450)]
-    outer = [(-1000, 1600), (-400, 1600), (-400, 1750), (400, 1750), (400, 1600), (1000, 1600)]
+        v.line((x, yb0), (x, B_HALF), "S-HIDE")
+    v.rect(-250, yb0, 250, pt + PAD, "S-HIDE")
+    v.pl([(-200, yb0), (-200, pt), (200, pt), (200, yb0)], "S-STEEL")
+    inner = [(-1000, g0), (-260, g0), (-260, g1), (260, g1), (260, g0), (1000, g0)]
+    outer = [(-1000, g1), (-400, g1), (-400, gj), (400, gj), (400, g1), (1000, g1)]
     v.pl(inner, "S-REBAR")
     v.pl(outer, "S-REBAR")
     v.hatch(inner + list(reversed(outer)), "ANSI37", "S-HATCH", rel=0.5)
-    v.arrow((-900, 1525), (-500, 1525))
-    v.arrow((-150, 1680), (150, 1680))
-    v.arrow((500, 1525), (900, 1525))
-    v.break_line((-1000, 1250), (1000, 1250))
-    v.chainh([-400, -260, 260, 400], Y_OUT, 2700, ["140", "520", "140"], ext=3)
-    v.chainv([1450, 1600, 1750], 1000, 1250, ["150", "150"], ext=3)
-    v.text(0, 1350, "传感器水泥台", 2.4, "MC")
-    v.text(-780, 1430, "沟底i=0.5%", 2.2, "TC")
-    v.text(0, 2000, "检修口", 2.4, "MC")
+    v.arrow((-900, (g0 + g1) / 2), (-500, (g0 + g1) / 2))
+    v.arrow((-150, (g1 + gj) / 2 + 5), (150, (g1 + gj) / 2 + 5))
+    v.arrow((500, (g0 + g1) / 2), (900, (g0 + g1) / 2))
+    v.break_line((-1000, yb0), (1000, yb0))
+    v.chainh([-400, -260, 260, 400], Y_OUT, Y_OUT + 350, ["140", "520", "140"], ext=3)
+    v.chainv([g0, g1, gj], 1000, 1250, ["150", "150"], ext=3)
+    v.text(0, B_HALF - 250, "传感器水泥台", 2.4, "MC")
+    v.text(-780, g0 - 20, "沟底i=0.5%", 2.2, "TC")
+    v.text(0, B_HALF + 400, "检修口", 2.4, "MC")
 
 
 # ---------------- 预埋件 ----------------
@@ -236,14 +246,16 @@ def m2(v):
 
 
 def m3(v_el, v_sec):
-    Lg = 3200
+    Lg = ANGLE_Y[1] - ANGLE_Y[0]
+    e = 150                                   # 端部锚筋距角钢端
+    sp = (Lg - 2 * e) / 8                     # 9根锚筋均布
     v_el.rect(0, 0, Lg, 75, "S-STEEL")
     v_el.line((0, 7), (Lg, 7), "S-STEEL")
-    xs = [100 + 375 * i for i in range(9)]
+    xs = [e + sp * i for i in range(9)]
     for x in xs:
         v_el.line((x, 0), (x, -120), "S-STEEL")
-    v_el.chainh([0] + xs + [Lg], 0, -260, ["100"] + ["375"] * 8 + ["100"], ext=3)
-    v_el.dimh(0, Lg, 0, -420, "3200", ext=3)
+    v_el.chainh([0] + xs + [Lg], 0, -260, [str(e)] + [f"{sp:g}"] * 8 + [str(e)], ext=3)
+    v_el.dimh(0, Lg, 0, -420, f"{Lg}", ext=3)
     v_el.text(Lg / 2, 120, "锚筋9C16,L=250，与角钢双面焊", 2.4, "BC")
     # 截面
     angle_L(v_sec, 0, 0, 75, 7, dx=-1, dy=-1)
@@ -308,19 +320,21 @@ def grounding(v):
 
 def conduit(v):
     """⑤ 电缆穿线管做法（②轴-Y侧检修口，局部 x = -Y，y = Z）。"""
-    v.rc_hatch([(1250, -1250), (Y_OUT, -1250), (Y_OUT, Z_TOP), (Y_OPEN_OUT + REB, Z_TOP),
-                (Y_OPEN_OUT + REB, Z_SEAT), (Y_OPEN_OUT, Z_SEAT), (Y_OPEN_OUT, Z_CAP), (1250, Z_CAP)])
-    v.pl([(1250, Z_CAP), (Y_OPEN_OUT, Z_CAP), (Y_OPEN_OUT, Z_SEAT), (Y_OPEN_OUT + REB, Z_SEAT),
-          (Y_OPEN_OUT + REB, Z_TOP), (Y_OUT, Z_TOP), (Y_OUT, -1250), (1250, -1250)], "S-CONC")
-    v.break_line((1250, -1300), (1250, Z_CAP + 50))
-    gravel(v, [(Y_OUT, -1250), (3000, -1250), (3000, 0), (Y_OUT, 0)])
-    v.line((Y_OUT, 0), (3000, 0), "S-CONC")
-    x0 = 1975
-    v.pl([(x0, -410), (x0, -800), (x0 + 120, -920), (3000, -940)], "S-PIPE")
-    v.pl([(x0 + 40, -410), (x0 + 40, -790), (x0 + 130, -880), (3000, -900)], "S-PIPE")
-    v.leader([(x0 + 20, -410), (1600, -150)], "管口高出混凝土面40", h=2.4, side="L")
-    v.leader([(2700, -920), (2600, -1350)], "φ40 PVC管至秤房(管内预穿铁丝)", h=2.4, side="L")
-    v.elev(1450, Z_CAP, "-0.450", "R")
+    y0 = B_HALF - 350
+    ye = Y_OUT + 650
+    v.rc_hatch([(y0, -1250), (Y_OUT, -1250), (Y_OUT, Z_TOP), (Y_OPEN_OUT + REB, Z_TOP),
+                (Y_OPEN_OUT + REB, Z_SEAT), (Y_OPEN_OUT, Z_SEAT), (Y_OPEN_OUT, Z_CAP), (y0, Z_CAP)])
+    v.pl([(y0, Z_CAP), (Y_OPEN_OUT, Z_CAP), (Y_OPEN_OUT, Z_SEAT), (Y_OPEN_OUT + REB, Z_SEAT),
+          (Y_OPEN_OUT + REB, Z_TOP), (Y_OUT, Z_TOP), (Y_OUT, -1250), (y0, -1250)], "S-CONC")
+    v.break_line((y0, -1300), (y0, Z_CAP + 50))
+    gravel(v, [(Y_OUT, -1250), (ye, -1250), (ye, 0), (Y_OUT, 0)])
+    v.line((Y_OUT, 0), (ye, 0), "S-CONC")
+    x0 = Y_OPEN_OUT - 175
+    v.pl([(x0, -410), (x0, -800), (x0 + 120, -920), (ye, -940)], "S-PIPE")
+    v.pl([(x0 + 40, -410), (x0 + 40, -790), (x0 + 130, -880), (ye, -900)], "S-PIPE")
+    v.leader([(x0 + 20, -410), (B_HALF, -150)], "管口高出混凝土面40", h=2.4, side="L")
+    v.leader([(Y_OUT + 350, -920), (Y_OUT + 250, -1350)], "φ40 PVC管至秤房(管内预穿铁丝)", h=2.4, side="L")
+    v.elev(B_HALF - 150, Z_CAP, "-0.450", "R")
 
 
 def parts_table(p, x, ytop):
@@ -328,7 +342,7 @@ def parts_table(p, x, ytop):
         ["编号", "名称", "规格", "单件重(kg)", "数量", "总重(kg)"],
         ["M-1", "传感器预埋板", "-400×400×20", "25.1", "10", "251.2"],
         ["M-2", "限位预埋板", "-320×150×16+2C16", "6.8", "4", "27.3"],
-        ["M-3", "护边角钢", "L75×75×7,L=3200+9C16", "29.1", "2", "58.1"],
+        ["M-3", "护边角钢", "L75×75×7,L=3500+9C16", "31.5", "2", "63.0"],
         ["M-4", "护口角钢框", "L50×5,L=2100+8C10", "8.7", "10", "86.6"],
         ["GB-1", "检修口盖板", "δ10花纹板+3-60×8", "53.0", "10", "530.0"],
         ["JD-1", "接地极", "L50×5,L=2300", "8.7", "2", "17.3"],
@@ -349,6 +363,8 @@ DETAIL_NOTES = [
     "5. 外露钢构件除锈Sa2.5，涂环氧富锌底漆2道+面漆2道；传感器预埋板上表面不涂漆，清理后涂防锈油。",
     "6. 检修口盖板用户自备，上平面与秤面平齐；检修口为非行车部位，严禁车辆碾压。",
     "7. 接地电阻≤4Ω，实测不满足时增设接地极；秤房内另设接地桩及接线螺钉(≤4Ω)。",
+    "8. 护边角钢长3500(厂家)，比坑内净宽3400长100，两端各伸入端部检修口50，端部4块检修口盖板在该处",
+    "   切角50×50；限位预埋板中心距3300※，外侧约110位于端部检修口内的端墙面上。",
 ]
 
 

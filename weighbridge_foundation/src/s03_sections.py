@@ -55,7 +55,7 @@ def earth(v, pts):
 
 # ======================================================================
 def long_section(v):
-    """1-1 纵剖面（Y=+1300，向 +Y 方向投射）。局部坐标 x=X, y=Z。"""
+    """1-1 纵剖面（Y=AY[1]，向 +Y 方向投射）。局部坐标 x=X, y=Z。"""
     # 混凝土断面
     body = [(X_LEFT, Z_BEAM_B)]
     for i, (x1, x2, nm) in enumerate(BEAMS):
@@ -167,7 +167,7 @@ def long_section(v):
 
 
 # ======================================================================
-def cross_common(v, half=3500, ground_from=None):
+def cross_common(v, half=REPL_Y + 150, ground_from=None):
     """横剖面公共部分：换填、原状土、地面线、水位/冻深线。"""
     v.pl([(-REPL_Y, 0), (-REPL_Y, Z_REPL), (REPL_Y, Z_REPL), (REPL_Y, 0)], "S-HIDE2")
     t = 300
@@ -202,17 +202,17 @@ def section_22(v):
               (Y_OPEN_OUT + REB, Z_SEAT), (Y_OPEN_OUT, Z_SEAT), (Y_OPEN_OUT, Z_CAP), (sy2, Z_CAP)]
         conc(v, [(s * y, z) for y, z in up])
         # 排水管
-        v.line((s * sy2, Z_PIPE), (s * 3700, Z_PIPE - 8), "S-THIN")
-        v.line((s * sy2, zp2), (s * 3700, zp2 - 8), "S-THIN")
+        v.line((s * sy2, Z_PIPE), (s * (REPL_Y + 350), Z_PIPE - 8), "S-THIN")
+        v.line((s * sy2, zp2), (s * (REPL_Y + 350), zp2 - 8), "S-THIN")
         # 盖板及加劲肋
         cov = [(s * B_HALF, Z_SEAT), (s * (Y_OPEN_OUT + REB), Z_SEAT),
                (s * (Y_OPEN_OUT + REB), Z_TOP), (s * B_HALF, Z_TOP)]
         v.hatch(cov, "SOLID", "S-STEEL")
-        for yc in (1700, 1875, 2050):
+        for yc in COVER_RIBS:
             v.hatch([(s * (yc - 4), Z_SEAT - 60), (s * (yc + 4), Z_SEAT - 60), (s * (yc + 4), Z_SEAT),
                      (s * (yc - 4), Z_SEAT)], "SOLID", "S-STEEL")
         # 预埋板
-        a, b = (1100, 1500) if s > 0 else (-1500, -1100)
+        a, b = PLATE_Y[1] if s > 0 else PLATE_Y[0]
         mortar_plate(v, a, b)
         # 剖切面以远：侧墙端面
         v.rect(s * B_HALF, Z_CAP, s * Y_WALL, Z_TOP, "S-THIN")
@@ -225,28 +225,28 @@ def section_22(v):
                                        (-Y_OUT - 100, Z_BEAM_B - T_CUSH), (-Y_OUT - 100, Z_BEAM_B),
                                        (-Y_OUT, Z_BEAM_B), (-Y_OUT, 0)]
     gravel(v, [(-REPL_Y, Z_REPL), (REPL_Y, Z_REPL)] + foot + [(-REPL_Y, 0)])
-    v.rect(-1585, -250, 1585, Z_TOP - 8, "S-HIDE2")
+    v.rect(-PLAT_Y, -250, PLAT_Y, Z_TOP - 8, "S-HIDE2")
     # 尺寸
-    v.chainh([-Y_OUT, -Y_OPEN_OUT, -B_HALF, -1300, 1300, B_HALF, Y_OPEN_OUT, Y_OUT], Z_REPL, -3500,
-             [None, None, None, "2600※", None, None, None], ext=3)
+    v.chainh([-Y_OUT, -Y_OPEN_OUT, -B_HALF, AY[0], AY[1], B_HALF, Y_OPEN_OUT, Y_OUT], Z_REPL, -3500,
+             [None, None, None, f"{AY[1] - AY[0]}※", None, None, None], ext=3)
     v.chainh([-REPL_Y, -Y_OUT, Y_OUT, REPL_Y], Z_REPL, -3900, ext=3)
-    v.chainv([Z_REPL, Z_BEAM_B - T_CUSH, Z_BEAM_B, Z_SUMP, Z_CAP, Z_TOP], REPL_Y, 3750, ext=3)
-    v.dimv(Z_PLATE, Z_TOP, 1300, 900, "450※")
+    v.chainv([Z_REPL, Z_BEAM_B - T_CUSH, Z_BEAM_B, Z_SUMP, Z_CAP, Z_TOP], REPL_Y, REPL_Y + 400, ext=3)
+    v.dimv(Z_PLATE, Z_TOP, AY[1], AY[1] - 400, "450※")
     # 标高
-    v.elev(-2700, Z_TOP, "+0.050", "L")
-    v.elev(-3100, 0, "±0.000", "L")
+    v.elev(-(Y_OUT + 350), Z_TOP, "+0.050", "L")
+    v.elev(-(Y_OUT + 750), 0, "±0.000", "L")
     v.elev(-600, Z_CAP, "-0.450", "R")
-    v.elev(-1300, Z_PLATE, "-0.400", "L")
-    v.elev(1840, Z_SUMP, "-0.850", "R")
+    v.elev(AY[0], Z_PLATE, "-0.400", "L")
+    v.elev(SUMP[2] + 140, Z_SUMP, "-0.850", "R")
     v.elev(-1000, Z_BEAM_B, "-1.250", "R", down=True)
     v.elev(-1000, Z_REPL, "-3.000", "R", down=True)
     # 标注
-    v.leader([(2050, -520), (2750, -1700)], "JSK-1集水坑", 2.6, "R")
-    v.leader([(3450, Z_PIPE + 80), (3450, -2300)], ["DN150排水管", "接室外雨水井"], 2.6, "L")
-    v.leader([(-1900, Z_TOP - 5), (-2600, 600)], "GB-1盖板", 2.6, "L")
+    v.leader([(SUMP[2] + 350, -520), (Y_OUT + 400, -1700)], "JSK-1集水坑", 2.6, "R")
+    v.leader([(REPL_Y + 100, Z_PIPE + 80), (REPL_Y + 100, -2300)], ["DN150排水管", "接室外雨水井"], 2.6, "L")
+    v.leader([(-(B_HALF + 300), Z_TOP - 5), (-(Y_OUT + 250), 600)], "GB-1盖板", 2.6, "L")
     v.leader([(0, -1000), (600, -1900)], "ZL-1", 2.6, "R")
     v.leader([(0, -1300), (-800, -2000)], "C15垫层", 2.6, "L")
-    v.leader([(-2700, -2600), (-1700, -2500)], "级配砂石", 2.6, "R")
+    v.leader([(-(Y_OUT + 350), -2600), (-1700, -2500)], "级配砂石", 2.6, "R")
     v.leader([(1000, -150), (1600, 650)], "秤台(示意)", 2.6, "R")
 
 
@@ -267,29 +267,30 @@ def section_33(v):
     gravel(v, [(-REPL_Y, Z_REPL), (REPL_Y, Z_REPL)] + foot + [(-REPL_Y, 0)])
     # 以远可见：③轴传感器水泥台
     for s in (1, -1):
-        a, b = sorted((s * 1100, s * 1500))
+        a, b = PLATE_Y[1] if s > 0 else PLATE_Y[0]
         v.rect(a - PAD, Z_CAP, b + PAD, Z_PLATE, "S-THIN")
-    v.rect(-1585, -250, 1585, Z_TOP - 8, "S-HIDE2")
+    v.rect(-PLAT_Y, -250, PLAT_Y, Z_TOP - 8, "S-HIDE2")
     # 坡度
     v.slope_mark(-750, -380, "i=1%", 14, ang=0, rev=True)
     v.slope_mark(750, -380, "i=1%", 14, ang=0)
     # 尺寸
     v.chainh([-Y_WALL, -B_HALF, -GUT_Y[0], GUT_Y[0], B_HALF, Y_WALL], Z_REPL, -3500, ext=3)
     v.chainh([-REPL_Y, -Y_WALL, Y_WALL, REPL_Y], Z_REPL, -3900, ext=3)
-    v.chainv([Z_REPL, Z_RAFT_B - T_CUSH, Z_RAFT_B, Z_CAP, Z_TOP], REPL_Y, 3750, ext=3)
+    v.chainv([Z_REPL, Z_RAFT_B - T_CUSH, Z_RAFT_B, Z_CAP, Z_TOP], REPL_Y, REPL_Y + 400, ext=3)
     # 标高
-    v.elev(-2500, Z_TOP, "+0.050", "L")
-    v.elev(-2900, 0, "±0.000", "L")
+    v.elev(-(Y_WALL + 700), Z_TOP, "+0.050", "L")
+    v.elev(-(Y_WALL + 1100), 0, "±0.000", "L")
     v.elev(0, Z_CAP, "-0.450", "R")
-    v.leader([(1525, zg), (2500, -1100)], "沟底标高随坡度变化", 2.6, "R")
+    gm = sum(GUT_Y) / 2
+    v.leader([(gm, zg), (Y_WALL + 700, -1100)], "沟底标高随坡度变化", 2.6, "R")
     v.elev(-1000, Z_RAFT_B, "-0.750", "R", down=True)
     v.elev(-1000, Z_REPL, "-3.000", "R", down=True)
     # 标注
-    v.leader([(-1700, -100), (-2500, 650)], "侧墙Q1(200厚)", 2.6, "L")
-    v.leader([(1525, zg + 10), (2300, 650)], "排水沟150宽", 2.6, "R")
+    v.leader([(-(B_HALF + 100), -100), (-(Y_WALL + 700), 650)], "侧墙Q1(200厚)", 2.6, "L")
+    v.leader([(gm, zg + 10), (Y_WALL + 500, 650)], "排水沟150宽", 2.6, "R")
     v.leader([(500, -650), (900, -1700)], "底板300厚", 2.6, "R")
     v.leader([(-500, -800), (-1100, -1700)], "C15垫层", 2.6, "L")
-    v.leader([(-2700, -2600), (-1700, -2500)], "级配砂石", 2.6, "R")
+    v.leader([(-(Y_OUT + 350), -2600), (-1700, -2500)], "级配砂石", 2.6, "R")
 
 
 def section_44(v):
@@ -307,12 +308,12 @@ def section_44(v):
             (-Y_OUT - 100, Z_BEAM_B), (-Y_OUT, Z_BEAM_B), (-Y_OUT, 0)]
     gravel(v, [(-REPL_Y, Z_REPL), (REPL_Y, Z_REPL)] + foot + [(-REPL_Y, 0)])
     for s in (1, -1):
-        a, b = (1100, 1500) if s > 0 else (-1500, -1100)
+        a, b = PLATE_Y[1] if s > 0 else PLATE_Y[0]
         mortar_plate(v, a, b)
         cov = [(s * B_HALF, Z_SEAT), (s * (Y_OPEN_OUT + REB), Z_SEAT),
                (s * (Y_OPEN_OUT + REB), Z_TOP), (s * B_HALF, Z_TOP)]
         v.hatch(cov, "SOLID", "S-STEEL")
-        for yc in (1700, 1875, 2050):
+        for yc in COVER_RIBS:
             v.hatch([(s * (yc - 4), Z_SEAT - 60), (s * (yc + 4), Z_SEAT - 60), (s * (yc + 4), Z_SEAT),
                      (s * (yc - 4), Z_SEAT)], "SOLID", "S-STEEL")
     # 端墙内侧立面（以远可见）
@@ -325,23 +326,25 @@ def section_44(v):
                 "S-STEEL", rel=0.4)
     # 尺寸
     v.chainh([-Y_OUT, -Y_OPEN_OUT, -B_HALF, B_HALF, Y_OPEN_OUT, Y_OUT], Z_REPL, -3500, ext=3)
-    v.chainh([-1660, -1340, 1340, 1660], Z_TOP, 400, [None, "2680", None], ext=3)
-    v.dimh(-1500, 1500, Z_TOP, 750, "3000※(限位板中心距)", ext=3)
-    v.dimh(-1300, 1300, Z_TOP, 1100, "2600※(传感器中心距)", ext=3)
-    v.chainv([Z_REPL, Z_BEAM_B - T_CUSH, Z_BEAM_B, Z_CAP, Z_TOP], REPL_Y, 3750, ext=3)
+    ly = [LIMIT_Y[0][0], LIMIT_Y[0][1], LIMIT_Y[1][0], LIMIT_Y[1][1]]
+    v.chainh(ly, Z_TOP, 400, [None, f"{ly[2] - ly[1]}", None], ext=3)
+    v.dimh(-LIMIT_C, LIMIT_C, Z_TOP, 750, f"{2 * LIMIT_C}※(限位板中心距)", ext=3)
+    v.dimh(AY[0], AY[1], Z_TOP, 1100, f"{AY[1] - AY[0]}※(传感器中心距)", ext=3)
+    v.dimh(ANGLE_Y[0], ANGLE_Y[1], Z_TOP, 1450, f"{ANGLE_Y[1] - ANGLE_Y[0]}(护边角钢长)", ext=3)
+    v.chainv([Z_REPL, Z_BEAM_B - T_CUSH, Z_BEAM_B, Z_CAP, Z_TOP], REPL_Y, REPL_Y + 400, ext=3)
     # 标高
-    v.elev(-2700, Z_TOP, "+0.050", "L")
-    v.elev(-3100, 0, "±0.000", "L")
+    v.elev(-(Y_OUT + 350), Z_TOP, "+0.050", "L")
+    v.elev(-(Y_OUT + 750), 0, "±0.000", "L")
     v.elev(-300, Z_CAP, "-0.450", "R")
-    v.elev(-1300, Z_PLATE, "-0.400", "L")
+    v.elev(AY[0], Z_PLATE, "-0.400", "L")
     v.elev(-1000, Z_BEAM_B, "-1.250", "R", down=True)
     v.elev(-1000, Z_REPL, "-3.000", "R", down=True)
     # 标注
-    v.leader([(1500, -100), (2600, -700)], "M-2限位预埋板", 2.6, "R")
-    v.leader([(-800, Z_TOP - 40), (-1700, -800)], "M-3护边角钢", 2.6, "L")
+    v.leader([(LIMIT_C - 100, -100), (Y_OUT + 250, -700)], "M-2限位预埋板", 2.6, "R")
+    v.leader([(-1150, Z_TOP - 75), (-950, -170)], "M-3护边角钢", 2.6, "R")
     v.leader([(0, -1000), (600, -1900)], "ZL-2", 2.6, "R")
-    v.leader([(-1300, Z_PLATE_B), (-2000, -1250)], "M-1", 2.6, "L")
-    v.leader([(-2700, -2600), (-1700, -2500)], "级配砂石", 2.6, "R")
+    v.leader([(AY[0] + 150, Z_PLATE), (-850, -330)], "M-1", 2.6, "R")
+    v.leader([(-(Y_OUT + 350), -2600), (-1700, -2500)], "级配砂石", 2.6, "R")
 
 
 def sheet_sections(sh):

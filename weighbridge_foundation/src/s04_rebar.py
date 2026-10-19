@@ -22,31 +22,53 @@ def raft_x_len(d=14):
 
 Q1_LEN = 2 * (3825 + 4200 + 4200 + 3825) + 6 * (2 * 350 + 1200) + 4 * (350 + 1000)
 
+
+def n_at(length, sp, cover=40):
+    """长度 length 范围内间距 sp 的根数（两端保护层 cover）。"""
+    return int(math.ceil((length - 2 * cover) / sp)) + 1
+
+
+def hoop_len(w, h, d=10):
+    """封闭箍筋下料长度：外包周长 + 两个135°弯钩(11.9d)。"""
+    return int(2 * (w + h) + 2 * round(11.9 * d))
+
+
+W_RAFT = 2 * Y_WALL                 # 底板宽
+W_BEAM = 2 * Y_OUT                  # 墩梁长（横向）
+W_APP = 2 * APP_Y                   # 引道板宽
+L_APP = APP[0][1] - APP[0][0]       # 引道板长
+N_HOOP = n_at(W_BEAM, 150, 50)      # 每道墩梁箍筋道数
+YS = W_RAFT - 80                    # 底板Y向筋直段
+BS = W_BEAM - 80                    # 墩梁纵筋直段
+Q2S = W_BEAM - 60                   # 端墙水平筋直段
+YBS = W_APP - 80                    # 引道板横向筋直段
+CHAIRS = int(math.ceil((X_RIGHT - X_LEFT) * W_RAFT / 1e6 * 1.05 / 5.0) * 5)
+
 # (编号, 构件, 简图类型, 简图参数, 直径, 间距说明, 单根长mm 或 None, 根数, 总长m 指定或 None)
 BARS = [
-    ("1", "底板上层X向", "U", (21000, 210), 14, "@200", raft_x_len(), 19, None),
-    ("2", "底板下层X向", "U", (21000, 210), 14, "@200", raft_x_len(), 19, None),
-    ("3", "底板上层Y向", "U", (3520, 210), 14, "@200", 3940, 106, None),
-    ("4", "底板下层Y向", "U", (3520, 210), 14, "@200", 3940, 106, None),
-    ("5", "ZL-1底筋", "U", (4620, 300), 20, "7根/梁", 5220, 21, None),
-    ("6", "ZL-1顶筋", "U", (4620, 300), 20, "7根/梁", 5220, 21, None),
-    ("7", "ZL-1腰筋", "I", (4620,), 14, "G4/梁", 4620, 12, None),
-    ("8", "ZL-1外箍", "HOOP", (1110, 710), 10, "@150", 3878, 96, None),
-    ("9", "ZL-1内箍", "HOOP", (390, 710), 10, "@150", 2438, 96, None),
-    ("10", "ZL-2底筋", "U", (4620, 300), 20, "9根/梁", 5220, 18, None),
-    ("11", "ZL-2顶筋", "U", (4620, 300), 20, "9根/梁", 5220, 18, None),
-    ("12", "ZL-2腰筋", "I", (4620,), 14, "G4/梁", 4620, 8, None),
-    ("13", "ZL-2外箍", "HOOP", (1510, 710), 10, "@150", 4678, 64, None),
-    ("14", "ZL-2内箍", "HOOP", (400, 710), 10, "@150", 2458, 128, None),
+    ("1", "底板上层X向", "U", (21000, 210), 14, "@200", raft_x_len(), n_at(W_RAFT, 200), None),
+    ("2", "底板下层X向", "U", (21000, 210), 14, "@200", raft_x_len(), n_at(W_RAFT, 200), None),
+    ("3", "底板上层Y向", "U", (YS, 210), 14, "@200", YS + 420, n_at(X_RIGHT - X_LEFT, 200), None),
+    ("4", "底板下层Y向", "U", (YS, 210), 14, "@200", YS + 420, n_at(X_RIGHT - X_LEFT, 200), None),
+    ("5", "ZL-1底筋", "U", (BS, 300), 20, "7根/梁", BS + 600, 21, None),
+    ("6", "ZL-1顶筋", "U", (BS, 300), 20, "7根/梁", BS + 600, 21, None),
+    ("7", "ZL-1腰筋", "I", (BS,), 14, "G4/梁", BS, 12, None),
+    ("8", "ZL-1外箍", "HOOP", (1110, 710), 10, "@150", hoop_len(1110, 710), 3 * N_HOOP, None),
+    ("9", "ZL-1内箍", "HOOP", (390, 710), 10, "@150", hoop_len(390, 710), 3 * N_HOOP, None),
+    ("10", "ZL-2底筋", "U", (BS, 300), 20, "9根/梁", BS + 600, 18, None),
+    ("11", "ZL-2顶筋", "U", (BS, 300), 20, "9根/梁", BS + 600, 18, None),
+    ("12", "ZL-2腰筋", "I", (BS,), 14, "G4/梁", BS, 8, None),
+    ("13", "ZL-2外箍", "HOOP", (1510, 710), 10, "@150", hoop_len(1510, 710), 2 * N_HOOP, None),
+    ("14", "ZL-2内箍", "HOOP", (400, 710), 10, "@150", hoop_len(400, 710), 4 * N_HOOP, None),
     ("15", "Q1/Q3竖向筋", "UCAP", (720, 140, 150), 12, "@200双面", 1010, 500, None),
     ("16", "Q1/Q3水平筋", "I", (48900,), 12, "@200双面", None, 6, round(6 * Q1_LEN * 1.10 / 1000.0, 1)),
-    ("17", "Q2竖向筋", "L2", (1200, 210, 210), 14, "@200双面", 1620, 96, None),
-    ("18", "Q2水平筋", "U", (4640, 180), 12, "@200双面", 5000, 12, None),
-    ("19", "Q2拉筋", "TIE", (440,), 8, "@400×400", 640, 48, None),
-    ("20", "YB-1纵向筋", "U", (6100, 180), 12, "@150双层", 6460, 100, None),
-    ("21", "YB-1横向筋", "U", (3520, 180), 12, "@150双层", 3880, 168, None),
+    ("17", "Q2竖向筋", "L2", (1200, 210, 210), 14, "@200双面", 1620, 4 * int(math.ceil(W_BEAM / 200)), None),
+    ("18", "Q2水平筋", "U", (Q2S, 180), 12, "@200双面", Q2S + 360, 12, None),
+    ("19", "Q2拉筋", "TIE", (440,), 8, "@400×400", 640, 4 * int(math.ceil(W_BEAM / 400)), None),
+    ("20", "YB-1纵向筋", "U", (6100, 180), 12, "@150双层", 6460, 4 * n_at(W_APP, 150, 30), None),
+    ("21", "YB-1横向筋", "U", (YBS, 180), 12, "@150双层", YBS + 360, 4 * n_at(L_APP, 150, 30), None),
     ("22", "集水坑洞边附加筋", "I", (1340,), 14, "2根/边", 1340, 16, None),
-    ("23", "底板马凳筋", "CHAIR", (300, 250), 12, "@1000×1000", 850, 80, None),
+    ("23", "底板马凳筋", "CHAIR", (300, 250), 12, "@1000×1000", 850, CHAIRS, None),
 ]
 
 
@@ -159,11 +181,11 @@ def raft_plan(v):
     for s in (1, -1):
         x1, x2, y1, y2 = SUMP
         v.rect(x1, s * y1, x2, s * y2, "S-THIN")
-    v.leader([(SUMP[1], SUMP[3]), (AX[2] + 1300, 2900)], "洞边每侧附加2C14", h=2.8, side="R", marks=["22"])
+    v.leader([(SUMP[1], SUMP[3]), (AX[2] + 1300, Y_OUT + 200)], "洞边每侧附加2C14", h=2.8, side="R", marks=["22"])
     # 尺寸
-    v.chainh([X_LEFT] + [b for x1, x2, n in BEAMS for b in (x1, x2)][1:-1] + [X_RIGHT], -Y_OUT, -3000,
-             ext=3)
-    v.dimh(X_LEFT, X_RIGHT, -Y_OUT, -3500, ext=3)
+    v.chainh([X_LEFT] + [b for x1, x2, n in BEAMS for b in (x1, x2)][1:-1] + [X_RIGHT], -Y_OUT,
+             -(Y_OUT + 650), ext=3)
+    v.dimh(X_LEFT, X_RIGHT, -Y_OUT, -(Y_OUT + 1150), ext=3)
     v.chainv([-Y_OUT, -Y_WALL, Y_WALL, Y_OUT], X_LEFT, -1300, ext=3)
 
 
@@ -233,7 +255,7 @@ def zl1_elev(v):
             (-Y_OPEN_OUT - REB, Z_TOP), (-Y_OUT, Z_TOP)]
     v.pl(body, "S-CONC", closed=True)
     for s in (1, -1):
-        a, b = sorted((s * 1100, s * 1500))
+        a, b = PLATE_Y[1] if s > 0 else PLATE_Y[0]
         v.hatch([(a, Z_PLATE_B), (b, Z_PLATE_B), (b, Z_PLATE), (a, Z_PLATE)], "SOLID", "S-STEEL")
         v.pl([(a - PAD, zt), (b + PAD, zt), (b + PAD - 25, Z_PLATE_B), (a - PAD + 25, Z_PLATE_B)],
              "S-THIN", closed=True)
@@ -248,14 +270,16 @@ def zl1_elev(v):
         v.line((y, zb + 55), (y, zt - 35), "S-THIN")
         y += 150
     for s in (1, -1):
-        for yy in (2185, 2315):
+        w1, w2 = Y_OPEN_OUT + 35, Y_OUT - 35
+        for yy in (w1, w2):
             v.pl([(s * (yy - 160), zb + 75), (s * yy, zb + 75), (s * yy, Z_TOP - 30)], "S-REBAR")
-        v.line((s * 2185, Z_TOP - 30), (s * 2315, Z_TOP - 30), "S-REBAR")
-    v.chainh([-Y_OUT, -Y_OPEN_OUT, -1300, 1300, Y_OPEN_OUT, Y_OUT], zb, zb - 350,
-             [None, None, "2600※", None, None], ext=3)
+        v.line((s * w1, Z_TOP - 30), (s * w2, Z_TOP - 30), "S-REBAR")
+    v.chainh([-Y_OUT, -Y_OPEN_OUT, AY[0], AY[1], Y_OPEN_OUT, Y_OUT], zb, zb - 350,
+             [None, None, f"{AY[1] - AY[0]}※", None, None], ext=3)
     v.dimh(-Y_OUT, Y_OUT, zb, zb - 700, ext=3)
-    v.leader([(-1700, zt - 55), (-1900, 400)], "7C20(两端弯折15d)", h=2.6, side="L", marks=['6'])
-    v.leader([(700, zb + 75), (2500, zb - 150)], "7C20(两端弯折15d)", h=2.6, side="R", marks=['5'])
+    v.leader([(-(B_HALF + 100), zt - 55), (-(B_HALF + 300), 400)], "7C20(两端弯折15d)", h=2.6, side="L",
+             marks=['6'])
+    v.leader([(700, zb + 75), (Y_OUT + 150, zb - 150)], "7C20(两端弯折15d)", h=2.6, side="R", marks=['5'])
     v.leader([(0, -860), (300, 400)], "C10@150(4)", h=2.6, side="R", marks=['8', '9'])
     v.leader([(Y_OUT - 35, -200), (Y_OUT + 500, 400)], "C12@200", h=2.6, side="R", marks=['15'])
 
@@ -335,24 +359,26 @@ def zl2_section(v):
 def q1_section(v):
     zg = z_gutter(5000)
     zf = z_floor(GUT_Y[0])
-    zf9 = z_floor(900)
-    body = [(900, zf9), (GUT_Y[0], zf), (GUT_Y[0], zg), (B_HALF, zg), (B_HALF, Z_TOP),
-            (Y_WALL, Z_TOP), (Y_WALL, Z_RAFT_B), (900, Z_RAFT_B)]
+    y0 = B_HALF - 700                     # 断开处
+    zf0 = z_floor(y0)
+    g0 = GUT_Y[0]
+    body = [(y0, zf0), (g0, zf), (g0, zg), (B_HALF, zg), (B_HALF, Z_TOP),
+            (Y_WALL, Z_TOP), (Y_WALL, Z_RAFT_B), (y0, Z_RAFT_B)]
     v.pl(body, "S-CONC")
-    v.break_line((900, Z_RAFT_B - 60), (900, zf9 + 60))
-    v.rect(900, Z_RAFT_B - T_CUSH, Y_WALL + 100, Z_RAFT_B, "S-THIN")
-    v.hatch([(900, Z_RAFT_B - T_CUSH), (Y_WALL + 100, Z_RAFT_B - T_CUSH), (Y_WALL + 100, Z_RAFT_B),
-             (900, Z_RAFT_B)], "AR-CONC")
+    v.break_line((y0, Z_RAFT_B - 60), (y0, zf0 + 60))
+    v.rect(y0, Z_RAFT_B - T_CUSH, Y_WALL + 100, Z_RAFT_B, "S-THIN")
+    v.hatch([(y0, Z_RAFT_B - T_CUSH), (Y_WALL + 100, Z_RAFT_B - T_CUSH), (Y_WALL + 100, Z_RAFT_B),
+             (y0, Z_RAFT_B)], "AR-CONC")
     # 底板筋（排水沟处上层筋下弯）
-    zt1 = -487
+    zt1 = z_floor(g0 - 300) - 37
     zt2 = zg - 37
-    v.pl([(900, zt1), (1380, zt1), (1450, zt2), (Y_WALL - 40, zt2), (Y_WALL - 40, zt2 - 180)], "S-REBAR")
-    v.pl([(900, -693), (Y_WALL - 40, -693), (Y_WALL - 40, -693 + 210)], "S-REBAR")
-    for y in (1000, 1200, 1400):
+    v.pl([(y0, zt1), (g0 - 70, zt1), (g0, zt2), (Y_WALL - 40, zt2), (Y_WALL - 40, zt2 - 180)], "S-REBAR")
+    v.pl([(y0, -693), (Y_WALL - 40, -693), (Y_WALL - 40, -693 + 210)], "S-REBAR")
+    for y in (g0 - 450, g0 - 250, g0 - 50):
         v.dot((y, zt1 - 14), 0.7, real_d=14)
         v.dot((y, -679), 0.7, real_d=14)
-    v.dot((1600, zt2 - 14), 0.7, real_d=14)
-    v.dot((1600, -679), 0.7, real_d=14)
+    v.dot((B_HALF, zt2 - 14), 0.7, real_d=14)
+    v.dot((B_HALF, -679), 0.7, real_d=14)
     # 墙筋
     yi, yo = B_HALF + 36, Y_WALL - 36
     v.pl([(yi - 150, -700), (yi, -700), (yi, Z_TOP - 30), (yo, Z_TOP - 30), (yo, -700), (yo - 150, -700)],
@@ -366,13 +392,13 @@ def q1_section(v):
     v.chainh([GUT_Y[0], B_HALF, Y_WALL], Z_RAFT_B, Z_RAFT_B - 300, ext=3)
     v.chainv([Z_RAFT_B, Z_CAP, Z_TOP], Y_WALL, Y_WALL + 250, ext=3)
     # 标注
-    v.leader([(yi, -200), (1100, 200)], "C12@200(双面)", h=2.6, side="L", marks=['15'])
-    v.leader([(yo - 12, -300), (2400, 250)], "C12@200(双面)", h=2.6, side="R", marks=['16'])
-    v.leader([(1650, zt2), (2400, -1000)], "排水沟处上层筋下弯", 2.6, "R")
+    v.leader([(yi, -200), (B_HALF - 500, 200)], "C12@200(双面)", h=2.6, side="L", marks=['15'])
+    v.leader([(yo - 12, -300), (Y_WALL + 600, 250)], "C12@200(双面)", h=2.6, side="R", marks=['16'])
+    v.leader([(B_HALF + 50, zt2), (Y_WALL + 600, -1000)], "排水沟处上层筋下弯", 2.6, "R")
 
 
 def yb1_plan(v):
-    """引道板配筋平面（局部坐标：x 沿行车方向 0~6180，y 横向 ±1800）。"""
+    """引道板配筋平面（局部坐标：x 沿行车方向 0~6180，y 横向 ±APP_Y）。"""
     Lb, Bh = APP[0][1] - APP[0][0], APP_Y
     v.rect(0, -Bh, Lb, Bh, "S-CONC")
     v.pl([(40, 600 + 180), (40, 600), (Lb - 40, 600), (Lb - 40, 600 + 180)], "S-REBAR")
@@ -450,7 +476,7 @@ def sheet_rebar(sh):
     q1_section(v5)
     p.detail_title(318, 150, None, "侧墙Q1截面(Q3同)", "1:20", h=5.0)
 
-    v6 = sh.view(458, 255, 50)
+    v6 = sh.view(472, 255, 50)
     yb1_plan(v6)
     v7 = sh.view(482, 150, 20)
     yb1_section(v7)
