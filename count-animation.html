@@ -169,6 +169,12 @@ kbd {
           <option value="10">超密（10 行）</option>
         </select>
       </label>
+      <label class="field">墙面色调
+        <select id="tone">
+          <option value="brand" selected>品牌蓝调（推荐）</option>
+          <option value="natural">照片原色</option>
+        </select>
+      </label>
       <label class="field">计数到
         <input id="target" type="number" min="10" max="99999" step="1" value="1000" inputmode="numeric">
       </label>
@@ -227,9 +233,9 @@ kbd {
     orange: '#f89e02',
     white: [[0, '#ffffff'], [0.55, '#f1f6ff'], [1, '#bfd3ff']],
     plus: [[0, '#ffd27a'], [1, '#f88c02']],
-    numGlow: 'rgba(60,130,255,0.55)',
+    numGlow: 'rgba(80,160,255,0.6)',
     plusGlow: 'rgba(255,150,30,0.5)',
-    soft: '#bcd0fb',
+    soft: '#a9c6ff',
     track: 'rgba(150,195,255,0.22)',
     vignette: '1,4,22',
   };
@@ -267,6 +273,7 @@ kbd {
     plus: true,
     fx: true,
     spot: true,
+    tone: 'brand',
     loop: false,
     span: SPANS.normal,
     out: { w: 1280, h: 720 },
@@ -881,13 +888,15 @@ layout(location=4) in vec4 iPosA;
 layout(location=5) in vec4 iQuat;
 layout(location=6) in vec4 iSizeE;
 layout(location=7) in vec4 iUV;
+layout(location=8) in vec4 iFx;
 uniform mat4 uVP;
-out vec3 vW; out vec3 vN; out vec2 vUV; out vec2 vL; out vec2 vSize; out float vFace; out float vA; out float vE;
+out vec3 vW; out vec3 vN; out vec2 vUV; out vec2 vL; out vec2 vSize; out float vFace; out float vA; out float vE; out float vG;
 vec3 qrot(vec4 q, vec3 v) { return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v); }
 void main() {
   vec3 w = iPosA.xyz + qrot(iQuat, aPos * iSizeE.xyz);
   vW = w; vN = qrot(iQuat, aNor); vL = aUV; vSize = iSizeE.xy; vFace = aFace; vA = iPosA.w; vE = iSizeE.w;
   vUV = mix(iUV.xy, iUV.zw, aUV);
+  vG = iFx.x;
   gl_Position = uVP * vec4(w, 1.0);
 }`,
     cardFS: `#version 300 es
@@ -902,8 +911,16 @@ uniform vec3 uSpotPos[3];
 uniform vec3 uSpotDir[3];
 uniform vec3 uSpotCfg[3];
 uniform float uAmb;
-in vec3 vW; in vec3 vN; in vec2 vUV; in vec2 vL; in vec2 vSize; in float vFace; in float vA; in float vE;
+in vec3 vW; in vec3 vN; in vec2 vUV; in vec2 vL; in vec2 vSize; in float vFace; in float vA; in float vE; in float vG;
 layout(location=0) out vec4 o;
+// 品牌蓝调：按明暗把照片映射到 深海蓝 → 宝蓝 → 电光蓝 → 天蓝，整面墙统一成一块蓝色大屏
+vec3 grade(vec3 c, float g) {
+  float l = dot(c, vec3(0.299, 0.587, 0.114));
+  vec3 d = l < 0.45 ? mix(vec3(0.012, 0.039, 0.165), vec3(0.055, 0.165, 0.61), l / 0.45)
+         : l < 0.8 ? mix(vec3(0.055, 0.165, 0.61), vec3(0.1, 0.36, 0.92), (l - 0.45) / 0.35)
+         : mix(vec3(0.1, 0.36, 0.92), vec3(0.32, 0.62, 1.0), (l - 0.8) / 0.2);
+  return mix(c, d, g);
+}
 layout(location=1) out vec4 oG;
 void main() {
   vec3 N = normalize(vN);
@@ -911,7 +928,7 @@ void main() {
   vec3 base;
   float edge = 0.0;
   if (vFace < 0.5) {
-    base = texture(uAtlas, vUV).rgb;
+    base = grade(texture(uAtlas, vUV).rgb, vG);
     vec2 d = min(vL, 1.0 - vL) * vSize;
     edge = 1.0 - smoothstep(0.0, 1.4, min(d.x, d.y));
   } else if (vFace < 1.5) {
@@ -933,7 +950,7 @@ void main() {
     spotSpec += cone * pow(max(dot(N, normalize(V - L)), 0.0), 50.0);
   }
   vec3 sheen = vec3(0.85, 0.92, 1.0) * (spec + spec2 + fres + spotSpec * 0.45);
-  vec3 col = base * (min(diff, 0.97) * uAmb + spot * 0.75) + sheen + edge * 0.2;
+  vec3 col = base * (min(diff, 0.97) * uAmb + spot * 0.85) + sheen + edge * 0.2;
   float band = uSweep.z * exp(-pow((vW.x - vW.y * 0.35 - uSweep.x) / uSweep.y, 2.0));
   float glow = clamp(vE + band, 0.0, 1.0);
   col = mix(col, vec3(0.9, 0.95, 1.0), glow * 0.75);
@@ -977,9 +994,9 @@ void main() {
   float e = pow(pow(r.x, 4.0) + pow(r.y, 4.0), 0.25);
   float m = 1.0 - smoothstep(0.58, 1.0, e);
   vec3 frost = texture(uFrost, gl_FragCoord.xy / uRes).rgb;
-  vec3 col = mix(frost * vec3(0.5, 0.6, 0.9), vec3(0.015, 0.045, 0.18), 0.6);
-  o = vec4(col, m * 0.9);
-  oG = vec4(0.0, 0.0, 0.0, m * 0.9);
+  vec3 col = mix(frost * vec3(0.45, 0.55, 0.9), vec3(0.012, 0.04, 0.16), 0.62);
+  o = vec4(col, m * 0.85);
+  oG = vec4(0.0, 0.0, 0.0, m * 0.85);
 }`,
     panelFS: `#version 300 es
 precision highp float;
@@ -1120,9 +1137,9 @@ void main() {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
     const inst = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, inst);
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       gl.enableVertexAttribArray(4 + i);
-      gl.vertexAttribPointer(4 + i, 4, gl.FLOAT, false, 64, i * 16);
+      gl.vertexAttribPointer(4 + i, 4, gl.FLOAT, false, 80, i * 16);
       gl.vertexAttribDivisor(4 + i, 1);
     }
     gl.bindVertexArray(null);
@@ -1162,7 +1179,7 @@ void main() {
 
     return {
       gl, glc, P, cardVAO, inst, quadVAO, dustVAO, NDUST, emptyVAO, aniso, panelTex,
-      nIdx: idx.length, instData: new Float32Array(16 * 1200), atlasTex: null, targets: null,
+      nIdx: idx.length, instData: new Float32Array(20 * 1200), atlasTex: null, targets: null,
     };
   }
 
@@ -1289,12 +1306,13 @@ void main() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
-  function writeInst(arr, i, pos, alpha, q, w, h, th, emis, uv) {
-    const o = i * 16;
+  function writeInst(arr, i, pos, alpha, q, w, h, th, emis, uv, grade) {
+    const o = i * 20;
     arr[o] = pos[0]; arr[o + 1] = pos[1]; arr[o + 2] = pos[2]; arr[o + 3] = alpha;
     arr[o + 4] = q[0]; arr[o + 5] = q[1]; arr[o + 6] = q[2]; arr[o + 7] = q[3];
     arr[o + 8] = w; arr[o + 9] = h; arr[o + 10] = th; arr[o + 11] = emis;
     arr[o + 12] = uv[0]; arr[o + 13] = uv[1]; arr[o + 14] = uv[2]; arr[o + 15] = uv[3];
+    arr[o + 16] = grade || 0; arr[o + 17] = 0; arr[o + 18] = 0; arr[o + 19] = 0;
   }
 
   function renderGL(t, v) {
@@ -1308,8 +1326,10 @@ void main() {
 
     // —— 本帧要画的卡片：不透明的一批 + 半透明的一批（残影、淡入） ——
     const solid = [], trans = [];
-    solid.push([[0, 0, -11], 1, IDQ, W + 16, H + 16, 18, 0, G.uv.wall]);   // 墙体：有厚度的深色大屏
-    for (const c of plan.cells) solid.push([[c.X, c.Y, -1.5], 1, IDQ, cw, ch, 0.6, 0, G.uv.slot]);
+    const tone = state.tone === 'brand' ? 0.88 : 0;   // 墙面调色强度；飞行中保留大部分原色，落墙后融进蓝调
+    const flyTone = tone * 0.45;
+    solid.push([[0, 0, -11], 1, IDQ, W + 16, H + 16, 18, 0, G.uv.wall, 0]);   // 墙体：有厚度的深色大屏
+    for (const c of plan.cells) solid.push([[c.X, c.Y, -1.5], 1, IDQ, cw, ch, 0.6, 0, G.uv.slot, 0]);
     const sw = (t - plan.sweep) / 1.6;
     const sweepX = sw > 0 && sw < 1 ? lerp(-900, 900, easeInOutSine(sw)) : -5000;
     for (const cd of plan.cards) {
@@ -1320,26 +1340,26 @@ void main() {
         const bump = d < 0.32 ? 9 * Math.sin((Math.PI * d) / 0.32) * (1 - d / 0.32) : 0;
         let emis = (cd.kind === 'sheet' ? 0.55 : 0.85) * (1 - easeOutCubic(clamp01(d / 0.5)));
         if (state.fx && t > plan.sweep + 1.6) emis += 0.32 * Math.max(0, Math.sin(t * cd.cell.tf + cd.cell.tp)) ** 14;
-        solid.push([[cd.cell.X, cd.cell.Y, THICK / 2 + bump], 1, IDQ, cw, ch, THICK, emis, uv]);
+        solid.push([[cd.cell.X, cd.cell.Y, THICK / 2 + bump], 1, IDQ, cw, ch, THICK, emis, uv, lerp(flyTone, tone, easeInOutSine(clamp01(d / 0.7)))]);
         continue;
       }
       const at = cd.kind === 'student' ? studentAt : sheetAt;
       const s = at(cd, t);
-      (s.fade >= 1 ? solid : trans).push([s.pos, s.fade, s.q, cw, ch, THICK, 0, uv]);
+      (s.fade >= 1 ? solid : trans).push([s.pos, s.fade, s.q, cw, ch, THICK, 0, uv, flyTone]);
       // 运动模糊：只给移动快的卡片加残影
       const last = at(cd, t - BLUR_DT[BLUR_DT.length - 1]);
       if (Math.hypot(s.pos[0] - last.pos[0], s.pos[1] - last.pos[1], s.pos[2] - last.pos[2]) > 5) {
         BLUR_DT.forEach((dt, j) => {
           const g = at(cd, t - dt);
-          trans.push([g.pos, BLUR_A[j] * s.fade, g.q, cw, ch, THICK, 0, uv]);
+          trans.push([g.pos, BLUR_A[j] * s.fade, g.q, cw, ch, THICK, 0, uv, flyTone]);
         });
       }
     }
     const ez = cam.eye;
     trans.sort((a, b) => Math.hypot(b[0][0] - ez[0], b[0][1] - ez[1], b[0][2] - ez[2]) - Math.hypot(a[0][0] - ez[0], a[0][1] - ez[1], a[0][2] - ez[2]));
     const all = solid.concat(trans);
-    if (G.instData.length < all.length * 16) G.instData = new Float32Array(all.length * 16 + 1600);
-    all.forEach((r, i) => writeInst(G.instData, i, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]));
+    if (G.instData.length < all.length * 20) G.instData = new Float32Array(all.length * 20 + 2000);
+    all.forEach((r, i) => writeInst(G.instData, i, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]));
 
     // —— 面板贴图 ——
     gl.activeTexture(gl.TEXTURE1);
@@ -1382,7 +1402,7 @@ void main() {
     gl.uniform1i(cu.uAtlas, 0);
     gl.bindVertexArray(G.cardVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, G.inst);
-    gl.bufferData(gl.ARRAY_BUFFER, G.instData.subarray(0, all.length * 16), gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, G.instData.subarray(0, all.length * 20), gl.DYNAMIC_DRAW);
     gl.depthMask(true);
     gl.drawElementsInstanced(gl.TRIANGLES, G.nIdx, gl.UNSIGNED_SHORT, 0, solid.length);
 
@@ -1427,7 +1447,7 @@ void main() {
       gl.bindTexture(gl.TEXTURE_2D, G.atlasTex);
       gl.bindVertexArray(G.cardVAO);
       gl.bindBuffer(gl.ARRAY_BUFFER, G.inst);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, G.instData.subarray(solid.length * 16, all.length * 16));
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, G.instData.subarray(solid.length * 20, all.length * 20));
       gl.drawElementsInstanced(gl.TRIANGLES, G.nIdx, gl.UNSIGNED_SHORT, 0, trans.length);
     }
 
@@ -1573,7 +1593,7 @@ void main() {
         lerp(9.5, 13, conv), lerp(5.5, 7.5, conv), 0.95 * power),
       mk([0, 1050, 600], [sway(25, 0.4, 0), 30, 0], 16, 10, 0.4 * conv),
     ];
-    list.amb = state.spot ? lerp(0.6, 0.68, conv) : 1;
+    list.amb = state.spot ? lerp(0.74, 0.8, conv) : 0.95;
     return list;
   }
 
@@ -1834,6 +1854,7 @@ void main() {
   $('loop').addEventListener('change', (e) => { state.loop = e.target.checked; });
   $('fx').addEventListener('change', (e) => { state.fx = e.target.checked; if (!state.playing) render(state.t); });
   $('spot').addEventListener('change', (e) => { state.spot = e.target.checked; if (!state.playing) render(state.t); });
+  $('tone').addEventListener('change', (e) => { state.tone = e.target.value; if (!state.playing) render(state.t); });
   $('speed').addEventListener('change', (e) => { state.span = SPANS[e.target.value]; stopAt(0); rebuild(false); });
   $('rows').addEventListener('change', (e) => { state.rows = Number(e.target.value); stopAt(0); rebuild(false); });
   $('plus').addEventListener('change', (e) => { state.plus = e.target.checked; rebuild(true); });
