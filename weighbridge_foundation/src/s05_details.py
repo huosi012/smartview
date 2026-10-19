@@ -56,25 +56,26 @@ def node_end_wall(v):
     v.pl([(X_LEFT + 37, -780), (X_LEFT + 37, Z_LEDGE - 30), (X_LEDGE_L + 37, Z_LEDGE - 30)], "S-REBAR")
     v.line((700, Z_CAP - 72), (0, Z_CAP - 72), "S-REBAR")
     # 尺寸
-    v.dimv(Z_PLATE, Z_TOP, 400, 600, "450(+2/0)※", ext=3)
+    v.dimv(Z_PLATE, Z_TOP, 400, 520, "450(+2/0)※", ext=3)
     v.chainv([Z_LIMIT_B, Z_LIMIT_T, Z_TOP], -16, 80, ["150", "75"], ext=None)
     v.chainh([X_LEFT, -320, X_LEDGE_L, 0], Z_TOP, 220, ["180", "20", "300"], ext=3)
     v.dimh(0, 175, Z_TOP, 250, "175※", ext=3)
     v.dimv(Z_LEDGE, Z_TOP, X_LEFT, -700, "250", ext=3)
     # 标高
-    v.elev(560, Z_TOP, "+0.050", "R")
-    v.elev(560, Z_PLATE, "-0.400", "R")
-    v.elev(560, Z_CAP, "-0.450", "R", down=True)
+    v.elev(640, Z_TOP, "+0.050", "R")
+    v.elev(640, Z_PLATE, "-0.400", "R")
+    v.line((700, Z_CAP), (900, Z_CAP), "S-THIN")
+    v.elev(820, Z_CAP, "-0.450", "R", down=True)
     v.elev(-760, Z_TOP, "+0.050(引道板端)", "L")
     # 标注
-    v.leader([(-40, Z_TOP), (-250, 330)], "M-3 L75×75×7", h=2.6, side="L")
+    v.leader([(-40, Z_TOP), (-120, 480)], "M-3 L75×75×7", h=2.6, side="L")
     v.leader([(-100, -45), (-650, -280)], "锚筋C16,L=250", h=2.6, side="L")
     v.leader([(-20, Z_LIMIT_T + 5), (-650, -420)], "焊接(有锚筋侧上边与角钢焊)", h=2.4, side="L")
     v.leader([(-8, -120), (-650, -560)], "M-2 -320×150×16", h=2.6, side="L")
     v.leader([(-420, Z_LEDGE + 3), (-650, -700)], "油毡滑动层", h=2.4, side="L")
     v.leader([(-310, Z_TOP - 15), (-600, 330)], "20缝,聚氨酯密封胶", h=2.4, side="L")
-    v.leader([(300, Z_PLATE), (480, -150)], "M-1", h=2.6, side="R")
-    v.leader([(225, Z_CAP + 10), (760, -560)], "1:1水泥砂浆座浆", h=2.4, side="R")
+    v.leader([(260, Z_PLATE), (150, -150)], "M-1", h=2.6, side="L")
+    v.leader([(225, Z_CAP + 10), (760, -680)], "1:1水泥砂浆座浆", h=2.4, side="R")
     v.text(175, 440, "传感器中心线", 2.4, "BC")
     v.text(690, 30, "秤台(厂家)", 2.4, "TR")
 
@@ -127,7 +128,7 @@ def opening_plan(v):
     v.dimh(-450, 450, Y_OUT, 2900, "900(盖板)", ext=3)
     v.chainv([B_HALF, Y_OPEN_OUT, Y_OPEN_OUT + REB, Y_OUT], 600, 850, ["550", "50", "150"], ext=3)
     v.chainv([B_HALF, 1750], -900, -1100, ["150"], ext=3)
-    v.leader([(b, 1900), (780, 2050)], "JSK-1 400×400", h=2.4, side="R")
+    v.leader([(b, 1900), (950, 1950)], "JSK-1 400×400", h=2.4, side="R")
     v.leader([(-430, 2180), (-800, 2500)], "M-4 L50×5", h=2.4, side="L")
     v.leader([(0, 2500), (300, 2800)], "DN150排水管", h=2.4, side="R")
     v.leader([(-330, 1650), (-750, 2000)], "排水沟", h=2.4, side="L")
@@ -163,16 +164,15 @@ def opening_section(v):
     steel_fill(v, [(1250, Z_PLATE_B), (1500, Z_PLATE_B), (1500, Z_PLATE), (1250, Z_PLATE)])
     v.line((1585, Z_TOP), (1585, -250), "S-HIDE2")
     # 尺寸
-    v.chainv([Z_SUMP, Z_CAP, Z_SEAT, Z_TOP], Y_OUT, 2650, ["400", "490", "10"], ext=3)
-    v.chainh([B_HALF, sy1, sy2, Y_OPEN_OUT, Y_OPEN_OUT + REB, Y_OUT], Z_SUMP, -1250,
-             ["100", "400", "50", "50", "150"], ext=3)
+    v.chainv([Z_SUMP, Z_CAP, Z_TOP], Y_OUT, 2650, ["400", "500"], ext=3)
+    v.chainh([B_HALF, sy1, sy2, Y_OPEN_OUT + REB, Y_OUT], Z_SUMP, -1250, ["100", "400", "100", "150"], ext=3)
     v.elev(1350, Z_TOP, "+0.050", "L")
     v.elev(2700, 0, "±0.000", "L")
-    v.elev(1900, Z_SUMP, "-0.850", "R", down=True)
+    v.elev(1850, Z_SUMP, "-0.850", "R")
     v.leader([(1800, Z_TOP - 5), (1700, 330)], "GB-1 δ10花纹钢板", h=2.4, side="L")
-    v.leader([(1875, Z_SEAT - 40), (2050, -200)], "加劲肋-60×8", h=2.4, side="R")
+    v.leader([(1875, Z_SEAT - 40), (1600, -230)], "加劲肋-60×8", h=2.4, side="L")
     v.leader([(Y_OPEN_OUT + 3, Z_SEAT - 30), (2600, 250)], "M-4 L50×5", h=2.4, side="R")
-    v.leader([(2600, Z_PIPE + 80), (2550, -550)], "DN150", h=2.4, side="R")
+    v.leader([(2450, Z_PIPE + 80), (2750, -950)], "DN150", h=2.4, side="R")
     v.text(1585, -260, "秤台边", 2.2, "TC")
 
 
@@ -201,7 +201,7 @@ def gutter_cross(v):
     v.chainh([-400, -260, 260, 400], Y_OUT, 2700, ["140", "520", "140"], ext=3)
     v.chainv([1450, 1600, 1750], 1000, 1250, ["150", "150"], ext=3)
     v.text(0, 1350, "传感器水泥台", 2.4, "MC")
-    v.text(-700, 1780, "沟底i=0.5%", 2.2, "BC")
+    v.text(-780, 1430, "沟底i=0.5%", 2.2, "TC")
     v.text(0, 2000, "检修口", 2.4, "MC")
 
 
@@ -214,7 +214,7 @@ def m1(v):
     v.dimv(0, 400, 400, 520, ext=3)
     steel_fill(v, [(600, 0), (620, 0), (620, 400), (600, 400)])
     v.dimh(600, 620, 400, 500, "20", ext=None)
-    v.text(200, 200 - 60, "-400×400×20", 2.4, "TC")
+    v.text(300, 100, "-400×400×20", 2.4, "MC")
     v.text(700, 200, "板面要平", 2.6, "ML")
 
 
@@ -302,7 +302,7 @@ def grounding(v):
     v.dimv(-700, 0, xe, xe - 400, "700", ext=3)
     v.elev(-2000, 0, "±0.000", "L")
     v.leader([(xe, -2200), (xe + 450, -2500)], "JD-1 L50×5,L=2300(热镀锌)", h=2.4, side="R")
-    v.leader([(-1100, -700), (-900, -400)], "-40×4镀锌扁钢", h=2.4, side="R")
+    v.leader([(-1100, -700), (-1300, 300)], "-40×4镀锌扁钢", h=2.4, side="L")
     v.leader([(-300, Z_TOP - 60), (200, 300)], "与护边角钢锚筋焊接", h=2.4, side="R")
 
 
@@ -318,7 +318,6 @@ def conduit(v):
     x0 = 1975
     v.pl([(x0, -410), (x0, -800), (x0 + 120, -920), (3000, -940)], "S-PIPE")
     v.pl([(x0 + 40, -410), (x0 + 40, -790), (x0 + 130, -880), (3000, -900)], "S-PIPE")
-    v.dimv(Z_CAP, -410, x0, x0 - 250, "40", ext=None)
     v.leader([(x0 + 20, -410), (1600, -150)], "管口高出混凝土面40", h=2.4, side="L")
     v.leader([(2700, -920), (2600, -1350)], "φ40 PVC管至秤房(管内预穿铁丝)", h=2.4, side="L")
     v.elev(1450, Z_CAP, "-0.450", "R")

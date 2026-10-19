@@ -17,7 +17,7 @@ from ezdxf.addons.drawing.config import (BackgroundPolicy, ColorPolicy,  # noqa:
 from ezdxf.addons.drawing.matplotlib import MatplotlibBackend  # noqa: E402
 
 import geom as G  # noqa: E402
-from cadlib import A1, CAD, SHEET_SCALE, draw_frame  # noqa: E402
+from cadlib import A1, CAD, SHEET_SCALE, draw_frame, mask_texts  # noqa: E402
 
 SHEETS = []
 
@@ -42,12 +42,23 @@ DWG_FONT = "simfang.ttf"      # 交付 DXF 字体：仿宋
 PREVIEW_FONT = "NotoSansCJK-Regular.ttc"
 
 
-def build_sheet(font, number, title, scale, func, x0=0.0, cad=None, size=A1):
-    cad = cad or CAD(font=font)
+def build_sheet(number, title, scale, func, x0=0.0, cad=None, size=A1, mask=True):
+    """绘制一张图（预览字体），并做文字遮罩。cad 给出时追加到该文件中。"""
+    cad = cad or CAD(font=PREVIEW_FONT)
     sh = cad.sheet(x0, 0.0)
     draw_frame(sh, title, number, scale, G.PROJECT, G.SUBITEM, size=size)
     func(sh)
+    if mask:
+        mask_texts(cad.msp)
     return cad
+
+
+def save_dxf(cad, path):
+    """以交付字体（仿宋）保存 DXF；图形与预览完全一致，仅字体文件不同。"""
+    style = cad.doc.styles.get("HZ")
+    style.dxf.font = DWG_FONT
+    cad.doc.saveas(path)
+    style.dxf.font = PREVIEW_FONT
 
 
 def render(cad, x0=0.0, png=None, pdf_pages=None, dpi=200, size=A1):
@@ -85,35 +96,32 @@ def main():
             return
 
     sel = [s for s in SHEETS if only is None or s[0] == only]
-    # 1) 预览（PNG + 合并 PDF），使用本机中文字体
     pdf = None if only else PdfPages(os.path.join(out, "汽车衡基础施工图(预览).pdf"))
     for number, title, scale, func in sel:
-        cad = build_sheet(PREVIEW_FONT, number, title, scale, func)
+        cad = build_sheet(number, title, scale, func)
         render(cad, png=os.path.join(prev_dir, f"{number}.png"), pdf_pages=pdf)
-        print("rendered", number)
+        save_dxf(cad, os.path.join(out, f"{number} {title}.dxf"))
+        print("built", number)
     if pdf is not None:
         pdf.close()
     if only:
         return
-    # 2) 交付 DXF：单张 + 合并
-    combined = CAD(font=DWG_FONT)
+    # 五张图并排的合并文件
+    combined = CAD(font=PREVIEW_FONT)
     for i, (number, title, scale, func) in enumerate(SHEETS):
-        cad = build_sheet(DWG_FONT, number, title, scale, func)
-        cad.doc.saveas(os.path.join(out, f"{number} {title}.dxf"))
-        build_sheet(DWG_FONT, number, title, scale, func, x0=i * GAP, cad=combined)
-    combined.doc.saveas(os.path.join(out, "汽车衡基础施工图(全套).dxf"))
+        build_sheet(number, title, scale, func, x0=i * GAP, cad=combined, mask=False)
+    mask_texts(combined.msp)
+    save_dxf(combined, os.path.join(out, "汽车衡基础施工图(全套).dxf"))
     print("saved dxf")
 
 
 def build_combined(out, prev_dir):
     """全部内容合并为一张 A0 加长图。"""
     import combined as C
-    args = ("结施-01", "汽车衡基础施工图", "见各图", C.sheet_all)
-    cad = build_sheet(PREVIEW_FONT, *args, size=C.SIZE)
+    cad = build_sheet("结施-01", "汽车衡基础施工图", "见各图", C.sheet_all, size=C.SIZE)
     with PdfPages(os.path.join(out, "汽车衡基础施工图(一张图).pdf")) as pdf:
         render(cad, png=os.path.join(prev_dir, "一张图.png"), pdf_pages=pdf, dpi=150, size=C.SIZE)
-    cad = build_sheet(DWG_FONT, *args, size=C.SIZE)
-    cad.doc.saveas(os.path.join(out, "汽车衡基础施工图(一张图).dxf"))
+    save_dxf(cad, os.path.join(out, "汽车衡基础施工图(一张图).dxf"))
     print("saved combined")
 
 

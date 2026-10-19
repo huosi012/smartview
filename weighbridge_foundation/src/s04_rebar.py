@@ -64,48 +64,60 @@ def bar_rows():
 
 # ---------------- 简图 ----------------
 def sketch(p, x, y, w, shp, prm):
-    """在钢筋表单元格内绘制钢筋简图（图纸坐标，x,y 为单元格左下角，w 宽）。"""
-    cy = y + 3.3
+    """在钢筋表单元格内绘制钢筋简图（图纸坐标，x,y 为单元格左下角，w 宽，行高 SCHED_RH）。
+    所有图线和文字限制在格内上下各留约 1mm 的范围内，避免压线。"""
     x1, x2 = x + 6, x + w - 6
+    xm = (x1 + x2) / 2
     lw = "S-REBAR"
+    th = 1.8
     if shp == "U":
-        p.pl([(x1, cy + 2.2), (x1, cy - 0.8), (x2, cy - 0.8), (x2, cy + 2.2)], lw)
-        p.text((x1 + x2) / 2, cy - 0.2, str(prm[0]), 2.0, "BC")
-        p.text(x1 - 0.8, cy + 0.6, str(prm[1]), 1.8, "MR")
+        yb = y + 2.0
+        p.pl([(x1, yb + 3.2), (x1, yb), (x2, yb), (x2, yb + 3.2)], lw)
+        p.text(xm, yb + 0.5, str(prm[0]), th, "BC")
+        p.text(x1 - 0.8, yb + 1.6, str(prm[1]), th, "MR")
     elif shp == "I":
-        p.line((x1, cy), (x2, cy), lw)
-        p.text((x1 + x2) / 2, cy + 0.5, str(prm[0]) if prm[0] < 40000 else "通长", 2.0, "BC")
+        yb = y + 2.2
+        p.line((x1, yb), (x2, yb), lw)
+        p.text(xm, yb + 0.6, str(prm[0]) if prm[0] < 40000 else "通长", th, "BC")
     elif shp == "HOOP":
-        p.rect(x1 + 10, cy - 2.2, x2 - 10, cy + 2.2, lw)
-        p.line((x1 + 10, cy + 2.2), (x1 + 12.5, cy - 0.2), lw)
-        p.text((x1 + x2) / 2, cy + 2.5, str(prm[0]), 1.8, "BC")
-        p.text(x2 - 9, cy, str(prm[1]), 1.8, "ML")
+        xa, xb, ya, yt = x1 + 10, x2 - 10, y + 1.6, y + 5.8
+        p.rect(xa, ya, xb, yt, lw)
+        p.line((xa, yt), (xa + 2.2, yt - 1.8), lw)
+        p.text(xm + 1.0, (ya + yt) / 2, str(prm[0]), th, "MC")
+        p.text(xb + 1.0, (ya + yt) / 2, str(prm[1]), th, "ML")
     elif shp == "UCAP":
-        p.pl([(x1 + 4, cy - 2.4), (x1 + 8, cy - 2.4), (x1 + 8, cy + 2.4), (x1 + 14, cy + 2.4)], lw)
-        p.text(x1 + 16, cy, f"{prm[0]}+{prm[1]}+{prm[2]}", 1.8, "ML")
+        ya, yt = y + 1.6, y + 5.8
+        p.pl([(x1 + 4, ya), (x1 + 8, ya), (x1 + 8, yt), (x1 + 14, yt)], lw)
+        p.text(x1 + 16, (ya + yt) / 2, f"{prm[0]}+{prm[1]}+{prm[2]}", th, "ML")
     elif shp == "L2":
-        p.pl([(x1 + 4, cy + 2.4), (x1 + 8, cy + 2.4), (x1 + 8, cy - 2.4), (x1 + 12, cy - 2.4)], lw)
-        p.text(x1 + 14, cy, f"{prm[1]}+{prm[0]}+{prm[2]}", 1.8, "ML")
+        ya, yt = y + 1.6, y + 5.8
+        p.pl([(x1 + 4, yt), (x1 + 8, yt), (x1 + 8, ya), (x1 + 12, ya)], lw)
+        p.text(x1 + 14, (ya + yt) / 2, f"{prm[1]}+{prm[0]}+{prm[2]}", th, "ML")
     elif shp == "TIE":
-        p.pl([(x1 + 10, cy + 1.6), (x1 + 8, cy), (x2 - 8, cy), (x2 - 10, cy + 1.6)], lw)
-        p.text((x1 + x2) / 2, cy + 0.4, str(prm[0]), 1.8, "BC")
+        yb = y + 2.2
+        p.pl([(x1 + 10, yb + 1.6), (x1 + 8, yb), (x2 - 8, yb), (x2 - 10, yb + 1.6)], lw)
+        p.text(xm, yb + 0.6, str(prm[0]), th, "BC")
     elif shp == "CHAIR":
-        p.pl([(x1 + 6, cy - 2.2), (x1 + 6, cy + 2.2), (x2 - 6, cy + 2.2), (x2 - 6, cy - 2.2)], lw)
-        p.text((x1 + x2) / 2, cy + 2.5, "250", 1.8, "BC")
+        ya, yt = y + 1.4, y + 5.8
+        p.pl([(x1 + 6, ya), (x1 + 6, yt), (x2 - 6, yt), (x2 - 6, ya)], lw)
+        p.text(xm, (ya + yt) / 2 - 0.3, f"{prm[1]}(高{prm[0]})", th, "MC")
+
+
+SCHED_RH = 8.0
 
 
 def draw_schedule(p, x, ytop):
     rows, tot = bar_rows()
     cols = [11, 30, 54, 13, 22, 20, 14, 18, 20]
     head = ["编号", "构件", "钢筋简图", "规格", "间距/根数", "单根长(mm)", "根数", "总长(m)", "重量(kg)"]
-    rh = 6.6
+    rh = SCHED_RH
     W = sum(cols)
     p.text(x + W / 2, ytop + 6, "钢 筋 表", 4.5, "BC")
     data = [head]
     for no, part, shp, prm, d, sp, L1, n, Lt, w in rows:
         data.append([no, part, "", f"C{d}", sp, str(L1) if L1 else "—", str(n), f"{Lt:.1f}",
                      f"{w:.1f}"])
-    yb = p.table(x, ytop, cols, data, row_h=rh, h=2.5)
+    yb = p.table(x, ytop, cols, data, row_h=rh, h=2.6)
     for i, r in enumerate(rows):
         yc = ytop - rh * (i + 1) - rh
         sketch(p, x + cols[0] + cols[1], yc, cols[2], r[2], r[3])
@@ -203,9 +215,9 @@ def zl1_section(v):
     v.dimv(zb - T_CUSH, zb, -700, -1250, None, ext=3)
     # 标注
     v.leader([(0, zt - 55), (300, zt + 350)], "7C20", h=2.8, side="R", marks=['6'])
-    v.leader([(250, zb + 75), (1150, zb - 250)], "7C20", h=2.8, side="R", marks=['5'])
-    v.leader([(535, -850), (1150, -950)], "G4C14", h=2.8, side="R", marks=['7'])
-    v.leader([(-555, -900), (-1150, -1150)], "C10@150(4)", h=2.8, side="L", marks=["8", "9"])
+    v.leader([(250, zb + 75), (450, zb - 500)], "7C20", h=2.8, side="R", marks=['5'])
+    v.leader([(535, -850), (1550, -700)], "G4C14", h=2.8, side="R", marks=['7'])
+    v.leader([(-555, -900), (-1380, -1150)], "C10@150(4)", h=2.8, side="L", marks=["8", "9"])
     v.leader([(-800, zt - 72), (-1300, zt + 350)], "C14@200", h=2.8, side="L", marks=['1', '3'])
     v.leader([(-800, -686), (-1350, -950)], "C14@200", h=2.8, side="L", marks=['2', '4'])
     v.elev(800, zt, "-0.450", "R")
@@ -243,7 +255,7 @@ def zl1_elev(v):
              [None, None, "2600※", None, None], ext=3)
     v.dimh(-Y_OUT, Y_OUT, zb, zb - 700, ext=3)
     v.leader([(-1700, zt - 55), (-1900, 400)], "7C20(两端弯折15d)", h=2.6, side="L", marks=['6'])
-    v.leader([(700, zb + 75), (1000, zb + 400)], "7C20(两端弯折15d)", h=2.6, side="R", marks=['5'])
+    v.leader([(700, zb + 75), (2500, zb - 150)], "7C20(两端弯折15d)", h=2.6, side="R", marks=['5'])
     v.leader([(0, -860), (300, 400)], "C10@150(4)", h=2.6, side="R", marks=['8', '9'])
     v.leader([(Y_OUT - 35, -200), (Y_OUT + 500, 400)], "C12@200", h=2.6, side="R", marks=['15'])
 
@@ -309,13 +321,13 @@ def zl2_section(v):
     # 标注
     v.leader([(300, zt - 55), (700, 450)], "9C20", h=2.6, side="R", marks=['11'])
     v.leader([(600, zb + 75), (900, zb - 300)], "9C20", h=2.6, side="R", marks=['10'])
-    v.leader([(1035, -850), (1700, -1000)], "G4C14", h=2.6, side="R", marks=['12'])
+    v.leader([(1035, -850), (2100, -700)], "G4C14", h=2.6, side="R", marks=['12'])
     v.leader([(X_LEFT + 45, -1000), (-1200, -1150)], "C10@150(6)", h=2.6, side="L", marks=['13', '14'])
     v.leader([(xi, -250), (-900, -600)], "C14@200(双面)", h=2.6, side="L", marks=['17'])
     v.leader([(xi - 14, -100), (-1100, 450)], "C12@200(双面)", h=2.6, side="L", marks=['18'])
     v.leader([(-200, -300), (-1000, -850)], "C8@400×400", h=2.6, side="L", marks=['19'])
     v.leader([(-40, Z_TOP), (300, 500)], "M-3", 2.6, "R")
-    v.leader([(-8, -100), (500, 150)], "M-2", 2.6, "R")
+    v.leader([(-8, -100), (250, 650)], "M-2", 2.6, "R")
     v.leader([(200, Z_PLATE), (900, 150)], "M-1", 2.6, "R")
 
 
@@ -352,11 +364,11 @@ def q1_section(v):
     v.dot((yo - 12, Z_TOP - 60), 0.8, real_d=12)
     # 尺寸
     v.chainh([GUT_Y[0], B_HALF, Y_WALL], Z_RAFT_B, Z_RAFT_B - 300, ext=3)
-    v.chainv([Z_RAFT_B, Z_CAP, Z_TOP], Y_WALL, Y_WALL + 350, ext=3)
+    v.chainv([Z_RAFT_B, Z_CAP, Z_TOP], Y_WALL, Y_WALL + 250, ext=3)
     # 标注
     v.leader([(yi, -200), (1100, 200)], "C12@200(双面)", h=2.6, side="L", marks=['15'])
-    v.leader([(yo - 12, -300), (2300, -100)], "C12@200(双面)", h=2.6, side="R", marks=['16'])
-    v.leader([(1650, zt2), (2300, -600)], "排水沟处上层筋下弯", 2.6, "R")
+    v.leader([(yo - 12, -300), (2400, 250)], "C12@200(双面)", h=2.6, side="R", marks=['16'])
+    v.leader([(1650, zt2), (2400, -1000)], "排水沟处上层筋下弯", 2.6, "R")
 
 
 def yb1_plan(v):
@@ -396,7 +408,7 @@ def yb1_section(v):
     v.chainh([X_LEFT, -320, X_LEDGE_L, 0], Z_LEDGE, Z_LEDGE - 450, ["180", "20", "300"], ext=3)
     v.dimv(Z_LEDGE, Z_TOP, -320, -1950 + 0, "250", ext=3)
     v.leader([(-310, Z_TOP - 10), (300, 300)], "20宽缝,聚氨酯密封胶", h=2.4, side="R")
-    v.leader([(-420, Z_LEDGE + 2), (-900, -500)], "油毡滑动层一道", h=2.4, side="L")
+    v.leader([(-420, Z_LEDGE + 2), (-650, -900)], "油毡滑动层一道", h=2.4, side="L")
     v.leader([(-1200, Z_LEDGE - 200), (-1600, -650)], "300厚级配砂石基层", h=2.4, side="L")
 
 
@@ -438,9 +450,9 @@ def sheet_rebar(sh):
     q1_section(v5)
     p.detail_title(318, 150, None, "侧墙Q1截面(Q3同)", "1:20", h=5.0)
 
-    v6 = sh.view(440, 255, 50)
+    v6 = sh.view(458, 255, 50)
     yb1_plan(v6)
-    v7 = sh.view(470, 150, 20)
+    v7 = sh.view(482, 150, 20)
     yb1_section(v7)
     p.detail_title(440, 98, None, "YB-1 引道板配筋", "1:50、1:20", h=5.0)
 

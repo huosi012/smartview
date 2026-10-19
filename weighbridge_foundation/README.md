@@ -36,8 +36,11 @@ DXF 文字样式 `HZ` 使用仿宋（simfang.ttf），宽度系数 0.7；图层�
 ## 重新生成
 
 ```bash
-pip install ezdxf matplotlib
+pip install ezdxf matplotlib shapely
 cd src && python3 build.py ../output
+python3 check_overlap.py all      # 出图前检查文字重叠，全部为 0 方可出图
 ```
+
+生成时自动做文字遮罩：填充图案在文字处挖孔，轴线、虚线等细线在文字处断开（同 AutoCAD 的孤岛检测/打断）。
 
 几何及参数集中在 `src/geom.py`，修改后重新运行即可。

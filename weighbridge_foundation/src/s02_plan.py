@@ -106,6 +106,15 @@ def draw_plan_body(v, show_platform=True, show_site=True, show_beams=True, label
         v.pl([(xj, -4000), (xj, -2600), (xw, -2600), (xw, -1500), (xa, -1500)], "S-HIDE2")
 
 
+def end_dims(v, y, by):
+    """第一道尺寸：端墙 500、端部 175※（文字移出窄档）、传感器间距。"""
+    v.chainh(AX, y, by, ["4850※", "5000※", "5000※", "4850※"], ext=3)
+    v.dimh(X_LEFT, 0, y, by, ext=3, tx=-300)
+    v.dimh(0, AX[0], y, by, "175※", ext=3, tx=AX[0] + 380)
+    v.dimh(AX[4], L, y, by, "175※", ext=3, tx=AX[4] - 380)
+    v.dimh(L, X_RIGHT, y, by, ext=3, tx=X_RIGHT - 200)
+
+
 def plan_axes(v, y_bub=5300, y_bub_b=6200, x_bub_l=-8700, x_bub_r=28700, ext=4500):
     for x, lb in zip(AX, AX_LABEL):
         v.line((x, -ext), (x, ext), "S-AXIS")
@@ -127,9 +136,7 @@ def plan_view(v):
 
     # ---------- 尺寸 ----------
     # 下方：第一道（端墙、传感器轴线），第二道（护边角钢间距、引道），第三道（总长）
-    xs = [X_LEFT, 0, AX[0], AX[1], AX[2], AX[3], AX[4], L, X_RIGHT]
-    v.chainh(xs, -Y_OUT, -4500, [None, "175※", "4850※", "5000※", "5000※", "4850※", "175※", None],
-             ext=3)
+    end_dims(v, -Y_OUT, -4500)
     v.dimh(0, L, -Y_OUT, -5000, "20050※(两护边角钢间距)", ext=3, tx=7000)
     v.dimh(APP[0][0], APP[0][1], -APP_Y, -5000, ext=3)
     v.dimh(APP[1][0], APP[1][1], -APP_Y, -5000, ext=3)
@@ -139,9 +146,9 @@ def plan_view(v):
     for x1, x2 in OPEN:
         xs2 += [x1, x2]
     xs2 = sorted(set(xs2 + [X_RIGHT]))
-    v.chainh(xs2, Y_OUT, 4400, ext=3)
+    v.chainh(xs2, Y_OUT, 4400, ext=3, avoid=AX)
     xs3 = [X_LEFT, 1000, 4425, 5625, 9425, 10625, 14425, 15625, 19050, X_RIGHT]
-    v.chainh(xs3, Y_OUT, 3900, ext=3)
+    v.chainh(xs3, Y_OUT, 3900, ext=3, avoid=AX)
     # 左侧：横向
     ys1 = [-Y_OUT, -Y_OPEN_OUT, -B_HALF, -1300, 1300, B_HALF, Y_OPEN_OUT, Y_OUT]
     v.chainv(ys1, X_LEFT, -7700, [None, None, None, "2600※", None, None, None], ext=3)
@@ -152,7 +159,7 @@ def plan_view(v):
     # ---------- 标注 ----------
     for x1, x2 in APP:
         xm = (x1 + x2) / 2
-        v.text(xm, 1250, "混凝土引道板 YB-1", 3.0)
+        v.text(xm, 700, "混凝土引道板 YB-1", 3.0)
         d = -1 if x1 < 0 else 1
         v.arrow((xm - d * 1600, -500), (xm + d * 1600, -500))
         v.text(xm, -850, "i=0.8%", 2.5)
@@ -173,7 +180,7 @@ def plan_view(v):
     v.leader([(AX[2], 3250), (AX[2] + 700, 2950)], "DN150排水管 i≥0.5% 接室外雨水井", 2.8, "R")
     v.leader([(AX[1] + 300, -3300), (AX[1] - 1100, -3700)], "φ40 PVC穿线管至秤房", 2.8, "L")
     v.leader([(PLATES_X[1][0] + 100, -1200), (AX[1] - 1500, -900)], "M-1", 2.8, "L")
-    v.leader([(-8, 1500), (-1100, 2950)], "M-2 限位预埋板", 2.8, "L")
+    v.leader([(-8, 1500), (-800, 3750)], "M-2 限位预埋板", 2.8, "L")
     v.leader([(-40, 700), (-1500, 2400)], "M-3 护边角钢", 2.8, "L")
     v.leader([(-400, -800), (-1500, -1300)], "端墙Q2", 2.8, "L")
     v.leader([(1100, -900), (2200, -650)], "ZL-2", 2.8, "R")
@@ -184,11 +191,11 @@ def plan_view(v):
     v.leader([(-1200, -4000), (-2400, -3700)], "JD-1 接地极", 2.8, "L")
     v.leader([(L + 1200, -4000), (L + 2400, -3700)], "JD-1 接地极", 2.8, "R")
     # 标高
-    v.elev(2600, -1550, "-0.466(墙边)", "R")
-    v.elev(-1000, 2050, "±0.000", "L")
+    v.leader([(2600, -1590), (3300, -2650)], "坑底墙边-0.466", 2.8, "R")
+    v.elev(-4500, 2550, "±0.000", "L")
     v.elev(2800, 2250, "+0.050", "R")
     # 剖切符号
-    v.section_mark((-7000, 1300), (27050, 1300), "1", (0, 1))
+    v.section_mark((-7250, 1300), (27300, 1300), "1", (0, 1))
     v.section_mark((AX[2], -3700), (AX[2], 3700), "2", (1, 0))
     v.section_mark((7525, -3700), (7525, 3700), "3", (1, 0))
     v.section_mark((200, -3700), (200, 3700), "4", (-1, 0))

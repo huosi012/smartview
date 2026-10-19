@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """结施-03 基础剖面图（1-1 纵剖面；2-2、3-3、4-4 横剖面）。"""
 from geom import *  # noqa: F401,F403
+from s02_plan import end_dims
 
 
 def app_top(x):
@@ -124,11 +125,10 @@ def long_section(v):
     # 秤台示意
     v.rect(25, -250, L - 25, Z_TOP - 8, "S-HIDE2")
     # 水位线、冻深线
-    v.line((APP_REPL[0][0] - 1500, Z_GW), (APP_REPL[1][1] + 1500, Z_GW), "S-WATER")
-    v.line((APP_REPL[0][0] - 1500, Z_FROST), (APP_REPL[1][1] + 1500, Z_FROST), "S-WATER")
-    v.text(APP_REPL[1][1] + 1400, Z_GW + 80, "抗浮设防水位134.500(绝对标高)", 2.5, "BR")
+    v.line((APP_REPL[0][0] - 300, Z_GW), (APP_REPL[1][1] + 1500, Z_GW), "S-WATER")
+    v.line((APP_REPL[0][0] - 300, Z_FROST), (APP_REPL[1][1] + 1500, Z_FROST), "S-WATER")
+    v.text(APP_REPL[0][0] - 200, Z_GW + 50, "抗浮设防水位134.500(绝对标高)", 2.5, "BL")
     v.text(APP_REPL[1][1] + 1400, Z_FROST + 80, "最大冻结深度线(2.80m)", 2.5, "BR")
-    v.elev(APP_REPL[1][1] + 900, Z_GW, "", "L", length=6)
 
     # 轴线
     for x, lb in zip(AX, AX_LABEL):
@@ -136,11 +136,9 @@ def long_section(v):
         v.line((x, -3700), (x, -4500), "S-THIN")
         v.axis_bubble(x, -4700, lb)
     # 尺寸
-    xs = [X_LEFT, 0, AX[0], AX[1], AX[2], AX[3], AX[4], L, X_RIGHT]
-    v.chainh(xs, Z_REPL, -3600, [None, "175※", "4850※", "5000※", "5000※", "4850※", "175※", None],
-             ext=3)
+    end_dims(v, Z_REPL, -3600)
     xs2 = [X_LEFT] + [b for x1, x2, n in BEAMS for b in (x1, x2)][1:-1] + [X_RIGHT]
-    v.chainh(xs2, Z_REPL, -4050, ext=3)
+    v.chainh(xs2, Z_REPL, -4050, ext=3, avoid=AX)
     v.chainv([Z_REPL, Z_BEAM_B, Z_RAFT_B, Z_CAP, Z_TOP], X_LEFT, -8000, ext=3)
     v.chainv([Z_REPL, Z_APP_REPL, -250], APP_REPL[0][0], -8500, ext=3)
     v.dimv(Z_PLATE, Z_TOP, 0, 1600, "450※", ext=None)
@@ -239,12 +237,12 @@ def section_22(v):
     v.elev(-3100, 0, "±0.000", "L")
     v.elev(-600, Z_CAP, "-0.450", "R")
     v.elev(-1300, Z_PLATE, "-0.400", "L")
-    v.elev(1900, Z_SUMP, "-0.850", "R", down=True)
+    v.elev(1840, Z_SUMP, "-0.850", "R")
     v.elev(-1000, Z_BEAM_B, "-1.250", "R", down=True)
     v.elev(-1000, Z_REPL, "-3.000", "R", down=True)
     # 标注
-    v.leader([(1900, -700), (2900, -1700)], "JSK-1集水坑", 2.6, "R")
-    v.leader([(3000, Z_PIPE + 80), (3000, -2300)], ["DN150排水管", "接室外雨水井"], 2.6, "L")
+    v.leader([(2050, -520), (2750, -1700)], "JSK-1集水坑", 2.6, "R")
+    v.leader([(3450, Z_PIPE + 80), (3450, -2300)], ["DN150排水管", "接室外雨水井"], 2.6, "L")
     v.leader([(-1900, Z_TOP - 5), (-2600, 600)], "GB-1盖板", 2.6, "L")
     v.leader([(0, -1000), (600, -1900)], "ZL-1", 2.6, "R")
     v.leader([(0, -1300), (-800, -2000)], "C15垫层", 2.6, "L")

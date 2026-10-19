@@ -11,7 +11,11 @@
 import math
 
 import ezdxf
+from ezdxf import bbox
 from ezdxf.enums import TextEntityAlignment as TA
+from shapely.geometry import LineString, Polygon, box as sbox
+from shapely.ops import unary_union
+from shapely.strtree import STRtree
 
 SHEET_SCALE = 50
 A1 = (841.0, 594.0)
@@ -319,7 +323,7 @@ class View:
         ext：尺寸界线长度（图纸mm），给出时界线起点取在尺寸线附近；tx：文字中心 X（真实坐标）。"""
         if ext is not None:
             y = by + (self.pp(ext) if y > by else -self.pp(ext))
-        loc = None if tx is None else (tx, by + self.pp(1.9))
+        loc = None if tx is None else (tx, by + self.pp(2.2))
         return self._dim((x1, by), (x1, y), (x2, y), 0, text, loc=loc)
 
     def dimv(self, y1, y2, x, bx, text=None, ext=None):
@@ -327,12 +331,17 @@ class View:
             x = bx + (self.pp(ext) if x > bx else -self.pp(ext))
         return self._dim((bx, y1), (x, y1), (x, y2), 90, text)
 
-    def chainh(self, xs, y, by, texts=None, ext=None):
+    def chainh(self, xs, y, by, texts=None, ext=None, avoid=()):
+        """连续水平尺寸。avoid：竖向线（如轴线）的 X 坐标，文字若居中压在其上则侧移。"""
         for i in range(len(xs) - 1):
             t = None if texts is None else texts[i]
             if t == "":
                 continue
-            self.dimh(xs[i], xs[i + 1], y, by, t, ext)
+            mid = (xs[i] + xs[i + 1]) / 2
+            tx = None
+            if any(abs(mid - a) < self.pp(3.0) for a in avoid):
+                tx = mid + self.pp(4.5)
+            self.dimh(xs[i], xs[i + 1], y, by, t, ext, tx)
 
     def chainv(self, ys, x, bx, texts=None, ext=None):
         for i in range(len(ys) - 1):
@@ -359,7 +368,8 @@ class View:
             self.line(b, (x + s - L, y + sg * s), "S-SYMB")
             tx = x + s - self.pp(0.8)
             al = "BR"
-        ty = y + sg * s + self.pp(0.6) if not down else y + sg * s - self.pp(h + 0.6)
+        # 向下的标高：文字整体置于横线以下（考虑字形上沿高出字高约 30%）
+        ty = y + sg * s + self.pp(0.6) if not down else y + sg * s - self.pp(1.35 * h + 0.8)
         self.text(tx, ty, label, h, al)
 
     def leader(self, pts, s, h=3.0, side="R", layer="S-SYMB", under=True, marks=None):
@@ -411,16 +421,15 @@ class View:
             self.pl([(px, py), q], "S-SYMB", width=0.6)
             r = (px + vx * T, py + vy * T)
             self.pl([(px, py), r], "S-SYMB", width=0.6)
-            tpos = (px + vx * (T + self.pp(3.0)) - sgn * ux * self.pp(0.0),
-                    py + vy * (T + self.pp(3.0)))
+            tpos = (px + vx * (T + self.pp(4.6)), py + vy * (T + self.pp(4.6)))
             self.text(tpos[0], tpos[1], label, h, "MC")
 
-    def index_mark(self, x, y, num, sheet="-", r=5.0, h=3.5):
+    def index_mark(self, x, y, num, sheet="-", r=6.0, h=3.5):
         """详图索引符号：上为详图编号，下为所在图号。"""
         self.circle_p((x, y), r, "S-SYMB")
         self.line((x - self.pp(r), y), (x + self.pp(r), y), "S-SYMB")
-        self.text(x, y + self.pp(r * 0.45), str(num), h, "MC")
-        self.text(x, y - self.pp(r * 0.45), str(sheet), h * 0.75, "MC")
+        self.text(x, y + self.pp(r * 0.45), str(num), h * 0.85, "MC")
+        self.text(x, y - self.pp(r * 0.4), str(sheet), h * 0.5, "MC")
 
     def detail_title(self, x, y, num, name, scale, h=6.0):
         """详图/视图标题：编号圆圈（可选）+ 名称 + 比例，下划粗细双线。"""
@@ -558,3 +567,106 @@ def draw_frame(sheet, title, number, scale_str, project, subitem, date="2026.10"
     v.line((xb + 18, y0), (xb + 18, y1), "S-TABLE")
     # 图框外左上角图号（便于检索）
     v.text(W - 12, H - 7, number, 3.5, "MR")
+
+
+# ---------------- 文字遮罩 ----------------
+# 穿过文字时断开的细线图层（结构轮廓、钢筋、引出线、表格线不断开，需在布置时避让）
+BREAK_LAYERS = {"S-AXIS", "S-THIN", "S-HIDE", "S-HIDE2", "S-PIPE", "S-WATER", "S-SOIL", "S-HATCH"}
+
+
+def _text_boxes(msp, pad):
+    boxes = []
+    for e in msp:
+        if e.dxftype() == "TEXT":
+            items = [e]
+        elif e.dxftype() == "DIMENSION":
+            items = [v for v in e.virtual_entities() if v.dxftype() in ("TEXT", "MTEXT")]
+        else:
+            continue
+        for t in items:
+            b = bbox.extents([t], fast=False)
+            if b.has_data:
+                boxes.append(sbox(b.extmin.x - pad, b.extmin.y - pad, b.extmax.x + pad, b.extmax.y + pad))
+    return boxes
+
+
+def _attribs(e):
+    a = e.dxfattribs()
+    for k in ("handle", "owner"):
+        a.pop(k, None)
+    return a
+
+
+def mask_texts(msp, pad=0.6):
+    """文字遮罩（同 AutoCAD 填充孤岛检测/打断）：
+    - 图案填充在文字处挖孔；
+    - BREAK_LAYERS 上的直线、多段线在文字处断开。
+    pad：文字四周留空（图纸mm）。"""
+    boxes = _text_boxes(msp, pad * SHEET_SCALE)
+    if not boxes:
+        return
+    tree = STRtree(boxes)
+
+    def hits(geom):
+        return [boxes[i] for i in tree.query(geom) if boxes[i].intersects(geom)]
+
+    for h in list(msp.query("HATCH")):
+        if h.dxf.solid_fill:
+            continue
+        poly = None
+        for path in h.paths:
+            pts = [(v[0], v[1]) for v in getattr(path, "vertices", [])]
+            if len(pts) < 3:
+                poly = None
+                break
+            p = Polygon(pts).buffer(0)
+            poly = p if poly is None else poly.symmetric_difference(p)
+        if poly is None or poly.is_empty:
+            continue
+        cut = hits(poly)
+        if not cut:
+            continue
+        res = poly.difference(unary_union(cut))
+        if res.is_empty:
+            msp.delete_entity(h)
+            continue
+        h.paths.clear()
+        for g in getattr(res, "geoms", [res]):
+            if g.geom_type != "Polygon" or g.area <= 0:
+                continue
+            h.paths.add_polyline_path(list(g.exterior.coords)[:-1], is_closed=True, flags=1)
+            for ring in g.interiors:
+                h.paths.add_polyline_path(list(ring.coords)[:-1], is_closed=True, flags=0)
+
+    for e in list(msp.query("LINE LWPOLYLINE")):
+        if e.dxf.layer not in BREAK_LAYERS:
+            continue
+        if e.dxftype() == "LINE":
+            pts = [(e.dxf.start.x, e.dxf.start.y), (e.dxf.end.x, e.dxf.end.y)]
+        else:
+            if e.dxf.hasattr("const_width") and e.dxf.const_width:
+                continue
+            pts = [(p[0], p[1]) for p in e.get_points("xy")]
+            if e.closed:
+                pts.append(pts[0])
+        if len(pts) < 2:
+            continue
+        ln = LineString(pts)
+        cut = hits(ln)
+        if not cut:
+            continue
+        res = ln.difference(unary_union(cut))
+        a = _attribs(e)
+        msp.delete_entity(e)
+        for g in getattr(res, "geoms", [res]):
+            if g.is_empty or g.length <= 0:
+                continue
+            c = list(g.coords)
+            if e.dxftype() == "LINE" or len(c) == 2:
+                la = {k: v for k, v in a.items() if k in ("layer", "linetype", "color", "lineweight",
+                                                          "ltscale")}
+                msp.add_line(c[0], c[-1], dxfattribs=la)
+            else:
+                pa = {k: v for k, v in a.items() if k in ("layer", "linetype", "color", "lineweight",
+                                                          "ltscale")}
+                msp.add_lwpolyline(c, dxfattribs=pa)
