@@ -130,7 +130,7 @@ kbd {
 </head>
 <body>
 <main class="booth">
-  <canvas id="stage" width="1280" height="720" aria-label="三维动画画面：学生海报汇成光环绕着数字旋转，再依次飞上墙面，成绩单围在四周，中间数字从 1 跳到 1000"></canvas>
+  <canvas id="stage" width="1280" height="720" aria-label="三维动画画面：学生海报汇成光环绕着数字旋转，再依次飞上墙面，成绩单围在四周，中间数字从 0 跳到 1000"></canvas>
 
   <section class="controls" aria-label="动画设置">
     <div class="head">
@@ -261,7 +261,7 @@ kbd {
     sheets: [],
     rows: 9,
     target: 1000,
-    start: 1,
+    start: 0,
     eyebrow: '顺易教育 · SHUNYI EDUCATION',
     tagline: '累计帮助上千名学子圆梦理想大学',
     english: 'HELPING STUDENTS REACH THEIR DREAM UNIVERSITIES',
@@ -878,7 +878,7 @@ kbd {
       const f = facs[i];
       if (f <= 0) return;
       const lead = Math.floor(n / 10 ** c.place);
-      if (lead > 0) drawGlyph(g, S[lead % 10], x + (c.w * f) / 2, 0, lerp(0.7, 1, f), f, true);
+      if (lead > 0 || c.place === 0) drawGlyph(g, S[lead % 10], x + (c.w * f) / 2, 0, lerp(0.7, 1, f), f, true);   // 个位的 0 也要显示
       x += c.w * f;
     });
     if (plusP > 0) drawGlyph(g, S['+'], x + (sprites.plusW * easeOutCubic(plusP)) / 2, -sprites.capH * 0.02, easeOutBack(plusP), plusP * 2, true);
