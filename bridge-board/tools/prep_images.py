@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 from scipy import ndimage
-from PIL import Image, ImageFilter
+from PIL import Image, ImageEnhance, ImageFilter
 
 MEDIA = Path(sys.argv[1])
 EXTRA = Path(sys.argv[2])
@@ -19,6 +19,17 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 def save(im, name, q=92):
     im.convert("RGB").save(OUT / name, quality=q, subsampling=0)
+
+
+def warm(im, lift=1.05, shift=0.025, sat=1.06, con=1.03):
+    """Brighten and warm a photo so gray studio backdrops sit with the orange palette."""
+    a = np.asarray(im.convert("RGB")).astype(np.float32) / 255
+    lo, hi = np.percentile(a, 0.5), np.percentile(a, 99.5)
+    a = np.clip((a - lo) / max(hi - lo, 1e-3) * lift, 0, 1)
+    a[..., 0] = np.clip(a[..., 0] * (1 + shift), 0, 1)
+    a[..., 2] = np.clip(a[..., 2] * (1 - shift), 0, 1)
+    im = Image.fromarray((a * 255).round().astype(np.uint8))
+    return ImageEnhance.Color(ImageEnhance.Contrast(im).enhance(con)).enhance(sat)
 
 
 def crop_to_aspect(im, aspect, cx=0.5, cy=0.5):
@@ -42,18 +53,18 @@ comp = Image.new("RGB", (1245, a.height + b.height + 8), (255, 255, 255))
 comp.paste(a, (0, 0))
 comp.paste(b, (0, a.height + 8))
 print("st1 composite", comp.size, comp.width / comp.height)
-save(crop_to_aspect(comp, ASPECT), "st1.jpg")
+save(warm(crop_to_aspect(comp, ASPECT)), "st1.jpg")
 
 for src, name, cx, cy in [
     ("image6.png", "st2.jpg", 0.5, 0.35),
     ("image8.png", "st3.jpg", 0.5, 0.5),
     ("image10.png", "st4.jpg", 0.4, 0.5),
 ]:
-    save(crop_to_aspect(Image.open(MEDIA / src).convert("RGB"), ASPECT, cx, cy), name)
+    save(warm(crop_to_aspect(Image.open(MEDIA / src).convert("RGB"), ASPECT, cx, cy)), name)
 
 # Load comparison pairs (top: flat bridge, bottom: improved bridge).
 for i, src in enumerate(["image11.jpeg", "image12.jpeg", "image13.jpeg"], 1):
-    save(Image.open(MEDIA / src), f"cmp{i}.jpg")
+    save(warm(Image.open(MEDIA / src)), f"cmp{i}.jpg")
 
 # Shenyang bridges. Drop the burned-in title and the watermark from image14.
 save(Image.open(MEDIA / "image14.jpeg").crop((0, 132, 860, 561)), "sy1.jpg")
@@ -61,7 +72,7 @@ save(Image.open(MEDIA / "image15.jpeg"), "sy2.jpg")
 save(Image.open(MEDIA / "image16.jpeg"), "sy3.jpg")
 save(Image.open(MEDIA / "image17.jpeg"), "sy4.jpg")
 
-save(Image.open(EXTRA / "2.jpg"), "kids.jpg", q=93)
+save(warm(Image.open(EXTRA / "2.jpg"), lift=1.03, shift=0.02, con=1.0), "kids.jpg", q=93)
 
 # Assembly diagram: slice the 3x3 sequence into nine cells, recolor.
 NAVY = (30, 55, 86)
