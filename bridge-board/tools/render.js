@@ -1,11 +1,12 @@
 // Render the board: measure layout, export PDF and preview PNGs.
-// usage: node render.js <source dir> <out dir> [--pdf]
+// usage: node render.js <source dir> <out dir> [--pdf] [--theme=wood]
 // Writes preview.png (screen size) and, with --pdf, board.pdf at 760 x 1760 mm.
 const path = require('path');
 const { chromium } = require('/opt/node-tools/node_modules/playwright');
 
 const [, , boardDir, outDir, ...flags] = process.argv;
 const PX_PER_MM = 96 / 25.4;
+const theme = (flags.find((f) => f.startsWith('--theme=')) || '').slice(8);
 
 (async () => {
   const browser = await chromium.launch();
@@ -13,7 +14,8 @@ const PX_PER_MM = 96 / 25.4;
     viewport: { width: Math.round(760 * PX_PER_MM), height: Math.round(1760 * PX_PER_MM) },
     deviceScaleFactor: 1,
   });
-  await page.goto('file://' + path.resolve(boardDir, 'index.html'));
+  await page.goto('file://' + path.resolve(boardDir, 'index.html') + (theme ? '?theme=' + theme : ''));
+  await page.waitForLoadState('load');
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(500);
 

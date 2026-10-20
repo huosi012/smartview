@@ -64,7 +64,8 @@ save(Image.open(MEDIA / "image17.jpeg"), "sy4.jpg")
 save(warm(Image.open(EXTRA / "2.jpg"), lift=1.03, shift=0.02, con=1.0), "kids.jpg", q=93)
 
 # Assembly diagram: slice the 3x3 sequence into nine cells, recolor.
-NAVY = (30, 55, 86)
+# Line color per theme: default (navy) and wood (deep coffee).
+LINE = {"": (30, 55, 86), "wood": (75, 46, 30)}
 ORANGE = (242, 107, 33)
 WOOD = (255, 226, 196)
 diag = Image.open(EXTRA / "1.jpg").convert("L")
@@ -104,10 +105,16 @@ for gy, row in zip(grounds, frames):
 
         rgba = np.zeros((h, w, 4), dtype=np.uint8)
         dark = np.clip((235 - L) * 255 // 155, 0, 255)
-        rgba[..., :3] = NAVY
+        rgba[..., :3] = LINE[""]
         rgba[..., 3] = dark
         rgba[interior] = (*WOOD, 255)
         rgba[arrow] = (*ORANGE, 255)
-        Image.fromarray(rgba, "RGBA").resize((CW * 2, CH * 2), Image.LANCZOS).save(OUT / f"step{n}.png")
+        for theme, color in LINE.items():
+            rgba[..., :3] = color
+            rgba[interior] = (*WOOD, 255)
+            rgba[arrow] = (*ORANGE, 255)
+            folder = OUT / theme
+            folder.mkdir(exist_ok=True)
+            Image.fromarray(rgba, "RGBA").resize((CW * 2, CH * 2), Image.LANCZOS).save(folder / f"step{n}.png")
 
 print("done", sorted(p.name for p in OUT.iterdir()))

@@ -9,6 +9,7 @@
 | `桥梁探究展板_76x176cm.pdf` | **交给印刷店的文件**。矢量文字、字体已嵌入，页面 760 × 1760 mm |
 | `桥梁探究展板_76x176cm_150dpi.jpg` | 同一版面的图片版（4488 × 10395 px，150 dpi），印刷店要图片时用 |
 | `预览图.jpg` | 手机/电脑上快速查看用，不用于印刷 |
+| `桥梁探究展板_76x176cm_暖木配色.pdf` 及同名 `_150dpi.jpg`、`预览图_暖木配色.jpg` | 第二套配色：橙 + 深咖（暖木色），内容与上面完全相同 |
 | `source/` | 版面源文件（HTML + 处理后的图片 + 字体子集） |
 | `tools/` | 图片处理脚本与导出脚本 |
 
@@ -47,6 +48,10 @@
 | 标注 | 9.5 | 标签、图片说明、注释 |
 | 小字 | 7.5 | 英文小字、步骤编号、照片角标 |
 
+## 两套配色
+
+同一份源文件，两套配色：默认是“橙 + 藏蓝”；加 `?theme=wood` 是“橙 + 深咖（暖木）”。颜色都写在 `source/index.html` 开头的变量里，暖木配色在 `:root[data-theme="wood"]` 里覆盖。改文字时两套会一起更新。
+
 ## 重新导出
 
 ```bash
@@ -56,6 +61,7 @@ python tools/prep_images.py <PPT解压后的 ppt/media 目录> <放 1.jpg、2.jp
 python tools/subset_fonts.py <完整字体目录> source
 # 3. 导出 PDF
 node tools/render.js source <输出目录> --pdf
+node tools/render.js source <输出目录> --pdf --theme=wood   # 暖木配色
 ```
 
 `render.js` 依赖 Playwright 自带的 Chromium。完整字体可从 Google Fonts 下载：Noto Sans SC（400/500/700/900）和 ZCOOL QingKe HuangYou，文件名需与 `subset_fonts.py` 里的一致。
