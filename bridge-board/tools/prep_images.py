@@ -43,7 +43,7 @@ def crop_to_aspect(im, aspect, cx=0.5, cy=0.5):
     return im.crop((0, y0, w, y0 + nh))
 
 
-ASPECT = 16 / 9
+ASPECT = 3 / 2
 
 # Station 1 shows the flat bridge bending under the bottle.
 save(warm(crop_to_aspect(Image.open(MEDIA / "image4.png").convert("RGB"), ASPECT)), "st1.jpg")

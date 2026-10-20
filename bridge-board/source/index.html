@@ -34,11 +34,11 @@
   --fs-title:92mm;  /* main title */
   --fs-2xl:26mm;    /* section titles */
   --fs-xl:19mm;     /* block titles, section numbers */
-  --fs-lg:15mm;     /* headlines */
-  --fs-md:12.5mm;   /* card titles, sub-headings */
-  --fs-base:10mm;   /* body text */
-  --fs-sm:8mm;      /* labels, tags, captions */
-  --fs-xs:6.5mm;    /* eyebrows, step numbers, photo tags */
+  --fs-lg:18mm;     /* headlines */
+  --fs-md:15mm;   /* card titles, sub-headings */
+  --fs-base:12mm;   /* body text */
+  --fs-sm:9.5mm;      /* labels, tags, captions */
+  --fs-xs:7.5mm;    /* eyebrows, step numbers, photo tags */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:760mm;height:1760mm}
@@ -95,10 +95,7 @@ b,strong{font-weight:900}
 
 /* ---------- sections ---------- */
 main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:9mm;padding:8mm var(--pad) 14mm}
-.link{display:flex;align-items:center;justify-content:center;gap:5mm}
-.link::before,.link::after{content:"";width:70mm;border-top:.6mm dashed #EDB48C}
-.link span{background:var(--orange-tint);border:.5mm solid #F3C9A8;color:var(--orange-deep);border-radius:20mm;padding:2.2mm 8mm;font-weight:900;font-size:var(--fs-base);line-height:1.3}
-.sec{display:flex;flex-direction:column;gap:8mm}
+.sec{display:flex;flex-direction:column;gap:10mm}
 .sh{display:flex;align-items:center;gap:6mm}
 .sh .num{
   width:31mm;height:31mm;border-radius:8mm;background:var(--orange);color:#fff;
@@ -106,6 +103,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
   box-shadow:1.4mm 1.4mm 0 var(--navy);flex:none;
 }
 .sh .tt{display:flex;flex-direction:column}
+.sh .step{align-self:flex-end;margin-bottom:1.2mm;padding-left:6mm;border-left:.8mm solid #F3C9A8;font-weight:900;font-size:var(--fs-xl);line-height:1.1;color:var(--orange-deep)}
 .sh .en{font-weight:900;font-size:var(--fs-xs);letter-spacing:1.4mm;color:var(--orange);line-height:1.1}
 .sh h2{font-size:var(--fs-2xl);line-height:1.05;color:var(--navy);letter-spacing:1.4mm;-webkit-text-stroke:.8mm var(--navy);paint-order:stroke fill}
 
@@ -150,7 +148,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 /* 03 */
 .stations{display:grid;grid-template-columns:repeat(4,1fr);gap:12mm}
 .st{display:flex;flex-direction:column;overflow:hidden}
-.st .ph{position:relative;aspect-ratio:16/9;overflow:hidden;background:#ddd}
+.st .ph{position:relative;aspect-ratio:3/2;overflow:hidden;background:#ddd}
 .st .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .st .ph .t{position:absolute;left:2.4mm;top:2.4mm;background:rgba(30,55,86,.85);color:#fff;font-weight:900;font-size:var(--fs-xs);line-height:1;padding:1.4mm 2.8mm;border-radius:1.6mm}
 .st .body{padding:6mm 6.4mm 8mm;display:flex;flex-direction:column;gap:3.2mm}
@@ -172,7 +170,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .law svg{width:100%;height:auto;display:block}
 .law h4{display:flex;align-items:center;justify-content:space-between;gap:3mm;font-size:var(--fs-md);font-weight:900;line-height:1.2}
 .law h4 span{background:var(--yellow);color:var(--navy);font-size:var(--fs-sm);padding:1.2mm 3mm;border-radius:10mm;white-space:nowrap}
-.law figure{position:relative;margin-top:.6mm;aspect-ratio:3/2;border-radius:3mm;overflow:hidden}
+.law figure{position:relative;margin-top:.6mm;aspect-ratio:4/3;border-radius:3mm;overflow:hidden}
 .law img{width:100%;height:100%;object-fit:cover;display:block}
 .law figcaption{
   position:absolute;left:0;right:0;bottom:0;padding:5mm 2.6mm 2mm;
@@ -248,6 +246,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
   <div class="sh">
     <div class="num qk">01</div>
     <div class="tt"><span class="en">PROJECT OVERVIEW</span><h2 class="qk">项目简介</h2></div>
+    <span class="step">定下目标</span>
   </div>
   <div class="card">
     <div class="intro">
@@ -268,13 +267,12 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
   </div>
 </section>
 
-<div class="link"><span>目标有了，可第一次动手就遇到了难题 ↓</span></div>
-
 <!-- ================= 02 问题驱动 ================= -->
 <section class="sec s2">
   <div class="sh">
     <div class="num qk">02</div>
     <div class="tt"><span class="en">DRIVING QUESTION</span><h2 class="qk">问题驱动</h2></div>
+    <span class="step">遇到难题</span>
   </div>
   <div class="rowA">
     <div class="card river">
@@ -305,7 +303,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
     </div>
     <div class="card challenge">
       <span class="k">核心挑战</span>
-      <p>如何搭一座桥，<br>跨过 <em>30 厘米</em>的“小河”？</p>
+      <p>如何搭一座桥，<br>跨过 <em>30 厘米</em>“小河”？</p>
       <div class="reqs"><span>桥面平稳</span><span>能承重</span><span>不坍塌</span></div>
     </div>
     <div class="thinks">
@@ -315,13 +313,12 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
   </div>
 </section>
 
-<div class="link"><span>带着这个问题，我们一次次改进 ↓</span></div>
-
 <!-- ================= 03 项目推进 ================= -->
 <section class="sec s3">
   <div class="sh">
     <div class="num qk">03</div>
     <div class="tt"><span class="en">PROJECT PROCESS</span><h2 class="qk">项目推进</h2></div>
+    <span class="step">一次次改进</span>
   </div>
 
   <div class="stations">
@@ -329,22 +326,22 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
       <div class="ph"><img src="img/st1.jpg" alt=""><span class="t">第一站</span></div>
       <div class="body">
         <h4>平板桥<small>一块板铺上去</small></h4>
-        <p><span class="tg f">发现</span>重量全压在板中间，一压就弯断。</p>
+        <p><span class="tg f">发现</span>重量全压在板中间，<br>一压就弯断。</p>
       </div>
     </article>
     <article class="card st">
       <div class="ph"><img src="img/st2.jpg" alt=""><span class="t">第二站</span></div>
       <div class="body">
         <h4>拱桥<small>把板弯成彩虹</small></h4>
-        <p><span class="tg f">发现</span>拱把重量传给两边桥墩，中间不易断了。</p>
-        <p><span class="tg x">新麻烦</span>拱会把桥墩往外“推”开，需要用梁加固。</p>
+        <p><span class="tg f">发现</span>拱把重量传给桥墩，<br>中间不易断。</p>
+        <p><span class="tg x">新麻烦</span>桥墩会被往外推开。</p>
       </div>
     </article>
     <article class="card st">
       <div class="ph"><img src="img/st3.jpg" alt=""><span class="t">第三站</span></div>
       <div class="body">
         <h4>悬索桥<small>用绳子把桥面吊起来</small></h4>
-        <p><span class="tg f">发现</span>重量经吊绳 → 主索 → 桥塔，桥面不再硬扛。</p>
+        <p><span class="tg f">发现</span>桥面被绳子吊住，<br>不再自己硬扛。</p>
         <p><span class="tg ok">效果</span>弯曲明显变小。</p>
       </div>
     </article>
@@ -352,7 +349,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
       <div class="ph"><img src="img/st4.jpg" alt=""><span class="t">第四站</span></div>
       <div class="body">
         <h4>斜拉桥<small>从塔顶斜着拉索</small></h4>
-        <p><span class="tg f">发现</span>斜索像扇子骨一样拉住桥面，受力更均匀。</p>
+        <p><span class="tg f">发现</span>斜索像扇子骨，<br>受力更均匀。</p>
         <p><span class="tg ok">效果</span>桥面几乎不弯。</p>
       </div>
     </article>
@@ -360,13 +357,12 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 
 </section>
 
-<div class="link"><span>四次尝试之后，我们找到了答案 ↓</span></div>
-
 <!-- ================= 04 成果展示 ================= -->
 <section class="sec s4">
   <div class="sh">
     <div class="num qk">04</div>
     <div class="tt"><span class="en">ACHIEVEMENTS</span><h2 class="qk">成果展示</h2></div>
+    <span class="step">找到答案</span>
   </div>
 
   <div class="principle">
@@ -476,7 +472,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
         <div class="fields">
           <div class="field">
             <span class="fh"><span class="fi"><svg viewBox="0 0 40 40" fill="none" stroke="#1E3756" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 29H35"/><path d="M9 29A11 11 0 0 1 31 29"/><path d="M17 18.6V13H23V18.6"/></svg></span><b>应急基建</b></span>
-            <small>应急与军事的“黄金标准”</small>
+            <small>应急救援“黄金标准”</small>
           </div>
           <div class="field">
             <span class="fh"><span class="fi"><svg viewBox="0 0 40 40" fill="none" stroke="#1E3756" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 35L16 5M29 35L24 5"/><path d="M20 31V27M20 21V18M20 12V10"/></svg></span><b>交通工程</b></span>
