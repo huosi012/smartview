@@ -43,24 +43,17 @@ def crop_to_aspect(im, aspect, cx=0.5, cy=0.5):
     return im.crop((0, y0, w, y0 + nh))
 
 
-ASPECT = 3 / 2
+ASPECT = 16 / 9
 
-# Station 1: empty flat bridge stacked over the same bridge under a bottle.
-a = Image.open(MEDIA / "image3.jpeg").convert("RGB").crop((0, 22, 1234, 418))
-b = Image.open(MEDIA / "image4.png").convert("RGB").crop((0, 4, 1245, 466))
-a = a.resize((1245, round(a.height * 1245 / a.width)), Image.LANCZOS)
-comp = Image.new("RGB", (1245, a.height + b.height + 8), (255, 255, 255))
-comp.paste(a, (0, 0))
-comp.paste(b, (0, a.height + 8))
-print("st1 composite", comp.size, comp.width / comp.height)
-save(warm(crop_to_aspect(comp, ASPECT)), "st1.jpg")
+# Station 1 shows the flat bridge bending under the bottle.
+save(warm(crop_to_aspect(Image.open(MEDIA / "image4.png").convert("RGB"), ASPECT)), "st1.jpg")
 
-for src, name, cx, cy in [
-    ("image6.png", "st2.jpg", 0.5, 0.35),
-    ("image8.png", "st3.jpg", 0.5, 0.5),
-    ("image10.png", "st4.jpg", 0.4, 0.5),
+for src, name, cy in [
+    ("image6.png", "st2.jpg", 0.4),
+    ("image8.png", "st3.jpg", 0.5),
+    ("image10.png", "st4.jpg", 0.5),
 ]:
-    save(warm(crop_to_aspect(Image.open(MEDIA / src).convert("RGB"), ASPECT, cx, cy)), name)
+    save(warm(crop_to_aspect(Image.open(MEDIA / src).convert("RGB"), ASPECT, cy=cy)), name)
 
 # Load comparison pairs (top: flat bridge, bottom: improved bridge).
 for i, src in enumerate(["image11.jpeg", "image12.jpeg", "image13.jpeg"], 1):
