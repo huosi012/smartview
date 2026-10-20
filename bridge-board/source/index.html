@@ -164,23 +164,14 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 
 /* 04 */
 .principle{background:var(--navy);color:#fff;border-radius:6mm;padding:8mm 8mm 9mm;box-shadow:1.6mm 1.6mm 0 var(--orange);display:flex;flex-direction:column;gap:6mm}
-.principle .lead{display:flex;align-items:center;justify-content:center;gap:5mm;margin-bottom:-2mm;font-weight:900;font-size:var(--fs-lg);line-height:1.25}
+.principle .lead{display:flex;align-items:center;justify-content:center;gap:5mm;font-weight:900;font-size:var(--fs-lg);line-height:1.25}
 .principle .k{flex:none;background:var(--yellow);color:var(--navy);font-size:var(--fs-sm);padding:1.2mm 3.4mm;border-radius:2mm;letter-spacing:.6mm}
 .principle em{font-style:normal;color:var(--yellow)}
 .laws{display:grid;grid-template-columns:repeat(4,1fr);gap:5mm}
 .law{background:rgba(255,255,255,.07);border:.45mm solid rgba(255,255,255,.18);border-radius:4mm;padding:4mm 4.4mm 4.4mm;display:flex;flex-direction:column;gap:2.4mm}
 .law svg{width:100%;height:auto;display:block}
-.logic{display:flex;align-items:center;justify-content:center;gap:4mm;font-weight:900;font-size:var(--fs-sm);line-height:1.2}
-.logic span{padding:1.2mm 4mm;border-radius:10mm}
-.logic i{font-style:normal;color:#C9D6E5}
-.logic .t{background:var(--orange);color:#fff}
-.logic .v,.law .tg.v{background:var(--blue);color:#fff}
-.logic .c{background:var(--yellow);color:var(--navy)}
-.law h4{font-size:var(--fs-md);font-weight:900;line-height:1.2}
-.law .tg{display:inline-block;font-weight:900;font-size:var(--fs-xs);line-height:1;padding:1.1mm 2mm;border-radius:1.4mm;margin-right:1.6mm;vertical-align:.6mm}
-.concl{margin-top:auto;display:flex;align-items:center;gap:2.4mm;background:var(--yellow);color:var(--navy);border-radius:2.4mm;padding:2.2mm 3mm;font-weight:900;font-size:var(--fs-md);line-height:1.2}
-.concl span{flex:none;background:var(--navy);color:#fff;font-size:var(--fs-xs);padding:1mm 2mm;border-radius:1.4mm}
-.law p{font-size:var(--fs-base);line-height:1.5;font-weight:500;color:#E6ECF3}
+.law h4{display:flex;align-items:center;justify-content:space-between;gap:3mm;font-size:var(--fs-md);font-weight:900;line-height:1.2}
+.law h4 span{background:var(--yellow);color:var(--navy);font-size:var(--fs-sm);padding:1.2mm 3mm;border-radius:10mm;white-space:nowrap}
 .law figure{position:relative;margin-top:.6mm;aspect-ratio:3/2;border-radius:3mm;overflow:hidden}
 .law img{width:100%;height:100%;object-fit:cover;display:block}
 .law figcaption{
@@ -380,10 +371,9 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 
   <div class="principle">
     <div class="lead"><span class="k">科学原理</span><span>桥结不结实，关键看一件事：<em>重量（力）传到哪里去了？</em></span></div>
-    <div class="logic"><span class="t">03 测试发现</span><i>→</i><span class="v">沈阳真桥印证</span><i>→</i><span class="c">得出结论</span></div>
     <div class="laws">
       <div class="law">
-        <h4>平板桥</h4>
+        <h4>平板桥<span>分给多个桥墩</span></h4>
         <svg viewBox="0 0 200 96">
           <defs>
             <marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF8B3D"/></marker>
@@ -406,11 +396,9 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
           <path d="M170 52Q178 58 182 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
         </svg>
         <figure><img src="img/sy1.jpg" alt=""><figcaption>云龙湖大桥</figcaption></figure>
-        <p><span class="tg v">印证</span>桥面下有一串拱撑住</p>
-        <div class="concl"><span>结论</span>中间要有支撑</div>
       </div>
       <div class="law">
-        <h4>拱桥</h4>
+        <h4>拱桥<span>顺拱传到两岸</span></h4>
         <svg viewBox="0 0 200 96">
           <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
           <path d="M6 39H194V92H174Q100 -6 26 92H6Z" fill="#7F93AB"/>
@@ -422,11 +410,9 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
           <path d="M116 55Q138 60 154 80" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
         </svg>
         <figure><img src="img/sy2.jpg" alt=""><figcaption>永安桥</figcaption></figure>
-        <p><span class="tg v">印证</span>桥台厚实，拱上开小拱减重</p>
-        <div class="concl"><span>结论</span>拱传力，桥台要稳</div>
       </div>
       <div class="law">
-        <h4>悬索桥</h4>
+        <h4>悬索桥<span>吊索传到桥塔</span></h4>
         <svg viewBox="0 0 200 96">
           <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
           <rect x="44" y="8" width="9" height="84" rx="2" fill="#7F93AB"/>
@@ -441,11 +427,9 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
           <path d="M163 22V84" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
         </svg>
         <figure><img src="img/sy3.jpg" alt="" style="object-position:50% 30%"><figcaption>东塔桥</figcaption></figure>
-        <p><span class="tg v">印证</span>主索和吊索把桥面吊起</p>
-        <div class="concl"><span>结论</span>绳索能分担重量</div>
       </div>
       <div class="law">
-        <h4>斜拉桥</h4>
+        <h4>斜拉桥<span>斜索拉到塔顶</span></h4>
         <svg viewBox="0 0 200 96">
           <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
           <rect x="44" y="8" width="9" height="84" rx="2" fill="#7F93AB"/>
@@ -459,8 +443,6 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
           <path d="M163 22V84" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
         </svg>
         <figure><img src="img/sy4.jpg" alt=""><figcaption>富民桥</figcaption></figure>
-        <p><span class="tg v">印证</span>斜索从塔顶直接拉住桥面</p>
-        <div class="concl"><span>结论</span>斜索越多越平稳</div>
       </div>
     </div>
   </div>
