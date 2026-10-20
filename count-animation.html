@@ -188,8 +188,8 @@ body.exporting .controls button, body.exporting .controls label.btn { opacity: 0
       <label class="field wide">标语
         <input id="tagline" type="text" maxlength="24" value="累计帮助上千名学子圆梦理想大学">
       </label>
-      <label class="field wide">英文小字
-        <input id="english" type="text" maxlength="60" value="HELPING STUDENTS REACH THEIR DREAM UNIVERSITIES">
+      <label class="field wide">英文小字（留空不显示）
+        <input id="english" type="text" maxlength="60" value="">
       </label>
     </div>
 
@@ -2110,7 +2110,8 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
   const FLY_SCALE = 2.1;                 // 格子很密，飞行中的卡片放大到约 2 倍，落位时缩回格子大小
   const PANEL_Z = 40;                    // 玻璃面板浮在墙前，镜头移动时有前后层次
   const PANEL_PAD = 36;
-  const NUM_Y = 0.39;                    // 大数字在中间区域里的纵向位置（占区域高度的比例）
+  // 大数字在中间区域里的纵向位置（占区域高度的比例）；没有英文小字时整体下移一点，上下更均衡
+  const numY = () => (state.english.trim() ? 0.39 : 0.43);
 
   // 两套整体风格。明亮：浅色舞台、照片原色、品牌蓝大字（和学生海报同一套配色）；深色：蓝色舞台、聚光灯
   const THEMES = {
@@ -2176,7 +2177,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     start: 0,
     eyebrow: '顺易教育 · SHUNYI EDUCATION',
     tagline: '累计帮助上千名学子圆梦理想大学',
-    english: 'HELPING STUDENTS REACH THEIR DREAM UNIVERSITIES',
+    english: '',
     plus: true,
     logo: true,
     demo: { students: true, sheets: true },
@@ -2495,7 +2496,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
 
     // 学生：先从镜头两侧冲进来，汇成一圈绕着数字转的倾斜光环（前弧在数字下方，后弧在上方）；
     // 再依次脱离光环，翻滚着飞到墙上的格子。每次轮到一个格子时，挑离它最近的那张卡片，路径短、不会堆在一起
-    p.ringY = CY - (panel.y + panel.h * NUM_Y);
+    p.ringY = CY - (panel.y + panel.h * numY());
     RING.r = panel.w * 0.55;    // 光环跟着中间区域的大小走，绕在数字外面
     RING.ry = panel.h * 0.43;
     for (const c of inner) {
@@ -2833,7 +2834,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     const S = sprites.num;
     const total = sprites.cols.reduce((s, c, i) => s + c.w * facs[i], 0) + sprites.plusW * easeOutCubic(plusP);
     g.save();
-    g.translate(cx, pn.h * NUM_Y);
+    g.translate(cx, pn.h * numY());
     const sc = sprites.numScale * (1 + punch);
     g.scale(sc, sc);
     let x = -total / 2;
@@ -2848,7 +2849,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     g.restore();
 
     // 进度条：随卡片落位填满，完成后变成分隔线
-    const by = pn.h * (NUM_Y + 0.255), bw = pn.w * 0.5;
+    const by = pn.h * (numY() + 0.255), bw = pn.w * 0.5;
     g.globalAlpha = intro;
     g.fillStyle = TH.track;
     g.fillRect(cx - bw / 2, by - 1, bw, 2);
@@ -2856,8 +2857,8 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     g.fillRect(cx - bw / 2, by - 1.5, bw * prog, 3);
     g.globalAlpha = 1;
 
-    if (tp > 0) drawLine(g, sprites.tag, cx, pn.h * (NUM_Y + 0.37) + (1 - tp) * 12, lerp(0.4, 0.14, tp), tp, pn.w * 0.9);
-    if (ep > 0 && state.english.trim()) drawLine(g, sprites.en, cx, pn.h * (NUM_Y + 0.485) + (1 - ep) * 8, lerp(0.6, 0.3, ep), ep * 0.9, pn.w * 0.9);
+    if (tp > 0) drawLine(g, sprites.tag, cx, pn.h * (numY() + 0.37) + (1 - tp) * 12, lerp(0.4, 0.14, tp), tp, pn.w * 0.9);
+    if (ep > 0 && state.english.trim()) drawLine(g, sprites.en, cx, pn.h * (numY() + 0.485) + (1 - ep) * 8, lerp(0.6, 0.3, ep), ep * 0.9, pn.w * 0.9);
     return true;
   }
 
@@ -3611,7 +3612,7 @@ void main() {
     const d = t - plan.done;
     if (d <= 0 || d > 1.6) return;
     const a = Math.exp(-d * 2.2) * clamp01(d * 12);
-    const y = plan.panel.y + plan.panel.h * NUM_Y;
+    const y = plan.panel.y + plan.panel.h * numY();
     const wd = lerp(500, 1500, easeOutCubic(clamp01(d / 0.8)));
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
