@@ -193,8 +193,6 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .law svg{width:100%;height:auto;display:block}
 .law .nm{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:var(--fs-md);line-height:1.2}
 .verdict{font-size:var(--fs-sm);padding:1mm 3mm;border-radius:10mm;line-height:1.2}
-.verdict.bad{background:var(--red)}
-.verdict.mid{background:var(--yellow);color:var(--navy)}
 .verdict.good{background:var(--green)}
 .law p{font-size:var(--fs-base);line-height:1.5;font-weight:500;color:#E6ECF3}
 .law figure{position:relative;margin-top:1.6mm;aspect-ratio:3/2;border-radius:3mm;overflow:hidden}
@@ -426,7 +424,6 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
         <svg viewBox="0 0 200 96">
           <defs>
             <marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF8B3D"/></marker>
-            <marker id="ahr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF5A44"/></marker>
           </defs>
           <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
           <rect x="4" y="44" width="10" height="48" rx="2" fill="#7F93AB"/>
@@ -452,18 +449,16 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
       <div class="law">
         <svg viewBox="0 0 200 96">
           <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
-          <rect x="26" y="44" width="18" height="48" rx="2" fill="#7F93AB"/>
-          <rect x="156" y="44" width="18" height="48" rx="2" fill="#7F93AB"/>
-          <path d="M44 66Q100 18 156 66" stroke="#CFE0F2" stroke-width="5" fill="none"/>
-          <path d="M8 38H192" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
-          <path d="M100 2V30" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
-          <path d="M86 50Q66 54 52 68" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
-          <path d="M114 50Q134 54 148 68" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
-          <path d="M24 76H6" stroke="#FF5A44" stroke-width="4" marker-end="url(#ahr)"/>
-          <path d="M176 76H194" stroke="#FF5A44" stroke-width="4" marker-end="url(#ahr)"/>
+          <path d="M6 39H194V92H174Q100 -6 26 92H6Z" fill="#7F93AB"/>
+          <path d="M30 80L44 65V50A7 7 0 0 0 30 50Z M49 60L61 50V48A6 6 0 0 0 49 48Z M170 80L156 65V50A7 7 0 0 1 170 50Z M151 60L139 50V48A6 6 0 0 1 151 48Z" fill="#2E4562" stroke="#CFE0F2" stroke-width="1.4"/>
+          <path d="M26 92Q100 -6 174 92" stroke="#CFE0F2" stroke-width="4" fill="none"/>
+          <path d="M6 36H194" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
+          <path d="M100 2V22" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
+          <path d="M84 55Q62 60 46 80" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
+          <path d="M116 55Q138 60 154 80" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
         </svg>
-        <div class="nm"><span>拱桥</span><span class="verdict mid">会推开桥墩</span></div>
-        <p>力顺着拱传给两边桥墩</p>
+        <div class="nm"><span>拱桥</span><span class="verdict good">拱上加拱</span></div>
+        <p>大拱把力传给两岸，小拱减重</p>
         <figure><img src="img/sy2.jpg" alt=""><figcaption><span>生活中</span>永安桥</figcaption></figure>
       </div>
       <div class="law">
