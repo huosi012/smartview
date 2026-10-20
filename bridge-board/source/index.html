@@ -48,6 +48,7 @@ body{
 }
 p,.bubble,.goal div,.q,.motto,.quote,.invite p{text-wrap:pretty}
 .field small{text-wrap:balance}
+p,.bubble,.goal div,.quote,.q{word-break:keep-all;overflow-wrap:anywhere}
 .qk{font-family:'QK','NotoSC',sans-serif;font-weight:400}
 b,strong{font-weight:900}
 .hl{color:var(--orange);font-weight:900}
@@ -58,38 +59,31 @@ b,strong{font-weight:900}
   background:linear-gradient(160deg,#F7833A 0%,var(--orange) 45%,#E85A16 100%);
   padding:13mm var(--pad) 22mm;
 }
-.header .toprow{display:flex;justify-content:space-between;align-items:center}
-.pill{
-  display:inline-flex;align-items:center;gap:2.4mm;
-  background:#fff;color:var(--orange-deep);font-weight:900;font-size:7.6mm;
-  padding:2.2mm 6mm;border-radius:20mm;letter-spacing:.4mm;
-}
-.pill.ghost{background:rgba(255,255,255,.16);color:#fff;border:.5mm solid rgba(255,255,255,.55)}
-.pill .dot{width:3.2mm;height:3.2mm;border-radius:50%;background:var(--orange)}
 .title{
-  margin-top:6mm;font-size:92mm;line-height:1.08;letter-spacing:2.4mm;
+  font-size:92mm;line-height:1.08;letter-spacing:2.4mm;
   text-shadow:2.2mm 2.2mm 0 var(--orange-deep);white-space:nowrap;
 }
 .subtitle{
   display:inline-block;margin-top:5mm;background:var(--navy);color:#fff;
-  font-weight:900;font-size:13.2mm;line-height:1;padding:4.6mm 9mm 5.2mm;border-radius:4mm;
+  font-weight:900;font-size:14.6mm;line-height:1;padding:5mm 9mm 5.6mm;border-radius:4mm;
   letter-spacing:.4mm;box-shadow:1.6mm 1.6mm 0 rgba(0,0,0,.14);
 }
 .subtitle em{font-style:normal;color:var(--yellow)}
-.journey{
-  margin-top:9mm;display:flex;align-items:flex-end;justify-content:space-between;
+.team{
+  margin-top:9mm;display:flex;align-items:stretch;background:#fff;border-radius:5mm;
+  box-shadow:1.8mm 1.8mm 0 var(--orange-deep);
 }
-.journey .stop{display:flex;flex-direction:column;align-items:center;gap:2mm;width:96mm}
-.journey svg{width:62mm;height:35mm;overflow:visible}
-.journey .lbl{font-weight:900;font-size:8.4mm;line-height:1;letter-spacing:.6mm}
-.journey .stop.dest{background:var(--navy);border-radius:6mm;padding:4mm 0 4mm;box-shadow:1.4mm 1.4mm 0 rgba(0,0,0,.16)}
-.journey .stop.dest .lbl{background:var(--yellow);color:var(--navy);padding:2mm 4.4mm;border-radius:10mm}
-.journey .arrow{font-weight:900;font-size:11mm;opacity:.8;margin-bottom:4mm}
+.tm{display:flex;align-items:center;gap:4mm;padding:5.4mm 8mm;border-right:.6mm dashed #F3C9A8}
+.tm:last-child{border-right:none;flex:1}
+.tm .k{font-size:7mm;font-weight:900;color:#fff;background:var(--orange);padding:1.4mm 3.2mm;border-radius:2mm;letter-spacing:.4mm;white-space:nowrap;line-height:1.2}
+.tm .v{display:flex;gap:5mm}
+.tm:last-child .v{flex:1;justify-content:space-between}
+.tm b{font-size:12.8mm;line-height:1.1;color:var(--navy);white-space:nowrap}
 .header .wave{position:absolute;left:0;right:0;bottom:-.5mm;width:100%;height:16mm;display:block}
 
 /* ---------- sections ---------- */
 main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:12mm;padding:6mm var(--pad) 14mm}
-.sec{display:flex;flex-direction:column;gap:6mm}
+.sec{display:flex;flex-direction:column;gap:8mm}
 .sh{display:flex;align-items:center;gap:6mm}
 .sh .num{
   width:27mm;height:27mm;border-radius:7mm;background:var(--orange);color:#fff;
@@ -99,31 +93,31 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .sh .tt{display:flex;flex-direction:column}
 .sh .en{font-weight:900;font-size:5.4mm;letter-spacing:1.4mm;color:var(--orange);line-height:1.1}
 .sh h2{font-size:21mm;line-height:1.05;color:var(--navy);letter-spacing:1mm}
-.sh .note{margin-left:auto;font-size:8mm;font-weight:700;color:var(--muted);text-align:right;line-height:1.35}
+.sh .note{margin-left:auto;font-size:9mm;font-weight:700;color:var(--muted);text-align:right;line-height:1.35}
 .sh .note b{color:var(--orange)}
 
 .card{background:#fff;border-radius:6mm;border:.5mm solid var(--line);box-shadow:0 1.6mm 0 rgba(30,55,86,.07)}
-.h3{display:flex;align-items:center;gap:3mm;font-weight:900;color:var(--navy);font-size:9.4mm;line-height:1.2}
+.h3{display:flex;align-items:center;gap:3mm;font-weight:900;color:var(--navy);font-size:10.6mm;line-height:1.2}
 .h3::before{content:"";width:3.4mm;height:3.4mm;border-radius:50%;background:var(--orange);box-shadow:0 0 0 1.4mm var(--orange-soft);flex:none}
-.h3 small{font-size:6.8mm;color:var(--muted);font-weight:700;margin-left:1mm}
+.h3 small{font-size:7.8mm;color:var(--muted);font-weight:700;margin-left:1mm}
 
 /* 01 */
 .s1 .card{display:grid;grid-template-columns:1.25fr 1fr;gap:0;overflow:hidden}
 .s1 .left{padding:7mm 9mm;display:flex;flex-direction:column;gap:5mm}
 .kvrow{display:flex;gap:10mm}
 .kv{display:flex;flex-direction:column}
-.kv span{font-size:5.6mm;font-weight:900;color:var(--orange);letter-spacing:.8mm;line-height:1.3}
-.kv strong{font-size:10mm;color:var(--navy);line-height:1.2}
+.kv span{font-size:6.4mm;font-weight:900;color:var(--orange);letter-spacing:.8mm;line-height:1.3}
+.kv strong{font-size:11.6mm;color:var(--navy);line-height:1.2}
 .members{display:flex;align-items:center;flex-wrap:wrap;gap:2.4mm}
-.members span.k{font-size:5.6mm;font-weight:900;color:var(--orange);letter-spacing:.8mm;margin-right:1mm}
-.chip{background:var(--orange-tint);border:.45mm solid #F7C9A6;color:var(--navy);font-weight:900;font-size:7.6mm;line-height:1;padding:2.2mm 3.6mm;border-radius:10mm}
+.members span.k{font-size:6.4mm;font-weight:900;color:var(--orange);letter-spacing:.8mm;margin-right:1mm}
+.chip{background:var(--orange-tint);border:.45mm solid #F7C9A6;color:var(--navy);font-weight:900;font-size:8.8mm;line-height:1;padding:2.2mm 3.6mm;border-radius:10mm}
 .chip.lead{background:var(--navy);border-color:var(--navy);color:#fff}
 .s1 .task{background:var(--navy);color:#fff;padding:7mm 9mm;display:flex;flex-direction:column;gap:3mm}
-.s1 .task .k{font-size:5.6mm;font-weight:900;color:var(--yellow);letter-spacing:.8mm}
-.s1 .task p{font-size:8.4mm;font-weight:500;line-height:1.5}
+.s1 .task .k{font-size:6.4mm;font-weight:900;color:var(--yellow);letter-spacing:.8mm}
+.s1 .task p{font-size:9.8mm;font-weight:500;line-height:1.5}
 .s1 .task p b{color:var(--yellow)}
 .reqs{display:flex;gap:2.6mm;margin-top:auto}
-.reqs span{background:#fff;color:var(--orange-deep);border-radius:10mm;font-weight:900;font-size:7mm;padding:1.6mm 4.4mm;line-height:1.2}
+.reqs span{background:#fff;color:var(--orange-deep);border-radius:10mm;font-weight:900;font-size:8.2mm;padding:1.6mm 4.4mm;line-height:1.2}
 
 /* 02 */
 .s2 .rowA{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9mm}
@@ -131,12 +125,12 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .river svg{width:100%;height:auto;display:block}
 .river .cap{font-size:6.6mm;font-weight:700;color:var(--muted);text-align:center;line-height:1.3;margin-top:1mm}
 .challenge{background:var(--orange);color:#fff;border:none;padding:7mm 8mm;display:flex;flex-direction:column;gap:3mm;box-shadow:1.6mm 1.6mm 0 var(--orange-deep)}
-.challenge .k{font-size:6.4mm;font-weight:900;letter-spacing:1mm;color:var(--navy);background:#fff;align-self:flex-start;padding:1mm 3.4mm;border-radius:2mm}
-.challenge p{font-size:12.8mm;font-weight:900;line-height:1.35}
+.challenge .k{font-size:7.4mm;font-weight:900;letter-spacing:1mm;color:var(--navy);background:#fff;align-self:flex-start;padding:1mm 3.4mm;border-radius:2mm}
+.challenge p{font-size:13.6mm;font-weight:900;line-height:1.35}
 .challenge p em{font-style:normal;color:var(--yellow)}
 .thinks{display:flex;flex-direction:column;gap:4mm}
-.bubble{position:relative;border-radius:5mm;padding:4.4mm 6mm;font-size:8.3mm;line-height:1.45;font-weight:500}
-.bubble .k{display:block;font-weight:900;font-size:6.4mm;letter-spacing:.6mm;margin-bottom:.6mm}
+.bubble{position:relative;border-radius:5mm;padding:4.4mm 6mm;font-size:9.6mm;line-height:1.45;font-weight:500}
+.bubble .k{display:block;font-weight:900;font-size:7.6mm;letter-spacing:.6mm;margin-bottom:.6mm}
 .bubble.think{background:#EAF1F8;color:var(--navy)}
 .bubble.think .k{color:var(--navy-2)}
 .bubble.real{background:#FFE9E4;color:#7A2316;flex:1}
@@ -145,15 +139,15 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .drive{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:5mm;align-items:stretch}
 .drive .lab{
   background:var(--navy);color:#fff;border-radius:5mm;padding:3mm 5mm;display:flex;flex-direction:column;justify-content:center;
-  font-weight:900;font-size:7.6mm;line-height:1.25;text-align:center;
+  font-weight:900;font-size:8.8mm;line-height:1.25;text-align:center;
 }
-.q{display:flex;align-items:center;gap:3.6mm;padding:3.6mm 5mm;font-weight:900;color:var(--navy);font-size:7.6mm;line-height:1.35}
-.q i{font-style:normal;flex:none;width:11mm;height:11mm;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:6.6mm;line-height:1}
+.q{display:flex;align-items:center;gap:3.6mm;padding:4mm 5mm;font-weight:900;color:var(--navy);font-size:9.2mm;line-height:1.3}
+.q i{font-style:normal;flex:none;width:13mm;height:13mm;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:7.4mm;line-height:1}
 .motto{
   display:flex;align-items:center;gap:5mm;background:var(--orange-soft);border-radius:5mm;padding:4mm 7mm;
-  color:var(--navy);font-weight:900;font-size:8.6mm;line-height:1.35;
+  color:var(--navy);font-weight:900;font-size:9.8mm;line-height:1.35;
 }
-.motto .tag{flex:none;background:var(--orange);color:#fff;border-radius:2.4mm;font-size:6.4mm;padding:1.2mm 3.4mm;letter-spacing:.6mm}
+.motto .tag{flex:none;background:var(--orange);color:#fff;border-radius:2.4mm;font-size:7.4mm;padding:1.2mm 3.4mm;letter-spacing:.6mm}
 .motto em{font-style:normal;color:var(--orange)}
 
 /* 03 */
@@ -170,11 +164,11 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 }
 .node .why{
   position:absolute;left:64%;top:50%;transform:translate(-50%,-50%);
-  background:#fff;border:.5mm solid var(--red);color:var(--red);font-weight:900;font-size:5.8mm;
+  background:#fff;border:.5mm solid var(--red);color:var(--red);font-weight:900;font-size:6.6mm;
   line-height:1.1;padding:1.2mm 2.8mm;border-radius:10mm;white-space:nowrap;z-index:2;
 }
 .node .why.end{left:auto;right:0;transform:translateY(-50%);background:var(--yellow);border-color:var(--orange-deep);color:var(--navy)}
-.node .st-name{background:var(--cream);padding:0 2mm;font-size:6.2mm;font-weight:900;color:var(--orange);letter-spacing:.6mm;z-index:1}
+.node .st-name{background:var(--cream);padding:0 2mm;font-size:7mm;font-weight:900;color:var(--orange);letter-spacing:.6mm;z-index:1}
 .stations{display:grid;grid-template-columns:repeat(4,1fr);gap:12mm}
 .st{display:flex;flex-direction:column;overflow:hidden}
 .st .ph{position:relative;aspect-ratio:3/2;overflow:hidden;background:#ddd}
@@ -182,9 +176,9 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .st .ph .t{position:absolute;left:2.4mm;background:rgba(30,55,86,.85);color:#fff;font-weight:900;font-size:5.4mm;line-height:1;padding:1.2mm 2.4mm;border-radius:1.6mm}
 .st .body{padding:4.4mm 5.6mm 5.6mm;display:flex;flex-direction:column;gap:2.6mm}
 .st h4{font-size:12.4mm;line-height:1.05;color:var(--navy)}
-.st h4 small{display:block;font-family:'NotoSC';font-weight:900;font-size:6.2mm;color:var(--orange);margin-top:1.4mm;letter-spacing:.3mm}
-.st p{font-size:7.1mm;line-height:1.5;font-weight:500}
-.st p .tg{display:inline-block;font-weight:900;font-size:5.4mm;line-height:1;color:#fff;background:var(--navy);padding:1.1mm 2mm;border-radius:1.4mm;margin-right:1.6mm;vertical-align:.6mm}
+.st h4 small{display:block;font-family:'NotoSC';font-weight:900;font-size:7.2mm;color:var(--orange);margin-top:1.4mm;letter-spacing:.3mm}
+.st p{font-size:8.2mm;line-height:1.5;font-weight:500}
+.st p .tg{display:inline-block;font-weight:900;font-size:6.2mm;line-height:1;color:#fff;background:var(--navy);padding:1.1mm 2mm;border-radius:1.4mm;margin-right:1.6mm;vertical-align:.6mm}
 .st p .tg.f{background:var(--orange)}
 .st p .tg.x{background:var(--red)}
 .st p .tg.ok{background:var(--green)}
@@ -195,13 +189,13 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .principle .lead em{font-style:normal;color:var(--yellow)}
 .forces{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
 .force{background:rgba(255,255,255,.07);border:.45mm solid rgba(255,255,255,.2);border-radius:4mm;padding:3mm 4mm 4mm;display:flex;flex-direction:column;gap:1.6mm}
-.force svg{width:100%;height:76mm;display:block}
-.force .nm{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:8mm;line-height:1.2}
-.verdict{font-size:5.8mm;padding:1mm 3mm;border-radius:10mm;line-height:1.2}
+.force svg{width:100%;height:82mm;display:block}
+.force .nm{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:9mm;line-height:1.2}
+.verdict{font-size:6.6mm;padding:1mm 3mm;border-radius:10mm;line-height:1.2}
 .verdict.bad{background:var(--red)}
 .verdict.mid{background:var(--yellow);color:var(--navy)}
 .verdict.good{background:var(--green)}
-.force p{font-size:7mm;line-height:1.45;font-weight:500;color:#E6ECF3}
+.force p{font-size:8.2mm;line-height:1.45;font-weight:500;color:#E6ECF3}
 .force p b{color:var(--yellow)}
 
 /* 04 */
@@ -211,31 +205,31 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .cmp figure{display:flex;flex-direction:column;gap:2mm}
 .cmp .im{position:relative;aspect-ratio:1/1;border-radius:3mm;overflow:hidden}
 .cmp .im img{width:100%;height:100%;object-fit:cover;display:block}
-.cmp .im .a,.cmp .im .b{position:absolute;left:1.6mm;font-weight:900;font-size:4.8mm;line-height:1;padding:1mm 2mm;border-radius:1.2mm;color:#fff}
+.cmp .im .a,.cmp .im .b{position:absolute;left:1.6mm;font-weight:900;font-size:5.6mm;line-height:1;padding:1mm 2mm;border-radius:1.2mm;color:#fff}
 .cmp .im .a{top:1.6mm;background:rgba(93,102,115,.9)}
 .cmp .im .b{top:39.5%;background:var(--orange)}
-.cmp figcaption{text-align:center;font-weight:900;font-size:7mm;color:var(--navy);line-height:1.2}
+.cmp figcaption{text-align:center;font-weight:900;font-size:8.2mm;color:var(--navy);line-height:1.2}
 .cmp figcaption em{font-style:normal;color:var(--orange)}
 .scale{display:flex;flex-direction:column;gap:1mm}
-.scale .names{display:flex;justify-content:space-between;font-weight:900;font-size:6mm;color:var(--navy);line-height:1.2}
+.scale .names{display:flex;justify-content:space-between;font-weight:900;font-size:7mm;color:var(--navy);line-height:1.2}
 .scale svg{width:100%;height:9mm;display:block}
-.scale .ends{display:flex;justify-content:space-between;font-size:5.6mm;font-weight:700;color:var(--muted);line-height:1.2}
+.scale .ends{display:flex;justify-content:space-between;font-size:6.6mm;font-weight:700;color:var(--muted);line-height:1.2}
 .city{display:grid;grid-template-columns:1fr 1fr;gap:3.6mm}
 .city figure{position:relative;aspect-ratio:3/2;border-radius:3mm;overflow:hidden}
 .city img{width:100%;height:100%;object-fit:cover;display:block}
 .city figcaption{
   position:absolute;left:0;right:0;bottom:0;padding:5mm 2.6mm 2mm;
   background:linear-gradient(transparent,rgba(15,28,45,.82));color:#fff;
-  font-weight:900;font-size:6.6mm;line-height:1.15;display:flex;align-items:center;gap:2mm;
+  font-weight:900;font-size:8mm;line-height:1.15;display:flex;align-items:center;gap:2mm;
 }
-.city figcaption span{background:var(--orange);font-size:4.8mm;padding:.8mm 1.8mm;border-radius:1.2mm}
+.city figcaption span{background:var(--orange);font-size:5.8mm;padding:.8mm 1.8mm;border-radius:1.2mm}
 
 .gains{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm}
 .gain{display:flex;gap:4mm;align-items:flex-start;padding:4.6mm 5mm}
-.gain .ic{flex:none;width:18mm;height:18mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center}
+.gain .ic{flex:none;width:20mm;height:20mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center}
 .gain .ic svg{width:11mm;height:11mm}
-.gain h5{font-size:8.2mm;font-weight:900;color:var(--navy);line-height:1.25}
-.gain p{font-size:7mm;line-height:1.45;font-weight:500;color:var(--muted);margin-top:1mm}
+.gain h5{font-size:9.8mm;font-weight:900;color:var(--navy);line-height:1.25}
+.gain p{font-size:8.2mm;line-height:1.45;font-weight:500;color:var(--ink);margin-top:1mm}
 
 .final{background:var(--navy);color:#fff;border-radius:7mm;padding:7mm 8mm 8mm;display:flex;flex-direction:column;gap:5mm;position:relative;box-shadow:1.8mm 1.8mm 0 var(--orange)}
 .final .top{display:flex;align-items:center;gap:4mm}
@@ -245,45 +239,40 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .final .grid{display:grid;grid-template-columns:1.08fr 1fr;gap:7mm}
 .final .photo{position:relative;border-radius:4mm;overflow:hidden;border:1.4mm solid #fff}
 .final .photo img{width:100%;display:block}
-.final .photo .cap{position:absolute;left:3mm;bottom:3mm;background:var(--orange);color:#fff;font-weight:900;font-size:6.2mm;line-height:1.2;padding:1.6mm 3.4mm;border-radius:2mm}
+.final .photo .cap{position:absolute;left:3mm;bottom:3mm;background:var(--orange);color:#fff;font-weight:900;font-size:7.6mm;line-height:1.2;padding:1.6mm 3.4mm;border-radius:2mm}
 .final .txt{display:flex;flex-direction:column;justify-content:space-between;gap:4.6mm}
-.final .txt .k{font-weight:900;font-size:9.6mm;color:var(--yellow);line-height:1.2}
-.final .txt p{font-size:9mm;line-height:1.5;font-weight:500;color:#EEF2F7}
+.final .txt .k{font-weight:900;font-size:10.8mm;color:var(--yellow);line-height:1.2}
+.final .txt p{font-size:10mm;line-height:1.5;font-weight:500;color:#EEF2F7}
 .final .txt p b{color:#fff}
 .goals{display:flex;flex-direction:column;gap:3mm}
 .goal{display:flex;gap:3.4mm;align-items:flex-start;background:rgba(255,255,255,.08);border-radius:3mm;padding:3.2mm 4mm}
-.goal i{flex:none;font-style:normal;width:10mm;height:10mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:6.2mm;line-height:1;margin-top:.6mm}
-.goal div{font-size:8mm;line-height:1.45;color:#E6ECF3}
-.goal div b{color:#fff;font-size:8.4mm}
+.goal i{flex:none;font-style:normal;width:11mm;height:11mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:6.2mm;line-height:1;margin-top:.6mm}
+.goal div{font-size:9mm;line-height:1.45;color:#E6ECF3}
+.goal div b{color:#fff;font-size:9.4mm}
 .fields{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm}
 .field{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2mm;border:.45mm dashed rgba(255,255,255,.35);border-radius:3.4mm;padding:5mm 2mm 5.4mm}
 .field .fi{width:20mm;height:20mm;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center}
 .field .fi svg{width:12.6mm;height:12.6mm}
-.field b{font-size:9.2mm;line-height:1.2;color:#fff}
-.field small{font-size:6.6mm;line-height:1.3;color:#C9D6E5;font-weight:700}
+.field b{font-size:10mm;line-height:1.2;color:#fff}
+.field small{font-size:7.4mm;line-height:1.3;color:#C9D6E5;font-weight:700}
 .steps{background:#FFF9F3;border-radius:4mm;padding:3mm 4mm 2.4mm;color:var(--navy)}
-.steps .k{font-weight:900;font-size:6.6mm;display:flex;justify-content:space-between;align-items:baseline;line-height:1.2}
-.steps .k span{font-size:5.6mm;color:var(--muted);font-weight:700}
+.steps .k{font-weight:900;font-size:8.4mm;display:flex;justify-content:space-between;align-items:baseline;line-height:1.2}
+.steps .k span{font-size:6.6mm;color:var(--muted);font-weight:700}
 .steps .row{display:grid;grid-template-columns:repeat(9,1fr);gap:1.6mm;margin-top:1.6mm}
 .steps figure{display:flex;flex-direction:column;align-items:center}
 .steps img{width:100%;display:block}
-.steps figcaption{font-weight:900;font-size:5mm;line-height:1;width:7mm;height:7mm;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:.8mm}
-.quote{font-size:9mm;font-weight:700;line-height:1.45;color:#fff;border-left:none;background:rgba(255,197,58,.14);border-radius:3mm;padding:3mm 4.4mm}
+.steps figcaption{font-weight:900;font-size:6mm;line-height:1;width:8.6mm;height:8.6mm;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:.8mm}
+.quote{font-size:9.6mm;font-weight:700;line-height:1.45;color:#fff;border-left:none;background:rgba(255,197,58,.14);border-radius:3mm;padding:3mm 4.4mm}
 .quote b{color:var(--yellow)}
 .invite{
   display:flex;align-items:center;gap:6mm;background:var(--orange);border-radius:5mm;padding:5mm 7mm;
 }
 .invite .big{font-size:19mm;line-height:1;color:var(--yellow);flex:none;text-shadow:1mm 1mm 0 var(--orange-deep)}
-.invite p{font-weight:900;font-size:11.6mm;line-height:1.35;flex:1}
+.invite p{font-weight:900;font-size:12.6mm;line-height:1.2;flex:1;white-space:nowrap}
 .invite .safe{flex:none;background:#fff;color:var(--green);border-radius:4mm;padding:3mm 5mm;display:flex;align-items:center;gap:2.6mm;font-weight:900;font-size:7.4mm;line-height:1.25}
 .invite .safe svg{width:11mm;height:11mm;flex:none}
 .invite .safe span{color:var(--navy)}
 
-/* footer */
-.footer{background:var(--navy);color:#fff;padding:6mm var(--pad);display:flex;align-items:center;justify-content:space-between}
-.footer .who{font-weight:700;font-size:7mm;color:#C9D6E5}
-.footer .who b{color:#fff}
-.footer .ask{font-size:12.4mm;line-height:1;color:var(--yellow);letter-spacing:.6mm}
 </style>
 </head>
 <body>
@@ -291,53 +280,13 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 
 <!-- ================= HEADER ================= -->
 <header class="header">
-  <div class="toprow">
-    <span class="pill"><span class="dot"></span>校园科技节 · 项目式学习成果展</span>
-    <span class="pill ghost">五年六班 · 安沫宣小组</span>
-  </div>
   <h1 class="title qk">我们的桥梁探究之旅</h1>
   <div class="subtitle">从<em>平板桥</em>到<em>倍力桥</em>，一座桥是怎样一步步搭起来的</div>
 
-  <div class="journey">
-    <div class="stop">
-      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 31H58" opacity=".55"/><path d="M12 31V19M48 31V19"/><path d="M5 18H55" stroke-width="3.4"/>
-      </svg>
-      <span class="lbl">平板桥</span>
-    </div>
-    <span class="arrow">›</span>
-    <div class="stop">
-      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 31H58" opacity=".55"/><path d="M5 14H55" stroke-width="3.4"/><path d="M10 31Q30 -2 50 31"/><path d="M20 16V20M40 16V20M30 16V15"/>
-      </svg>
-      <span class="lbl">拱桥</span>
-    </div>
-    <span class="arrow">›</span>
-    <div class="stop">
-      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 31H58" opacity=".55"/><path d="M16 31V3M44 31V3"/><path d="M2 22H58" stroke-width="3.4"/>
-        <path d="M2 17L16 4Q30 26 44 4L58 17"/><path d="M22 12.7V21M30 15V21M38 12.7V21" stroke-width="1.6"/>
-      </svg>
-      <span class="lbl">悬索桥</span>
-    </div>
-    <span class="arrow">›</span>
-    <div class="stop">
-      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 31H58" opacity=".55"/><path d="M30 31V2"/><path d="M2 22H58" stroke-width="3.4"/>
-        <path d="M30 4L5 21M30 4L13 21M30 4L21 21M30 4L39 21M30 4L47 21M30 4L55 21" stroke-width="1.5"/>
-      </svg>
-      <span class="lbl">斜拉桥</span>
-    </div>
-    <span class="arrow">›</span>
-    <div class="stop dest">
-      <svg viewBox="0 0 60 34" fill="none" stroke="#FFC53A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 31H58" stroke="#fff" opacity=".55" stroke-width="2.2"/>
-        <path d="M5 31L17 11M11 15L33 5M27 5L49 15M43 11L55 31"/>
-        <path d="M8 22L22 10M38 10L52 22M18 8H42" stroke-width="2"/>
-        <circle cx="17" cy="11" r="2" fill="#FFC53A"/><circle cx="43" cy="11" r="2" fill="#FFC53A"/><circle cx="30" cy="6" r="2" fill="#FFC53A"/>
-      </svg>
-      <span class="lbl">倍力桥</span>
-    </div>
+  <div class="team">
+    <div class="tm"><span class="k">班级</span><span class="v"><b>五年六班</b></span></div>
+    <div class="tm"><span class="k">指导教师</span><span class="v"><b>尹洪雨</b><b>孙昊</b></span></div>
+    <div class="tm"><span class="k">组员</span><span class="v"><b>安沫宣</b><b>张景怀</b><b>张淙桓</b><b>吕冰</b><b>韩竣旭</b><b>于沐熙</b><b>药芮萱</b></span></div>
   </div>
 
   <svg class="wave" viewBox="0 0 760 16" preserveAspectRatio="none">
@@ -358,7 +307,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
       <div class="kvrow">
         <div class="kv"><span>班级</span><strong>五年六班</strong></div>
         <div class="kv"><span>小组</span><strong>安沫宣小组（7人）</strong></div>
-        <div class="kv"><span>指导教师</span><strong>尹洪雨</strong></div>
+        <div class="kv"><span>指导教师</span><strong>尹洪雨、孙昊</strong></div>
       </div>
       <div class="members">
         <span class="k">组员</span>
@@ -413,8 +362,8 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
       <div class="reqs"><span>桥面平稳</span><span>能承重</span><span>不坍塌</span></div>
     </div>
     <div class="thinks">
-      <div class="bubble think"><span class="k">刚开始我们以为</span>“不就是两块桥墩，上面铺一块板嘛，太简单了！”</div>
-      <div class="bubble real"><span class="k">真动手一试才发现</span>只放一瓶可乐，平板桥就 <b>“咔嚓”</b> 一声断了，桥面中间往下弯——<b>桥好不好搭，和结不结实完全是两回事。</b></div>
+      <div class="bubble think"><span class="k">刚开始我们以为</span>“不就是两块桥墩，<br>上面铺一块板嘛，太简单了！”</div>
+      <div class="bubble real"><span class="k">真动手一试才发现</span>只放一瓶可乐，平板桥就 <b>“咔嚓”</b> 一声断了，<br>桥面中间往下弯——<br><b>桥好不好搭，和结不结实完全是两回事。</b></div>
     </div>
   </div>
   <div class="drive">
@@ -574,7 +523,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
   <div class="gains">
     <div class="card gain">
       <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M31 15A12.5 12.5 0 1 0 32.5 24"/><path d="M32 6V15H23"/></svg></div>
-      <div><h5>失败不是坏事</h5><p>每一次塌桥，都告诉我们下一步该改哪里。</p></div>
+      <div><h5>失败不是坏事</h5><p>每一次塌桥，<br>都告诉我们下一步该改哪里。</p></div>
     </div>
     <div class="card gain">
       <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14H36"/><path d="M7 34Q20 0 33 34"/></svg></div>
@@ -582,11 +531,11 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
     </div>
     <div class="card gain">
       <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L35 33H5Z"/><path d="M12.5 19.5H27.5" stroke-width="2.6"/></svg></div>
-      <div><h5>三角形最稳</h5><p>三根杆件一交叉，形状就不容易被压变形。</p></div>
+      <div><h5>三角形最稳</h5><p>三根杆件一交叉，<br>形状就不容易被压变形。</p></div>
     </div>
     <div class="card gain">
       <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.4" stroke-linejoin="round"><rect x="4" y="21" width="14" height="13" rx="2"/><rect x="22" y="21" width="14" height="13" rx="2"/><rect x="13" y="5" width="14" height="13" rx="2"/></svg></div>
-      <div><h5>模块化更结实</h5><p>像积木一样拆开搭，坏了哪块换哪块。</p></div>
+      <div><h5>模块化更结实</h5><p>像积木一样拆开搭，<br>坏了哪块换哪块。</p></div>
     </div>
   </div>
 
@@ -636,18 +585,13 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
     </div>
     <div class="invite">
       <span class="big qk">诚挚邀请</span>
-      <p>各位领导、老师、同学们到台前，<br>亲身感受我们小组搭建的倍力桥！</p>
+      <p>各位领导、老师、同学们，亲身感受我们小组搭建的倍力桥！</p>
       <span class="safe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#5DB35A"/><path d="M6.5 12.5l3.6 3.6L17.5 8.6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>队员已先尝试<br>安全可靠</span></span>
     </div>
   </div>
 </section>
 
 </main>
-
-<footer class="footer">
-  <span class="who"><b>五年六班 · 安沫宣小组</b>　指导教师：尹洪雨</span>
-  <span class="ask qk">你们的桥，会怎么进化呢？</span>
-</footer>
 
 </div>
 </body>
