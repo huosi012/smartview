@@ -67,7 +67,7 @@ b,strong{font-weight:900}
 .header{
   position:relative;color:#fff;
   background:linear-gradient(160deg,#F7833A 0%,var(--orange) 45%,#E85A16 100%);
-  padding:13mm var(--pad) 20mm;text-align:center;
+  padding:20mm var(--pad) 28mm;text-align:center;
 }
 .title{
   font-size:var(--fs-title);line-height:1.08;letter-spacing:2.4mm;
@@ -94,8 +94,8 @@ b,strong{font-weight:900}
 .header .wave{position:absolute;left:0;right:0;bottom:-.5mm;width:100%;height:16mm;display:block}
 
 /* ---------- sections ---------- */
-main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:10mm;padding:6mm var(--pad) 11mm}
-.sec{display:flex;flex-direction:column;gap:6mm}
+main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:20mm;padding:10mm var(--pad) 18mm}
+.sec{display:flex;flex-direction:column;gap:9mm}
 .sh{display:flex;align-items:center;gap:6mm}
 .sh .num{
   width:31mm;height:31mm;border-radius:8mm;background:var(--orange);color:#fff;
@@ -115,12 +115,12 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 
 /* 01 */
 .s1 .card{display:grid;grid-template-columns:1.32fr 1fr;overflow:hidden}
-.intro{padding:7mm 9mm 8mm;display:flex;flex-direction:column;justify-content:center;gap:4.4mm}
+.intro{padding:11mm 11mm 12mm;display:flex;flex-direction:column;justify-content:center;gap:4.4mm}
 .intro .lead{font-weight:900;font-size:var(--fs-lg);line-height:1.35;color:var(--navy)}
 .intro .lead em{font-style:normal;color:var(--orange)}
 .intro p{font-size:var(--fs-base);line-height:1.5;font-weight:500}
 .intro p b{color:var(--navy);font-weight:900}
-.process{background:var(--orange-tint);color:var(--navy);padding:7mm 8mm 8mm;display:flex;flex-direction:column;justify-content:center;gap:3mm}
+.process{background:var(--orange-tint);color:var(--navy);padding:11mm 10mm 12mm;display:flex;flex-direction:column;justify-content:center;gap:3mm}
 .process .k{align-self:flex-start;font-size:var(--fs-sm);font-weight:900;color:#fff;background:var(--orange);padding:1.2mm 3.4mm;border-radius:2mm;letter-spacing:.8mm;line-height:1.2}
 .flow{display:flex;align-items:center;justify-content:space-between;margin-top:2mm}
 .flow span{width:36mm;height:17mm;border-radius:10mm;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:var(--fs-base);line-height:1;letter-spacing:.6mm}
@@ -173,7 +173,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .st .ph{position:relative;aspect-ratio:16/9;overflow:hidden;background:#ddd}
 .st .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .st .ph .t{position:absolute;left:2.4mm;background:rgba(30,55,86,.85);color:#fff;font-weight:900;font-size:var(--fs-xs);line-height:1;padding:1.4mm 2.8mm;border-radius:1.6mm}
-.st .body{padding:4.4mm 5.6mm 5.6mm;display:flex;flex-direction:column;gap:2.6mm}
+.st .body{padding:6mm 6.4mm 8mm;display:flex;flex-direction:column;gap:3.2mm}
 .st h4{font-size:var(--fs-md);font-weight:900;line-height:1.15;color:var(--navy)}
 .st h4 small{display:block;font-weight:900;font-size:var(--fs-sm);color:var(--orange);margin-top:1.4mm;letter-spacing:.3mm}
 .st p{font-size:var(--fs-base);line-height:1.5;font-weight:500}
@@ -182,39 +182,17 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .st p .tg.x{background:var(--red)}
 .st p .tg.ok{background:var(--green)}
 
-.principle{padding:6mm 8mm 7mm;display:flex;flex-direction:column;gap:4mm;background:var(--navy);border:none;color:#fff;box-shadow:1.6mm 1.6mm 0 var(--orange)}
-.principle .lead{display:flex;align-items:center;gap:4mm;font-weight:900;font-size:var(--fs-md);line-height:1.25}
-.principle .lead .k{flex:none;background:var(--yellow);color:var(--navy);font-size:var(--fs-sm);padding:1.2mm 3.4mm;border-radius:2mm;letter-spacing:.6mm}
-.principle .lead em{font-style:normal;color:var(--yellow)}
-.forces{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
-.force{background:rgba(255,255,255,.07);border:.45mm solid rgba(255,255,255,.2);border-radius:4mm;padding:3mm 4mm 4mm;display:flex;flex-direction:column;gap:1.6mm}
-.force svg{width:100%;height:70mm;display:block}
-.force .nm{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:var(--fs-md);line-height:1.2}
-.verdict{font-size:var(--fs-sm);padding:1mm 3mm;border-radius:10mm;line-height:1.2}
-.verdict.bad{background:var(--red)}
-.verdict.mid{background:var(--yellow);color:var(--navy)}
-.verdict.good{background:var(--green)}
-.force p{font-size:var(--fs-base);line-height:1.5;font-weight:500;color:#E6ECF3}
-.force p b{color:var(--yellow)}
-
 /* 04 */
-.row41{display:grid;grid-template-columns:1.6fr 1fr;gap:9mm}
-.panel{padding:6mm 7mm;display:flex;flex-direction:column;gap:4mm}
-.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
-.cmp figure{display:flex;flex-direction:column;gap:2mm}
-.cmp .im{position:relative;aspect-ratio:1/1;border-radius:3mm;overflow:hidden}
-.cmp .im img{width:100%;height:100%;object-fit:cover;display:block}
-.cmp .im .a,.cmp .im .b{position:absolute;left:1.6mm;font-weight:900;font-size:var(--fs-xs);line-height:1;padding:1mm 2mm;border-radius:1.2mm;color:#fff}
-.cmp .im .a{top:1.6mm;background:rgba(93,102,115,.9)}
-.cmp .im .b{top:39.5%;background:var(--orange)}
-.cmp figcaption{text-align:center;font-weight:900;font-size:var(--fs-sm);color:var(--navy);line-height:1.2}
-.cmp figcaption em{font-style:normal;color:var(--orange)}
-.scale{display:flex;flex-direction:column;gap:1mm}
-.scale .names{display:flex;justify-content:space-between;font-weight:900;font-size:var(--fs-sm);color:var(--navy);line-height:1.2}
-.scale svg{width:100%;height:9mm;display:block}
-.scale .ends{display:flex;justify-content:space-between;font-size:var(--fs-xs);font-weight:700;color:var(--muted);line-height:1.2}
-.city{display:grid;grid-template-columns:1fr 1fr;gap:3.6mm}
-.city figure{position:relative;aspect-ratio:3/2;border-radius:3mm;overflow:hidden}
+.principle{
+  display:flex;align-items:center;justify-content:center;gap:5mm;background:var(--navy);color:#fff;
+  border-radius:6mm;padding:9mm 8mm;box-shadow:1.6mm 1.6mm 0 var(--orange);
+  font-weight:900;font-size:var(--fs-lg);line-height:1.25;
+}
+.principle .k{flex:none;background:var(--yellow);color:var(--navy);font-size:var(--fs-sm);padding:1.2mm 3.4mm;border-radius:2mm;letter-spacing:.6mm}
+.principle em{font-style:normal;color:var(--yellow)}
+.panel{padding:6mm 7mm 7mm;display:flex;flex-direction:column;gap:5mm}
+.city{display:grid;grid-template-columns:repeat(4,1fr);gap:5mm}
+.city figure{position:relative;aspect-ratio:4/3;border-radius:3mm;overflow:hidden}
 .city img{width:100%;height:100%;object-fit:cover;display:block}
 .city figcaption{
   position:absolute;left:0;right:0;bottom:0;padding:5mm 2.6mm 2mm;
@@ -224,19 +202,18 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .city figcaption span{background:var(--orange);font-size:var(--fs-xs);padding:.8mm 1.8mm;border-radius:1.2mm}
 
 .gains{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm}
-.gain{display:flex;flex-direction:column;gap:3mm;padding:5mm 6mm 6mm}
+.gain{display:flex;justify-content:center;padding:9mm 5mm}
 .gain .gh{display:flex;align-items:center;gap:3.4mm}
 .gain .ic{flex:none;width:17mm;height:17mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center}
 .gain .ic svg{width:10.4mm;height:10.4mm}
 .gain h5{font-size:var(--fs-md);font-weight:900;color:var(--navy);line-height:1.25}
-.gain p{font-size:var(--fs-base);line-height:1.5;font-weight:500;color:var(--ink)}
 
-.final{background:var(--navy);color:#fff;border-radius:7mm;padding:7mm 8mm 8mm;display:flex;flex-direction:column;gap:5mm;position:relative;box-shadow:1.8mm 1.8mm 0 var(--orange)}
+.final{background:var(--navy);color:#fff;border-radius:7mm;padding:10mm 10mm 11mm;display:flex;flex-direction:column;gap:7mm;position:relative;box-shadow:1.8mm 1.8mm 0 var(--orange)}
 .final .top{display:flex;align-items:center;gap:4mm}
 .final .top .k{background:var(--yellow);color:var(--navy);font-weight:900;font-size:var(--fs-sm);padding:1.4mm 3.6mm;border-radius:2mm;letter-spacing:.6mm}
 .final .top h3{font-size:var(--fs-xl);line-height:1;letter-spacing:.6mm}
 .final .top h3 small{font-family:'NotoSC';font-weight:700;font-size:var(--fs-sm);color:#C9D6E5;margin-left:2mm;letter-spacing:0}
-.final .grid{display:grid;grid-template-columns:1fr 1fr;gap:7mm}
+.final .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:8mm}
 .final .photo{position:relative;border-radius:4mm;overflow:hidden;border:1.4mm solid #fff}
 .final .photo img{width:100%;display:block}
 .final .photo .cap{position:absolute;left:3mm;bottom:3mm;background:var(--orange);color:#fff;font-weight:900;font-size:var(--fs-sm);line-height:1.2;padding:1.6mm 3.4mm;border-radius:2mm}
@@ -256,7 +233,7 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
 .field .fi svg{width:8.6mm;height:8.6mm}
 .field b{font-size:var(--fs-base);line-height:1.2;color:#fff}
 .field small{font-size:var(--fs-sm);line-height:1.3;color:#C9D6E5;font-weight:700}
-.steps{background:#FFF9F3;border-radius:4mm;padding:3mm 4mm 2.4mm;color:var(--navy)}
+.steps{background:#FFF9F3;border-radius:4mm;padding:5mm 6mm 4.4mm;color:var(--navy)}
 .steps .k{font-weight:900;font-size:var(--fs-md);display:flex;justify-content:space-between;align-items:baseline;line-height:1.2}
 .steps .k span{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
 .steps .row{display:grid;grid-template-columns:repeat(9,1fr);gap:1.6mm;margin-top:1.6mm}
@@ -422,60 +399,6 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
     </article>
   </div>
 
-  <div class="card principle">
-    <div class="lead"><span class="k">科学原理</span><span>桥结不结实，关键看一件事：<em>重量（力）传到哪里去了？</em></span></div>
-    <div class="forces">
-      <div class="force">
-        <svg viewBox="0 0 200 96">
-          <defs>
-            <marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF8B3D"/></marker>
-            <marker id="ahr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF5A44"/></marker>
-          </defs>
-          <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
-          <rect x="14" y="58" width="18" height="34" rx="2" fill="#7F93AB"/>
-          <rect x="168" y="58" width="18" height="34" rx="2" fill="#7F93AB"/>
-          <path d="M8 55Q100 86 192 55" stroke="#F4C590" stroke-width="8" fill="none" stroke-linecap="round"/>
-          <path d="M100 6V54" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
-          <path d="M94 76l5 5l-4 4l6 6" stroke="#FF5A44" stroke-width="2.6" fill="none" stroke-linejoin="round"/>
-          <circle cx="100" cy="72" r="15" fill="none" stroke="#FF5A44" stroke-width="1.6" stroke-dasharray="3 3"/>
-        </svg>
-        <div class="nm"><span>平板桥</span><span class="verdict bad">易弯易断</span></div>
-        <p>重量全压在板上，中间没有支撑，<b>力集中在桥面正中间</b> → 最容易弯、最容易断。</p>
-      </div>
-      <div class="force">
-        <svg viewBox="0 0 200 96">
-          <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
-          <rect x="26" y="44" width="18" height="48" rx="2" fill="#7F93AB"/>
-          <rect x="156" y="44" width="18" height="48" rx="2" fill="#7F93AB"/>
-          <path d="M44 66Q100 18 156 66" stroke="#CFE0F2" stroke-width="5" fill="none"/>
-          <path d="M8 38H192" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
-          <path d="M100 2V30" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
-          <path d="M86 50Q66 54 52 68" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
-          <path d="M114 50Q134 54 148 68" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
-          <path d="M24 76H6" stroke="#FF5A44" stroke-width="4" marker-end="url(#ahr)"/>
-          <path d="M176 76H194" stroke="#FF5A44" stroke-width="4" marker-end="url(#ahr)"/>
-        </svg>
-        <div class="nm"><span>拱桥</span><span class="verdict mid">会推开桥墩</span></div>
-        <p>重量顺着弧形<b>传给两边桥墩</b>，但拱同时往外推 → 桥墩会被推开。</p>
-      </div>
-      <div class="force">
-        <svg viewBox="0 0 200 96">
-          <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
-          <rect x="44" y="8" width="9" height="84" rx="2" fill="#7F93AB"/>
-          <rect x="147" y="8" width="9" height="84" rx="2" fill="#7F93AB"/>
-          <path d="M48 12L12 60M48 12L26 60M48 12L70 60M48 12L86 60M152 12L114 60M152 12L130 60M152 12L174 60M152 12L188 60" stroke="#CFE0F2" stroke-width="1.6"/>
-          <path d="M4 61H196" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
-          <path d="M100 18V50" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
-          <path d="M80 50L60 24" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
-          <path d="M120 50L140 24" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
-          <path d="M37 22V84" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
-          <path d="M163 22V84" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
-        </svg>
-        <div class="nm"><span>悬索 / 斜拉桥</span><span class="verdict good">最结实</span></div>
-        <p>重量通过绳索<b>传到桥塔和地面</b>，桥面不硬扛 → 弯得最小、最结实。</p>
-      </div>
-    </div>
-  </div>
 </section>
 
 <!-- ================= 04 成果展示 ================= -->
@@ -485,50 +408,30 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
     <div class="tt"><span class="en">ACHIEVEMENTS</span><h2 class="qk">成果展示</h2></div>
   </div>
 
-  <div class="row41">
-    <div class="card panel">
-      <div class="h3">承重对比实验<small>同样一瓶水，不同桥的表现</small></div>
-      <div class="cmp">
-        <figure><div class="im"><img src="img/cmp1.jpg" alt=""><span class="a">平板桥</span><span class="b">拱桥</span></div><figcaption><em>拱桥</em> vs 平板桥</figcaption></figure>
-        <figure><div class="im"><img src="img/cmp2.jpg" alt=""><span class="a">平板桥</span><span class="b">悬索桥</span></div><figcaption><em>悬索桥</em> vs 平板桥</figcaption></figure>
-        <figure><div class="im"><img src="img/cmp3.jpg" alt=""><span class="a">平板桥</span><span class="b">斜拉桥</span></div><figcaption><em>斜拉桥</em> vs 平板桥</figcaption></figure>
-      </div>
-      <div class="scale">
-        <div class="names"><span>平板桥</span><span>拱桥</span><span>悬索桥</span><span>斜拉桥</span></div>
-        <svg viewBox="0 0 400 18" preserveAspectRatio="none">
-          <defs><linearGradient id="wg" x1="0" x2="1"><stop offset="0" stop-color="#E4513B"/><stop offset=".5" stop-color="#F26B21"/><stop offset="1" stop-color="#2E9E6A"/></linearGradient></defs>
-          <path d="M0 1L400 8V10L0 17Z" fill="url(#wg)"/>
-        </svg>
-        <div class="ends"><span>桥面弯得多</span><span>结构越好，重量被传走越多，桥面弯曲越小</span><span>几乎不弯</span></div>
-      </div>
-    </div>
-    <div class="card panel">
-      <div class="h3">生活中的桥<small>沈阳就有</small></div>
-      <div class="city">
-        <figure><img src="img/sy1.jpg" alt=""><figcaption><span>平板桥</span>云龙湖大桥</figcaption></figure>
-        <figure><img src="img/sy2.jpg" alt=""><figcaption><span>拱桥</span>永安桥</figcaption></figure>
-        <figure><img src="img/sy3.jpg" alt="" style="object-position:50% 30%"><figcaption><span>悬索桥</span>东塔桥</figcaption></figure>
-        <figure><img src="img/sy4.jpg" alt=""><figcaption><span>斜拉桥</span>富民桥</figcaption></figure>
-      </div>
+  <div class="principle">
+    <span class="k">科学原理</span><span>桥结不结实，关键看一件事：<em>重量（力）传到哪里去了？</em></span>
+  </div>
+  <div class="card panel">
+    <div class="h3">生活中的桥<small>沈阳就有</small></div>
+    <div class="city">
+      <figure><img src="img/sy1.jpg" alt=""><figcaption><span>平板桥</span>云龙湖大桥</figcaption></figure>
+      <figure><img src="img/sy2.jpg" alt=""><figcaption><span>拱桥</span>永安桥</figcaption></figure>
+      <figure><img src="img/sy3.jpg" alt="" style="object-position:50% 30%"><figcaption><span>悬索桥</span>东塔桥</figcaption></figure>
+      <figure><img src="img/sy4.jpg" alt=""><figcaption><span>斜拉桥</span>富民桥</figcaption></figure>
     </div>
   </div>
-
   <div class="gains">
     <div class="card gain">
       <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M31 15A12.5 12.5 0 1 0 32.5 24"/><path d="M32 6V15H23"/></svg></div><h5>失败不是坏事</h5></div>
-      <p>每一次塌桥，<br>都告诉我们下一步该改哪里。</p>
     </div>
     <div class="card gain">
       <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14H36"/><path d="M7 34Q20 0 33 34"/></svg></div><h5>形状变了，力就变了</h5></div>
-      <p>平板受不住，<br>弯成拱形、加上绳索就受得住。</p>
     </div>
     <div class="card gain">
       <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L35 33H5Z"/><path d="M12.5 19.5H27.5" stroke-width="2.6"/></svg></div><h5>三角形最稳</h5></div>
-      <p>三根杆件一交叉，<br>形状就不容易被压变形。</p>
     </div>
     <div class="card gain">
       <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.4" stroke-linejoin="round"><rect x="4" y="21" width="14" height="13" rx="2"/><rect x="22" y="21" width="14" height="13" rx="2"/><rect x="13" y="5" width="14" height="13" rx="2"/></svg></div><h5>模块化更结实</h5></div>
-      <p>像积木一样拆开搭，<br>坏了哪块换哪块。</p>
     </div>
   </div>
 

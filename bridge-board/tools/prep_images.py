@@ -55,10 +55,6 @@ for src, name, cy in [
 ]:
     save(warm(crop_to_aspect(Image.open(MEDIA / src).convert("RGB"), ASPECT, cy=cy)), name)
 
-# Load comparison pairs (top: flat bridge, bottom: improved bridge).
-for i, src in enumerate(["image11.jpeg", "image12.jpeg", "image13.jpeg"], 1):
-    save(warm(Image.open(MEDIA / src)), f"cmp{i}.jpg")
-
 # Shenyang bridges. Drop the burned-in title and the watermark from image14.
 save(Image.open(MEDIA / "image14.jpeg").crop((0, 132, 860, 561)), "sy1.jpg")
 save(Image.open(MEDIA / "image15.jpeg"), "sy2.jpg")
