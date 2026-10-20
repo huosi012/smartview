@@ -1,0 +1,113 @@
+"""Prepare board images: crops, composites and the recolored assembly-step strip.
+
+usage: python prep_images.py <pptx media dir> <extra images dir> <out dir>
+  pptx media dir   ppt/media from the unzipped project PPT
+  extra images dir holds 1.jpg (assembly diagram) and 2.jpg (team on the bridge)
+"""
+import sys
+from pathlib import Path
+
+import numpy as np
+from scipy import ndimage
+from PIL import Image, ImageFilter
+
+MEDIA = Path(sys.argv[1])
+EXTRA = Path(sys.argv[2])
+OUT = Path(sys.argv[3])
+OUT.mkdir(parents=True, exist_ok=True)
+
+
+def save(im, name, q=92):
+    im.convert("RGB").save(OUT / name, quality=q, subsampling=0)
+
+
+def crop_to_aspect(im, aspect, cx=0.5, cy=0.5):
+    w, h = im.size
+    if w / h > aspect:
+        nw = round(h * aspect)
+        x0 = round((w - nw) * cx)
+        return im.crop((x0, 0, x0 + nw, h))
+    nh = round(w / aspect)
+    y0 = round((h - nh) * cy)
+    return im.crop((0, y0, w, y0 + nh))
+
+
+ASPECT = 3 / 2
+
+# Station 1: empty flat bridge stacked over the same bridge under a bottle.
+a = Image.open(MEDIA / "image3.jpeg").convert("RGB").crop((0, 22, 1234, 418))
+b = Image.open(MEDIA / "image4.png").convert("RGB").crop((0, 4, 1245, 466))
+a = a.resize((1245, round(a.height * 1245 / a.width)), Image.LANCZOS)
+comp = Image.new("RGB", (1245, a.height + b.height + 8), (255, 255, 255))
+comp.paste(a, (0, 0))
+comp.paste(b, (0, a.height + 8))
+print("st1 composite", comp.size, comp.width / comp.height)
+save(crop_to_aspect(comp, ASPECT), "st1.jpg")
+
+for src, name, cx, cy in [
+    ("image6.png", "st2.jpg", 0.5, 0.35),
+    ("image8.png", "st3.jpg", 0.5, 0.5),
+    ("image10.png", "st4.jpg", 0.4, 0.5),
+]:
+    save(crop_to_aspect(Image.open(MEDIA / src).convert("RGB"), ASPECT, cx, cy), name)
+
+# Load comparison pairs (top: flat bridge, bottom: improved bridge).
+for i, src in enumerate(["image11.jpeg", "image12.jpeg", "image13.jpeg"], 1):
+    save(Image.open(MEDIA / src), f"cmp{i}.jpg")
+
+# Shenyang bridges. Drop the burned-in title and the watermark from image14.
+save(Image.open(MEDIA / "image14.jpeg").crop((0, 132, 860, 561)), "sy1.jpg")
+save(Image.open(MEDIA / "image15.jpeg"), "sy2.jpg")
+save(Image.open(MEDIA / "image16.jpeg"), "sy3.jpg")
+save(Image.open(MEDIA / "image17.jpeg"), "sy4.jpg")
+
+save(Image.open(EXTRA / "2.jpg"), "kids.jpg", q=93)
+
+# Assembly diagram: slice the 3x3 sequence into nine cells, recolor.
+NAVY = (30, 55, 86)
+ORANGE = (242, 107, 33)
+WOOD = (255, 226, 196)
+diag = Image.open(EXTRA / "1.jpg").convert("L")
+PAD = 120
+padded = Image.new("L", (diag.width + 2 * PAD, diag.height + 2 * PAD), 255)
+padded.paste(diag, (PAD, PAD))
+grounds = [118, 377, 684]
+frames = [
+    [(137, 347), (520, 732), (880, 1165)],
+    [(102, 380), (460, 794), (873, 1191)],
+    [(82, 440), (480, 825), (848, 1209)],
+]
+CW, CH = 400, 222
+n = 0
+for gy, row in zip(grounds, frames):
+    for x0, x1 in row:
+        n += 1
+        cx = (x0 + x1) // 2
+        box = (cx - CW // 2 + PAD, gy - (CH - 8) + PAD, cx + CW // 2 + PAD, gy + 8 + PAD)
+        cell = padded.crop(box)
+        L = np.array(cell).astype(np.int32)
+
+        # Arrow fills are flat mid-gray; erode away anti-aliased line edges.
+        mid = Image.fromarray((((L > 95) & (L < 185)) * 255).astype(np.uint8))
+        arrow = mid.filter(ImageFilter.MinFilter(7)).filter(ImageFilter.MaxFilter(11))
+        arrow = np.array(arrow) > 0
+
+        # Small enclosed white regions are plank / peg interiors; large ones are
+        # open space (outside, or under the bridge).
+        labels, count = ndimage.label(L > 225)
+        sizes = ndimage.sum(np.ones_like(L), labels, index=np.arange(1, count + 1))
+        small = np.concatenate([[False], sizes < 2500])
+        edge = np.unique(np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]]))
+        small[edge] = False
+        interior = small[labels] | (small[ndimage.grey_dilation(labels, size=3)] & (L > 150))
+        h, w = L.shape
+
+        rgba = np.zeros((h, w, 4), dtype=np.uint8)
+        dark = np.clip((235 - L) * 255 // 155, 0, 255)
+        rgba[..., :3] = NAVY
+        rgba[..., 3] = dark
+        rgba[interior] = (*WOOD, 255)
+        rgba[arrow] = (*ORANGE, 255)
+        Image.fromarray(rgba, "RGBA").resize((CW * 2, CH * 2), Image.LANCZOS).save(OUT / f"step{n}.png")
+
+print("done", sorted(p.name for p in OUT.iterdir()))

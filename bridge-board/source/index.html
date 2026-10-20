@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>桥梁探究展板</title>
+<style>
+@font-face{font-family:'NotoSC';src:url('fonts/NotoSansSC-400.ttf');font-weight:400}
+@font-face{font-family:'NotoSC';src:url('fonts/NotoSansSC-500.ttf');font-weight:500}
+@font-face{font-family:'NotoSC';src:url('fonts/NotoSansSC-700.ttf');font-weight:700}
+@font-face{font-family:'NotoSC';src:url('fonts/NotoSansSC-900.ttf');font-weight:900}
+@font-face{font-family:'QK';src:url('fonts/ZCOOLQingKeHuangYou.ttf')}
+@page{size:760mm 1760mm;margin:0}
+
+:root{
+  --orange:#F26B21;
+  --orange-2:#FF8B3D;
+  --orange-deep:#B9461A;
+  --orange-soft:#FFE4CF;
+  --orange-tint:#FFF2E6;
+  --navy:#1E3756;
+  --navy-2:#2E4F78;
+  --ink:#25303D;
+  --muted:#5D6673;
+  --cream:#FFF9F3;
+  --yellow:#FFC53A;
+  --blue:#3AA2DA;
+  --green:#5DB35A;
+  --red:#E0412D;
+  --wood:#F4C590;
+  --line:#F1DCCA;
+  --pad:34mm;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:760mm;height:1760mm}
+body{
+  font-family:'NotoSC',sans-serif;color:var(--ink);background:var(--cream);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  font-size:7.6mm;line-height:1.5;
+}
+.board{
+  position:relative;width:760mm;height:1760mm;overflow:hidden;
+  background-color:var(--cream);
+  background-image:
+    linear-gradient(rgba(242,107,33,.07) .35mm, transparent .35mm),
+    linear-gradient(90deg, rgba(242,107,33,.07) .35mm, transparent .35mm);
+  background-size:12mm 12mm;
+  display:flex;flex-direction:column;
+}
+p,.bubble,.goal div,.q,.motto,.quote,.invite p{text-wrap:pretty}
+.field small{text-wrap:balance}
+.qk{font-family:'QK','NotoSC',sans-serif;font-weight:400}
+b,strong{font-weight:900}
+.hl{color:var(--orange);font-weight:900}
+
+/* ---------- header ---------- */
+.header{
+  position:relative;color:#fff;
+  background:linear-gradient(160deg,#F7833A 0%,var(--orange) 45%,#E85A16 100%);
+  padding:13mm var(--pad) 22mm;
+}
+.header .toprow{display:flex;justify-content:space-between;align-items:center}
+.pill{
+  display:inline-flex;align-items:center;gap:2.4mm;
+  background:#fff;color:var(--orange-deep);font-weight:900;font-size:7.6mm;
+  padding:2.2mm 6mm;border-radius:20mm;letter-spacing:.4mm;
+}
+.pill.ghost{background:rgba(255,255,255,.16);color:#fff;border:.5mm solid rgba(255,255,255,.55)}
+.pill .dot{width:3.2mm;height:3.2mm;border-radius:50%;background:var(--orange)}
+.title{
+  margin-top:6mm;font-size:92mm;line-height:1.08;letter-spacing:2.4mm;
+  text-shadow:2.2mm 2.2mm 0 var(--orange-deep);white-space:nowrap;
+}
+.subtitle{
+  display:inline-block;margin-top:5mm;background:var(--navy);color:#fff;
+  font-weight:900;font-size:13.2mm;line-height:1;padding:4.6mm 9mm 5.2mm;border-radius:4mm;
+  letter-spacing:.4mm;box-shadow:1.6mm 1.6mm 0 rgba(0,0,0,.14);
+}
+.subtitle em{font-style:normal;color:var(--yellow)}
+.journey{
+  margin-top:9mm;display:flex;align-items:flex-end;justify-content:space-between;
+}
+.journey .stop{display:flex;flex-direction:column;align-items:center;gap:2mm;width:96mm}
+.journey svg{width:62mm;height:35mm;overflow:visible}
+.journey .lbl{font-weight:900;font-size:8.4mm;line-height:1;letter-spacing:.6mm}
+.journey .stop.dest{background:var(--navy);border-radius:6mm;padding:4mm 0 4mm;box-shadow:1.4mm 1.4mm 0 rgba(0,0,0,.16)}
+.journey .stop.dest .lbl{background:var(--yellow);color:var(--navy);padding:2mm 4.4mm;border-radius:10mm}
+.journey .arrow{font-weight:900;font-size:11mm;opacity:.8;margin-bottom:4mm}
+.header .wave{position:absolute;left:0;right:0;bottom:-.5mm;width:100%;height:16mm;display:block}
+
+/* ---------- sections ---------- */
+main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:12mm;padding:6mm var(--pad) 14mm}
+.sec{display:flex;flex-direction:column;gap:6mm}
+.sh{display:flex;align-items:center;gap:6mm}
+.sh .num{
+  width:27mm;height:27mm;border-radius:7mm;background:var(--orange);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:16mm;line-height:1;
+  box-shadow:1.4mm 1.4mm 0 var(--navy);flex:none;
+}
+.sh .tt{display:flex;flex-direction:column}
+.sh .en{font-weight:900;font-size:5.4mm;letter-spacing:1.4mm;color:var(--orange);line-height:1.1}
+.sh h2{font-size:21mm;line-height:1.05;color:var(--navy);letter-spacing:1mm}
+.sh .note{margin-left:auto;font-size:8mm;font-weight:700;color:var(--muted);text-align:right;line-height:1.35}
+.sh .note b{color:var(--orange)}
+
+.card{background:#fff;border-radius:6mm;border:.5mm solid var(--line);box-shadow:0 1.6mm 0 rgba(30,55,86,.07)}
+.h3{display:flex;align-items:center;gap:3mm;font-weight:900;color:var(--navy);font-size:9.4mm;line-height:1.2}
+.h3::before{content:"";width:3.4mm;height:3.4mm;border-radius:50%;background:var(--orange);box-shadow:0 0 0 1.4mm var(--orange-soft);flex:none}
+.h3 small{font-size:6.8mm;color:var(--muted);font-weight:700;margin-left:1mm}
+
+/* 01 */
+.s1 .card{display:grid;grid-template-columns:1.25fr 1fr;gap:0;overflow:hidden}
+.s1 .left{padding:7mm 9mm;display:flex;flex-direction:column;gap:5mm}
+.kvrow{display:flex;gap:10mm}
+.kv{display:flex;flex-direction:column}
+.kv span{font-size:5.6mm;font-weight:900;color:var(--orange);letter-spacing:.8mm;line-height:1.3}
+.kv strong{font-size:10mm;color:var(--navy);line-height:1.2}
+.members{display:flex;align-items:center;flex-wrap:wrap;gap:2.4mm}
+.members span.k{font-size:5.6mm;font-weight:900;color:var(--orange);letter-spacing:.8mm;margin-right:1mm}
+.chip{background:var(--orange-tint);border:.45mm solid #F7C9A6;color:var(--navy);font-weight:900;font-size:7.6mm;line-height:1;padding:2.2mm 3.6mm;border-radius:10mm}
+.chip.lead{background:var(--navy);border-color:var(--navy);color:#fff}
+.s1 .task{background:var(--navy);color:#fff;padding:7mm 9mm;display:flex;flex-direction:column;gap:3mm}
+.s1 .task .k{font-size:5.6mm;font-weight:900;color:var(--yellow);letter-spacing:.8mm}
+.s1 .task p{font-size:8.4mm;font-weight:500;line-height:1.5}
+.s1 .task p b{color:var(--yellow)}
+.reqs{display:flex;gap:2.6mm;margin-top:auto}
+.reqs span{background:#fff;color:var(--orange-deep);border-radius:10mm;font-weight:900;font-size:7mm;padding:1.6mm 4.4mm;line-height:1.2}
+
+/* 02 */
+.s2 .rowA{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9mm}
+.river{padding:4mm 4mm 2mm;display:flex;flex-direction:column}
+.river svg{width:100%;height:auto;display:block}
+.river .cap{font-size:6.6mm;font-weight:700;color:var(--muted);text-align:center;line-height:1.3;margin-top:1mm}
+.challenge{background:var(--orange);color:#fff;border:none;padding:7mm 8mm;display:flex;flex-direction:column;gap:3mm;box-shadow:1.6mm 1.6mm 0 var(--orange-deep)}
+.challenge .k{font-size:6.4mm;font-weight:900;letter-spacing:1mm;color:var(--navy);background:#fff;align-self:flex-start;padding:1mm 3.4mm;border-radius:2mm}
+.challenge p{font-size:12.8mm;font-weight:900;line-height:1.35}
+.challenge p em{font-style:normal;color:var(--yellow)}
+.thinks{display:flex;flex-direction:column;gap:4mm}
+.bubble{position:relative;border-radius:5mm;padding:4.4mm 6mm;font-size:8.3mm;line-height:1.45;font-weight:500}
+.bubble .k{display:block;font-weight:900;font-size:6.4mm;letter-spacing:.6mm;margin-bottom:.6mm}
+.bubble.think{background:#EAF1F8;color:var(--navy)}
+.bubble.think .k{color:var(--navy-2)}
+.bubble.real{background:#FFE9E4;color:#7A2316;flex:1}
+.bubble.real .k{color:var(--red)}
+.bubble.real b{color:var(--red)}
+.drive{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:5mm;align-items:stretch}
+.drive .lab{
+  background:var(--navy);color:#fff;border-radius:5mm;padding:3mm 5mm;display:flex;flex-direction:column;justify-content:center;
+  font-weight:900;font-size:7.6mm;line-height:1.25;text-align:center;
+}
+.q{display:flex;align-items:center;gap:3.6mm;padding:3.6mm 5mm;font-weight:900;color:var(--navy);font-size:7.6mm;line-height:1.35}
+.q i{font-style:normal;flex:none;width:11mm;height:11mm;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:6.6mm;line-height:1}
+.motto{
+  display:flex;align-items:center;gap:5mm;background:var(--orange-soft);border-radius:5mm;padding:4mm 7mm;
+  color:var(--navy);font-weight:900;font-size:8.6mm;line-height:1.35;
+}
+.motto .tag{flex:none;background:var(--orange);color:#fff;border-radius:2.4mm;font-size:6.4mm;padding:1.2mm 3.4mm;letter-spacing:.6mm}
+.motto em{font-style:normal;color:var(--orange)}
+
+/* 03 */
+.route{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:12mm;margin-top:1mm}
+.route::before{
+  content:"";position:absolute;left:8mm;right:0;top:7mm;height:2.6mm;border-radius:2mm;
+  background:repeating-linear-gradient(90deg,var(--orange) 0 9mm,transparent 9mm 13mm);
+}
+.node{position:relative;display:flex;align-items:center;gap:3mm;height:17mm}
+.node .n{
+  width:17mm;height:17mm;border-radius:50%;background:var(--navy);color:#fff;border:1.4mm solid #fff;
+  box-shadow:0 0 0 .8mm var(--navy);display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:8mm;line-height:1;flex:none;z-index:1;
+}
+.node .why{
+  position:absolute;left:64%;top:50%;transform:translate(-50%,-50%);
+  background:#fff;border:.5mm solid var(--red);color:var(--red);font-weight:900;font-size:5.8mm;
+  line-height:1.1;padding:1.2mm 2.8mm;border-radius:10mm;white-space:nowrap;z-index:2;
+}
+.node .why.end{left:auto;right:0;transform:translateY(-50%);background:var(--yellow);border-color:var(--orange-deep);color:var(--navy)}
+.node .st-name{background:var(--cream);padding:0 2mm;font-size:6.2mm;font-weight:900;color:var(--orange);letter-spacing:.6mm;z-index:1}
+.stations{display:grid;grid-template-columns:repeat(4,1fr);gap:12mm}
+.st{display:flex;flex-direction:column;overflow:hidden}
+.st .ph{position:relative;aspect-ratio:3/2;overflow:hidden;background:#ddd}
+.st .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.st .ph .t{position:absolute;left:2.4mm;background:rgba(30,55,86,.85);color:#fff;font-weight:900;font-size:5.4mm;line-height:1;padding:1.2mm 2.4mm;border-radius:1.6mm}
+.st .body{padding:4.4mm 5.6mm 5.6mm;display:flex;flex-direction:column;gap:2.6mm}
+.st h4{font-size:12.4mm;line-height:1.05;color:var(--navy)}
+.st h4 small{display:block;font-family:'NotoSC';font-weight:900;font-size:6.2mm;color:var(--orange);margin-top:1.4mm;letter-spacing:.3mm}
+.st p{font-size:7.1mm;line-height:1.5;font-weight:500}
+.st p .tg{display:inline-block;font-weight:900;font-size:5.4mm;line-height:1;color:#fff;background:var(--navy);padding:1.1mm 2mm;border-radius:1.4mm;margin-right:1.6mm;vertical-align:.6mm}
+.st p .tg.f{background:var(--orange)}
+.st p .tg.x{background:var(--red)}
+.st p .tg.ok{background:var(--green)}
+
+.principle{padding:6mm 8mm 7mm;display:flex;flex-direction:column;gap:4mm;background:var(--navy);border:none;color:#fff;box-shadow:1.6mm 1.6mm 0 var(--orange)}
+.principle .lead{display:flex;align-items:center;gap:4mm;font-weight:900;font-size:9.6mm;line-height:1.25}
+.principle .lead .k{flex:none;background:var(--yellow);color:var(--navy);font-size:6.4mm;padding:1.2mm 3.4mm;border-radius:2mm;letter-spacing:.6mm}
+.principle .lead em{font-style:normal;color:var(--yellow)}
+.forces{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
+.force{background:rgba(255,255,255,.07);border:.45mm solid rgba(255,255,255,.2);border-radius:4mm;padding:3mm 4mm 4mm;display:flex;flex-direction:column;gap:1.6mm}
+.force svg{width:100%;height:76mm;display:block}
+.force .nm{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:8mm;line-height:1.2}
+.verdict{font-size:5.8mm;padding:1mm 3mm;border-radius:10mm;line-height:1.2}
+.verdict.bad{background:var(--red)}
+.verdict.mid{background:var(--yellow);color:var(--navy)}
+.verdict.good{background:var(--green)}
+.force p{font-size:7mm;line-height:1.45;font-weight:500;color:#E6ECF3}
+.force p b{color:var(--yellow)}
+
+/* 04 */
+.row41{display:grid;grid-template-columns:1.6fr 1fr;gap:9mm}
+.panel{padding:6mm 7mm;display:flex;flex-direction:column;gap:4mm}
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
+.cmp figure{display:flex;flex-direction:column;gap:2mm}
+.cmp .im{position:relative;aspect-ratio:1/1;border-radius:3mm;overflow:hidden}
+.cmp .im img{width:100%;height:100%;object-fit:cover;display:block}
+.cmp .im .a,.cmp .im .b{position:absolute;left:1.6mm;font-weight:900;font-size:4.8mm;line-height:1;padding:1mm 2mm;border-radius:1.2mm;color:#fff}
+.cmp .im .a{top:1.6mm;background:rgba(93,102,115,.9)}
+.cmp .im .b{top:39.5%;background:var(--orange)}
+.cmp figcaption{text-align:center;font-weight:900;font-size:7mm;color:var(--navy);line-height:1.2}
+.cmp figcaption em{font-style:normal;color:var(--orange)}
+.scale{display:flex;flex-direction:column;gap:1mm}
+.scale .names{display:flex;justify-content:space-between;font-weight:900;font-size:6mm;color:var(--navy);line-height:1.2}
+.scale svg{width:100%;height:9mm;display:block}
+.scale .ends{display:flex;justify-content:space-between;font-size:5.6mm;font-weight:700;color:var(--muted);line-height:1.2}
+.city{display:grid;grid-template-columns:1fr 1fr;gap:3.6mm}
+.city figure{position:relative;aspect-ratio:3/2;border-radius:3mm;overflow:hidden}
+.city img{width:100%;height:100%;object-fit:cover;display:block}
+.city figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:5mm 2.6mm 2mm;
+  background:linear-gradient(transparent,rgba(15,28,45,.82));color:#fff;
+  font-weight:900;font-size:6.6mm;line-height:1.15;display:flex;align-items:center;gap:2mm;
+}
+.city figcaption span{background:var(--orange);font-size:4.8mm;padding:.8mm 1.8mm;border-radius:1.2mm}
+
+.gains{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm}
+.gain{display:flex;gap:4mm;align-items:flex-start;padding:4.6mm 5mm}
+.gain .ic{flex:none;width:18mm;height:18mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center}
+.gain .ic svg{width:11mm;height:11mm}
+.gain h5{font-size:8.2mm;font-weight:900;color:var(--navy);line-height:1.25}
+.gain p{font-size:7mm;line-height:1.45;font-weight:500;color:var(--muted);margin-top:1mm}
+
+.final{background:var(--navy);color:#fff;border-radius:7mm;padding:7mm 8mm 8mm;display:flex;flex-direction:column;gap:5mm;position:relative;box-shadow:1.8mm 1.8mm 0 var(--orange)}
+.final .top{display:flex;align-items:center;gap:4mm}
+.final .top .k{background:var(--yellow);color:var(--navy);font-weight:900;font-size:6.6mm;padding:1.4mm 3.6mm;border-radius:2mm;letter-spacing:.6mm}
+.final .top h3{font-size:16mm;line-height:1;letter-spacing:.6mm}
+.final .top h3 small{font-family:'NotoSC';font-weight:700;font-size:7mm;color:#C9D6E5;margin-left:2mm;letter-spacing:0}
+.final .grid{display:grid;grid-template-columns:1.08fr 1fr;gap:7mm}
+.final .photo{position:relative;border-radius:4mm;overflow:hidden;border:1.4mm solid #fff}
+.final .photo img{width:100%;display:block}
+.final .photo .cap{position:absolute;left:3mm;bottom:3mm;background:var(--orange);color:#fff;font-weight:900;font-size:6.2mm;line-height:1.2;padding:1.6mm 3.4mm;border-radius:2mm}
+.final .txt{display:flex;flex-direction:column;justify-content:space-between;gap:4.6mm}
+.final .txt .k{font-weight:900;font-size:9.6mm;color:var(--yellow);line-height:1.2}
+.final .txt p{font-size:9mm;line-height:1.5;font-weight:500;color:#EEF2F7}
+.final .txt p b{color:#fff}
+.goals{display:flex;flex-direction:column;gap:3mm}
+.goal{display:flex;gap:3.4mm;align-items:flex-start;background:rgba(255,255,255,.08);border-radius:3mm;padding:3.2mm 4mm}
+.goal i{flex:none;font-style:normal;width:10mm;height:10mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:6.2mm;line-height:1;margin-top:.6mm}
+.goal div{font-size:8mm;line-height:1.45;color:#E6ECF3}
+.goal div b{color:#fff;font-size:8.4mm}
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm}
+.field{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2mm;border:.45mm dashed rgba(255,255,255,.35);border-radius:3.4mm;padding:5mm 2mm 5.4mm}
+.field .fi{width:20mm;height:20mm;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center}
+.field .fi svg{width:12.6mm;height:12.6mm}
+.field b{font-size:9.2mm;line-height:1.2;color:#fff}
+.field small{font-size:6.6mm;line-height:1.3;color:#C9D6E5;font-weight:700}
+.steps{background:#FFF9F3;border-radius:4mm;padding:3mm 4mm 2.4mm;color:var(--navy)}
+.steps .k{font-weight:900;font-size:6.6mm;display:flex;justify-content:space-between;align-items:baseline;line-height:1.2}
+.steps .k span{font-size:5.6mm;color:var(--muted);font-weight:700}
+.steps .row{display:grid;grid-template-columns:repeat(9,1fr);gap:1.6mm;margin-top:1.6mm}
+.steps figure{display:flex;flex-direction:column;align-items:center}
+.steps img{width:100%;display:block}
+.steps figcaption{font-weight:900;font-size:5mm;line-height:1;width:7mm;height:7mm;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:.8mm}
+.quote{font-size:9mm;font-weight:700;line-height:1.45;color:#fff;border-left:none;background:rgba(255,197,58,.14);border-radius:3mm;padding:3mm 4.4mm}
+.quote b{color:var(--yellow)}
+.invite{
+  display:flex;align-items:center;gap:6mm;background:var(--orange);border-radius:5mm;padding:5mm 7mm;
+}
+.invite .big{font-size:19mm;line-height:1;color:var(--yellow);flex:none;text-shadow:1mm 1mm 0 var(--orange-deep)}
+.invite p{font-weight:900;font-size:11.6mm;line-height:1.35;flex:1}
+.invite .safe{flex:none;background:#fff;color:var(--green);border-radius:4mm;padding:3mm 5mm;display:flex;align-items:center;gap:2.6mm;font-weight:900;font-size:7.4mm;line-height:1.25}
+.invite .safe svg{width:11mm;height:11mm;flex:none}
+.invite .safe span{color:var(--navy)}
+
+/* footer */
+.footer{background:var(--navy);color:#fff;padding:6mm var(--pad);display:flex;align-items:center;justify-content:space-between}
+.footer .who{font-weight:700;font-size:7mm;color:#C9D6E5}
+.footer .who b{color:#fff}
+.footer .ask{font-size:12.4mm;line-height:1;color:var(--yellow);letter-spacing:.6mm}
+</style>
+</head>
+<body>
+<div class="board">
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="toprow">
+    <span class="pill"><span class="dot"></span>校园科技节 · 项目式学习成果展</span>
+    <span class="pill ghost">五年六班 · 安沫宣小组</span>
+  </div>
+  <h1 class="title qk">我们的桥梁探究之旅</h1>
+  <div class="subtitle">从<em>平板桥</em>到<em>倍力桥</em>，一座桥是怎样一步步搭起来的</div>
+
+  <div class="journey">
+    <div class="stop">
+      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 31H58" opacity=".55"/><path d="M12 31V19M48 31V19"/><path d="M5 18H55" stroke-width="3.4"/>
+      </svg>
+      <span class="lbl">平板桥</span>
+    </div>
+    <span class="arrow">›</span>
+    <div class="stop">
+      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 31H58" opacity=".55"/><path d="M5 14H55" stroke-width="3.4"/><path d="M10 31Q30 -2 50 31"/><path d="M20 16V20M40 16V20M30 16V15"/>
+      </svg>
+      <span class="lbl">拱桥</span>
+    </div>
+    <span class="arrow">›</span>
+    <div class="stop">
+      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 31H58" opacity=".55"/><path d="M16 31V3M44 31V3"/><path d="M2 22H58" stroke-width="3.4"/>
+        <path d="M2 17L16 4Q30 26 44 4L58 17"/><path d="M22 12.7V21M30 15V21M38 12.7V21" stroke-width="1.6"/>
+      </svg>
+      <span class="lbl">悬索桥</span>
+    </div>
+    <span class="arrow">›</span>
+    <div class="stop">
+      <svg viewBox="0 0 60 34" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 31H58" opacity=".55"/><path d="M30 31V2"/><path d="M2 22H58" stroke-width="3.4"/>
+        <path d="M30 4L5 21M30 4L13 21M30 4L21 21M30 4L39 21M30 4L47 21M30 4L55 21" stroke-width="1.5"/>
+      </svg>
+      <span class="lbl">斜拉桥</span>
+    </div>
+    <span class="arrow">›</span>
+    <div class="stop dest">
+      <svg viewBox="0 0 60 34" fill="none" stroke="#FFC53A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 31H58" stroke="#fff" opacity=".55" stroke-width="2.2"/>
+        <path d="M5 31L17 11M11 15L33 5M27 5L49 15M43 11L55 31"/>
+        <path d="M8 22L22 10M38 10L52 22M18 8H42" stroke-width="2"/>
+        <circle cx="17" cy="11" r="2" fill="#FFC53A"/><circle cx="43" cy="11" r="2" fill="#FFC53A"/><circle cx="30" cy="6" r="2" fill="#FFC53A"/>
+      </svg>
+      <span class="lbl">倍力桥</span>
+    </div>
+  </div>
+
+  <svg class="wave" viewBox="0 0 760 16" preserveAspectRatio="none">
+    <path d="M0 9 C120 -2 240 16 380 8 S640 0 760 9 V16 H0Z" fill="#FFF9F3"/>
+  </svg>
+</header>
+
+<main>
+
+<!-- ================= 01 项目简介 ================= -->
+<section class="sec s1">
+  <div class="sh">
+    <div class="num qk">01</div>
+    <div class="tt"><span class="en">PROJECT OVERVIEW</span><h2 class="qk">项目简介</h2></div>
+  </div>
+  <div class="card">
+    <div class="left">
+      <div class="kvrow">
+        <div class="kv"><span>班级</span><strong>五年六班</strong></div>
+        <div class="kv"><span>小组</span><strong>安沫宣小组（7人）</strong></div>
+        <div class="kv"><span>指导教师</span><strong>尹洪雨</strong></div>
+      </div>
+      <div class="members">
+        <span class="k">组员</span>
+        <span class="chip lead">安沫宣</span><span class="chip">张景怀</span><span class="chip">张淙桓</span><span class="chip">吕冰</span>
+        <span class="chip">韩竣旭</span><span class="chip">于沐熙</span><span class="chip">药芮萱</span>
+      </div>
+    </div>
+    <div class="task">
+      <span class="k">项目任务</span>
+      <p>七人分工合作，搭一座跨越 <b>30 厘米“小河”</b> 的桥。每位组员都参与了自己想做的桥型设计与搭建。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 问题驱动 ================= -->
+<section class="sec s2">
+  <div class="sh">
+    <div class="num qk">02</div>
+    <div class="tt"><span class="en">DRIVING QUESTION</span><h2 class="qk">问题驱动</h2></div>
+  </div>
+  <div class="rowA">
+    <div class="card river">
+      <svg viewBox="0 12 220 100">
+        <defs>
+          <marker id="dim" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10Z" fill="#fff"/>
+          </marker>
+        </defs>
+        <path d="M0 58H66L82 112H0Z" fill="#7CC36A"/>
+        <path d="M220 58H154L138 112H220Z" fill="#7CC36A"/>
+        <path d="M0 58H66L68 64H0Z" fill="#5DA74C"/>
+        <path d="M220 58H154L152 64H220Z" fill="#5DA74C"/>
+        <path d="M68 66H152L138 112H82Z" fill="#3AA2DA"/>
+        <path d="M78 76q6 -3 12 0t12 0t12 0t12 0t12 0" stroke="#BFE5F7" stroke-width="1.6" fill="none"/>
+        <path d="M86 102q6 -3 12 0t12 0t12 0t12 0" stroke="#BFE5F7" stroke-width="1.6" fill="none" opacity=".7"/>
+        <line x1="72" y1="89" x2="148" y2="89" stroke="#fff" stroke-width="1.6" marker-start="url(#dim)" marker-end="url(#dim)"/>
+        <rect x="93" y="82" width="34" height="13" rx="3" fill="#1E3756"/>
+        <text x="110" y="91.6" text-anchor="middle" font-family="NotoSC" font-weight="900" font-size="8" fill="#fff">30厘米</text>
+        <rect x="50" y="50" width="120" height="7" rx="2" fill="#F4C590" stroke="#1E3756" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <rect x="103" y="26" width="14" height="24" rx="3" fill="#E9F5FB" stroke="#1E3756" stroke-width="1.2"/>
+        <rect x="106" y="21" width="8" height="6" rx="1.5" fill="#E9F5FB" stroke="#1E3756" stroke-width="1.2"/>
+        <rect x="106" y="18" width="8" height="3.4" rx="1" fill="#E0412D"/>
+        <rect x="103" y="33" width="14" height="8" fill="#E0412D"/>
+        <text x="146" y="40" text-anchor="middle" font-family="QK" font-size="30" fill="#F26B21">?</text>
+        <text x="74" y="40" text-anchor="middle" font-family="QK" font-size="22" fill="#F26B21" opacity=".6">?</text>
+      </svg>
+      <div class="cap">任务现场：一条 30 厘米宽的“小河”</div>
+    </div>
+    <div class="card challenge">
+      <span class="k">核心挑战</span>
+      <p>如何搭一座跨过 <em>30 厘米“小河”</em> 的桥，桥面要能放稳东西、<em>不能塌</em>？</p>
+      <div class="reqs"><span>桥面平稳</span><span>能承重</span><span>不坍塌</span></div>
+    </div>
+    <div class="thinks">
+      <div class="bubble think"><span class="k">刚开始我们以为</span>“不就是两块桥墩，上面铺一块板嘛，太简单了！”</div>
+      <div class="bubble real"><span class="k">真动手一试才发现</span>只放一瓶可乐，平板桥就 <b>“咔嚓”</b> 一声断了，桥面中间往下弯——<b>桥好不好搭，和结不结实完全是两回事。</b></div>
+    </div>
+  </div>
+  <div class="drive">
+    <div class="lab">驱动性<br>问题</div>
+    <div class="card q"><i>Q1</i>重量（力）到底传到了哪里？</div>
+    <div class="card q"><i>Q2</i>为什么有的桥容易弯、容易塌？</div>
+    <div class="card q"><i>Q3</i>怎样改变结构，让桥更结实？</div>
+  </div>
+  <div class="motto"><span class="tag">迭代动力</span><span>每一次改变都不是凭空想出来的，而是上一次的桥 <em>“塌”给我们看的</em>——失败推动了四次尝试与改进。</span></div>
+</section>
+
+<!-- ================= 03 项目推进 ================= -->
+<section class="sec s3">
+  <div class="sh">
+    <div class="num qk">03</div>
+    <div class="tt"><span class="en">PROJECT PROCESS</span><h2 class="qk">项目推进</h2></div>
+    <div class="note">四次桥型迭代<br><b>每一次都因上一次的问题而改进</b></div>
+  </div>
+
+  <div class="route">
+    <div class="node"><span class="n">1</span><span class="st-name">第一站</span><span class="why">中间断了 →</span></div>
+    <div class="node"><span class="n">2</span><span class="st-name">第二站</span><span class="why">桥墩被推开 →</span></div>
+    <div class="node"><span class="n">3</span><span class="st-name">第三站</span><span class="why">还想更平更稳 →</span></div>
+    <div class="node"><span class="n">4</span><span class="st-name">第四站</span><span class="why end">终点站：倍力桥 ↓</span></div>
+  </div>
+
+  <div class="stations">
+    <article class="card st">
+      <div class="ph"><img src="img/st1.jpg" alt=""><span class="t" style="top:2.4mm">空桥</span><span class="t" style="top:52%">放上一瓶可乐</span></div>
+      <div class="body">
+        <h4 class="qk">平板桥<small>一块板铺上去</small></h4>
+        <p><span class="tg">做法</span>一块板直接铺在两个桥墩上。</p>
+        <p><span class="tg x">问题</span>只放一瓶可乐，桥面中间就弯曲断裂。</p>
+        <p><span class="tg f">发现</span>重量全压在板自己身上，力集中在正中间，最容易弯、最容易断。</p>
+      </div>
+    </article>
+    <article class="card st">
+      <div class="ph"><img src="img/st2.jpg" alt=""></div>
+      <div class="body">
+        <h4 class="qk">拱桥<small>把板弯成彩虹</small></h4>
+        <p><span class="tg">做法</span>在桥面下加一道弧形拱。</p>
+        <p><span class="tg f">发现</span>拱把重量顺着弧形传给两边桥墩，中间没那么容易断了。</p>
+        <p><span class="tg x">新麻烦</span>拱会往两边“推”桥墩，放重了桥墩会滑开，需要用梁加固。</p>
+      </div>
+    </article>
+    <article class="card st">
+      <div class="ph"><img src="img/st3.jpg" alt=""></div>
+      <div class="body">
+        <h4 class="qk">悬索桥<small>用绳子把桥面吊起来</small></h4>
+        <p><span class="tg">做法</span>桥塔之间拉上两根主索，再用短竖绳把桥面吊在主索下面。</p>
+        <p><span class="tg f">发现</span>重量经短绳 → 主索 → 桥塔和地面，桥面不再硬扛。</p>
+        <p><span class="tg ok">效果</span>放一瓶水，弯曲比平板桥小多了。</p>
+      </div>
+    </article>
+    <article class="card st">
+      <div class="ph"><img src="img/st4.jpg" alt=""></div>
+      <div class="body">
+        <h4 class="qk">斜拉桥<small>从塔顶斜着拉索</small></h4>
+        <p><span class="tg">做法</span>每根索从桥塔顶端斜拉到桥面，像扇子骨一样撑住桥面。</p>
+        <p><span class="tg f">发现</span>多根斜索从不同位置拉住桥面，每个点都有索帮忙，受力更均匀。</p>
+        <p><span class="tg ok">效果</span>放一瓶水，桥面几乎不弯。</p>
+      </div>
+    </article>
+  </div>
+
+  <div class="card principle">
+    <div class="lead"><span class="k">科学原理</span><span>桥结不结实，关键看一件事：<em>重量（力）传到哪里去了？</em></span></div>
+    <div class="forces">
+      <div class="force">
+        <svg viewBox="0 0 200 96">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF8B3D"/></marker>
+            <marker id="ahr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF5A44"/></marker>
+          </defs>
+          <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
+          <rect x="14" y="58" width="18" height="34" rx="2" fill="#7F93AB"/>
+          <rect x="168" y="58" width="18" height="34" rx="2" fill="#7F93AB"/>
+          <path d="M8 55Q100 86 192 55" stroke="#F4C590" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <path d="M100 6V54" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
+          <path d="M94 76l5 5l-4 4l6 6" stroke="#FF5A44" stroke-width="2.6" fill="none" stroke-linejoin="round"/>
+          <circle cx="100" cy="72" r="15" fill="none" stroke="#FF5A44" stroke-width="1.6" stroke-dasharray="3 3"/>
+        </svg>
+        <div class="nm"><span>平板桥</span><span class="verdict bad">易弯易断</span></div>
+        <p>重量全压在板上，中间没有支撑，<b>力集中在桥面正中间</b> → 最容易弯、最容易断。</p>
+      </div>
+      <div class="force">
+        <svg viewBox="0 0 200 96">
+          <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
+          <rect x="26" y="44" width="18" height="48" rx="2" fill="#7F93AB"/>
+          <rect x="156" y="44" width="18" height="48" rx="2" fill="#7F93AB"/>
+          <path d="M44 66Q100 18 156 66" stroke="#CFE0F2" stroke-width="5" fill="none"/>
+          <path d="M8 38H192" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
+          <path d="M100 2V30" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
+          <path d="M86 50Q66 54 52 68" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
+          <path d="M114 50Q134 54 148 68" stroke="#FF8B3D" stroke-width="3.4" fill="none" marker-end="url(#ah)"/>
+          <path d="M24 76H6" stroke="#FF5A44" stroke-width="4" marker-end="url(#ahr)"/>
+          <path d="M176 76H194" stroke="#FF5A44" stroke-width="4" marker-end="url(#ahr)"/>
+        </svg>
+        <div class="nm"><span>拱桥</span><span class="verdict mid">会推开桥墩</span></div>
+        <p>重量顺着弧形<b>传给两边桥墩</b>，但拱同时往外推 → 桥墩会被推开。</p>
+      </div>
+      <div class="force">
+        <svg viewBox="0 0 200 96">
+          <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
+          <rect x="44" y="8" width="9" height="84" rx="2" fill="#7F93AB"/>
+          <rect x="147" y="8" width="9" height="84" rx="2" fill="#7F93AB"/>
+          <path d="M48 12L12 60M48 12L26 60M48 12L70 60M48 12L86 60M152 12L114 60M152 12L130 60M152 12L174 60M152 12L188 60" stroke="#CFE0F2" stroke-width="1.6"/>
+          <path d="M4 61H196" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
+          <path d="M100 18V50" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
+          <path d="M80 50L60 24" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
+          <path d="M120 50L140 24" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
+          <path d="M37 22V84" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
+          <path d="M163 22V84" stroke="#FF8B3D" stroke-width="3.4" marker-end="url(#ah)"/>
+        </svg>
+        <div class="nm"><span>悬索 / 斜拉桥</span><span class="verdict good">最结实</span></div>
+        <p>重量通过绳索<b>传到桥塔和地面</b>，桥面不硬扛 → 弯得最小、最结实。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 成果展示 ================= -->
+<section class="sec s4">
+  <div class="sh">
+    <div class="num qk">04</div>
+    <div class="tt"><span class="en">ACHIEVEMENTS</span><h2 class="qk">成果展示</h2></div>
+  </div>
+
+  <div class="row41">
+    <div class="card panel">
+      <div class="h3">承重对比实验<small>同样一瓶水，不同桥的表现</small></div>
+      <div class="cmp">
+        <figure><div class="im"><img src="img/cmp1.jpg" alt=""><span class="a">平板桥</span><span class="b">拱桥</span></div><figcaption><em>拱桥</em> vs 平板桥</figcaption></figure>
+        <figure><div class="im"><img src="img/cmp2.jpg" alt=""><span class="a">平板桥</span><span class="b">悬索桥</span></div><figcaption><em>悬索桥</em> vs 平板桥</figcaption></figure>
+        <figure><div class="im"><img src="img/cmp3.jpg" alt=""><span class="a">平板桥</span><span class="b">斜拉桥</span></div><figcaption><em>斜拉桥</em> vs 平板桥</figcaption></figure>
+      </div>
+      <div class="scale">
+        <div class="names"><span>平板桥</span><span>拱桥</span><span>悬索桥</span><span>斜拉桥</span></div>
+        <svg viewBox="0 0 400 18" preserveAspectRatio="none">
+          <defs><linearGradient id="wg" x1="0" x2="1"><stop offset="0" stop-color="#E0412D"/><stop offset=".5" stop-color="#F26B21"/><stop offset="1" stop-color="#5DB35A"/></linearGradient></defs>
+          <path d="M0 1L400 8V10L0 17Z" fill="url(#wg)"/>
+        </svg>
+        <div class="ends"><span>桥面弯得多</span><span>结构越好，重量被传走越多，桥面弯曲越小</span><span>几乎不弯</span></div>
+      </div>
+    </div>
+    <div class="card panel">
+      <div class="h3">生活中的桥<small>沈阳就有</small></div>
+      <div class="city">
+        <figure><img src="img/sy1.jpg" alt=""><figcaption><span>平板桥</span>云龙湖大桥</figcaption></figure>
+        <figure><img src="img/sy2.jpg" alt=""><figcaption><span>拱桥</span>永安桥</figcaption></figure>
+        <figure><img src="img/sy3.jpg" alt="" style="object-position:50% 30%"><figcaption><span>悬索桥</span>东塔桥</figcaption></figure>
+        <figure><img src="img/sy4.jpg" alt=""><figcaption><span>斜拉桥</span>富民桥</figcaption></figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="gains">
+    <div class="card gain">
+      <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M31 15A12.5 12.5 0 1 0 32.5 24"/><path d="M32 6V15H23"/></svg></div>
+      <div><h5>失败不是坏事</h5><p>每一次塌桥，都告诉我们下一步该改哪里。</p></div>
+    </div>
+    <div class="card gain">
+      <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14H36"/><path d="M7 34Q20 0 33 34"/></svg></div>
+      <div><h5>形状变了，力就变了</h5><p>平板受不住，<br>弯成拱形、加上绳索就受得住。</p></div>
+    </div>
+    <div class="card gain">
+      <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L35 33H5Z"/><path d="M12.5 19.5H27.5" stroke-width="2.6"/></svg></div>
+      <div><h5>三角形最稳</h5><p>三根杆件一交叉，形状就不容易被压变形。</p></div>
+    </div>
+    <div class="card gain">
+      <div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.4" stroke-linejoin="round"><rect x="4" y="21" width="14" height="13" rx="2"/><rect x="22" y="21" width="14" height="13" rx="2"/><rect x="13" y="5" width="14" height="13" rx="2"/></svg></div>
+      <div><h5>模块化更结实</h5><p>像积木一样拆开搭，坏了哪块换哪块。</p></div>
+    </div>
+  </div>
+
+  <div class="final">
+    <div class="top"><span class="k">终极成果</span><h3 class="qk">现场搭建倍力桥<small>（贝雷桥）</small></h3></div>
+    <div class="grid">
+      <div class="photo"><img src="img/kids.jpg" alt=""><span class="cap">我们组 7 人已先站上去试过——稳稳当当！</span></div>
+      <div class="txt">
+        <span class="k">为什么选倍力桥？</span>
+        <p>前面试的桥都是一整块搭死的，接头一松，整座桥就散架。倍力桥<b>拆成小模块，一节一节扣上去</b>，每块模块里都有三角形结构，坏了哪节换哪节。</p>
+        <span class="k">现场搭建的目的</span>
+        <div class="goals">
+          <div class="goal"><i>1</i><div><b>展示模块化拼装</b>：让大家看到桥是怎么一块块拼起来的。</div></div>
+          <div class="goal"><i>2</i><div><b>现场测试承重</b>：搭好后放东西上去，验证结实程度。</div></div>
+          <div class="goal"><i>3</i><div><b>传递现代价值</b>：倍力桥是二战期间发明的模块化预制钢桁架便桥，如今在三大领域继续发挥作用：</div></div>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <span class="fi"><svg viewBox="0 0 40 40" fill="none" stroke="#1E3756" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 29H35"/><path d="M9 29A11 11 0 0 1 31 29"/><path d="M17 18.6V13H23V18.6"/></svg></span>
+            <b>应急基建</b><small>应急与军事的“黄金标准”</small>
+          </div>
+          <div class="field">
+            <span class="fi"><svg viewBox="0 0 40 40" fill="none" stroke="#1E3756" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 35L16 5M29 35L24 5"/><path d="M20 31V27M20 21V18M20 12V10"/></svg></span>
+            <b>交通工程</b><small>从临时替代到长期服役</small>
+          </div>
+          <div class="field">
+            <span class="fi"><svg viewBox="0 0 40 40" fill="none" stroke="#1E3756" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11C14 7 9 7 4 9V32C9 30 14 30 20 34C26 30 31 30 36 32V9C31 7 26 7 20 11Z"/><path d="M20 11V34"/></svg></span>
+            <b>教育科普</b><small>从钢桥到木制教具</small>
+          </div>
+        </div>
+        <div class="quote">倍力桥的本质：用<b>最少的构件、最快的速度、最可靠的承载</b>，解决“桥断了怎么办”的工程问题。</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="k">拼装过程示意<span>一根根杆件交叉扣合，越搭越高、越搭越稳</span></div>
+      <div class="row">
+        <figure><img src="img/step1.png" alt=""><figcaption>1</figcaption></figure>
+        <figure><img src="img/step2.png" alt=""><figcaption>2</figcaption></figure>
+        <figure><img src="img/step3.png" alt=""><figcaption>3</figcaption></figure>
+        <figure><img src="img/step4.png" alt=""><figcaption>4</figcaption></figure>
+        <figure><img src="img/step5.png" alt=""><figcaption>5</figcaption></figure>
+        <figure><img src="img/step6.png" alt=""><figcaption>6</figcaption></figure>
+        <figure><img src="img/step7.png" alt=""><figcaption>7</figcaption></figure>
+        <figure><img src="img/step8.png" alt=""><figcaption>8</figcaption></figure>
+        <figure><img src="img/step9.png" alt=""><figcaption>9</figcaption></figure>
+      </div>
+    </div>
+    <div class="invite">
+      <span class="big qk">诚挚邀请</span>
+      <p>各位领导、老师、同学们到台前，<br>亲身感受我们小组搭建的倍力桥！</p>
+      <span class="safe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#5DB35A"/><path d="M6.5 12.5l3.6 3.6L17.5 8.6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>队员已先尝试<br>安全可靠</span></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <span class="who"><b>五年六班 · 安沫宣小组</b>　指导教师：尹洪雨</span>
+  <span class="ask qk">你们的桥，会怎么进化呢？</span>
+</footer>
+
+</div>
+</body>
+</html>
