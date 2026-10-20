@@ -205,7 +205,8 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
   font-weight:900;font-size:var(--fs-sm);line-height:1.15;display:flex;align-items:center;gap:2mm;
 }
 .law figcaption span{background:var(--orange);font-size:var(--fs-xs);padding:.8mm 1.8mm;border-radius:1.2mm}
-.gains{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm}
+.gains{display:grid;grid-template-columns:auto repeat(4,1fr);gap:5mm}
+.gains-k{background:var(--navy);color:#fff;border-radius:5mm;padding:3mm 5mm;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:var(--fs-base);line-height:1.25}
 .gain{display:flex;justify-content:center;padding:9mm 5mm}
 .gain .gh{display:flex;align-items:center;gap:3.4mm}
 .gain .ic{flex:none;width:17mm;height:17mm;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center}
@@ -428,15 +429,24 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
             <marker id="ahr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#FF5A44"/></marker>
           </defs>
           <path d="M0 92H200" stroke="#7F93AB" stroke-width="1.6"/>
-          <rect x="14" y="58" width="18" height="34" rx="2" fill="#7F93AB"/>
-          <rect x="168" y="58" width="18" height="34" rx="2" fill="#7F93AB"/>
-          <path d="M8 55Q100 86 192 55" stroke="#F4C590" stroke-width="8" fill="none" stroke-linecap="round"/>
-          <path d="M100 6V54" stroke="#FF8B3D" stroke-width="7" marker-end="url(#ah)"/>
-          <path d="M94 76l5 5l-4 4l6 6" stroke="#FF5A44" stroke-width="2.6" fill="none" stroke-linejoin="round"/>
-          <circle cx="100" cy="72" r="15" fill="none" stroke="#FF5A44" stroke-width="1.6" stroke-dasharray="3 3"/>
+          <rect x="4" y="44" width="10" height="48" rx="2" fill="#7F93AB"/>
+          <rect x="64" y="68" width="10" height="24" rx="2" fill="#7F93AB"/>
+          <rect x="126" y="68" width="10" height="24" rx="2" fill="#7F93AB"/>
+          <rect x="186" y="44" width="10" height="48" rx="2" fill="#7F93AB"/>
+          <path d="M14 70Q39 22 64 70M74 70Q100 22 126 70M136 70Q161 22 186 70" stroke="#CFE0F2" stroke-width="4.4" fill="none"/>
+          <path d="M4 40H196" stroke="#F4C590" stroke-width="7" stroke-linecap="round"/>
+          <path d="M39 4V26" stroke="#FF8B3D" stroke-width="5" marker-end="url(#ah)"/>
+          <path d="M100 4V26" stroke="#FF8B3D" stroke-width="5" marker-end="url(#ah)"/>
+          <path d="M161 4V26" stroke="#FF8B3D" stroke-width="5" marker-end="url(#ah)"/>
+          <path d="M30 52Q22 58 18 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
+          <path d="M48 52Q56 58 60 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
+          <path d="M91 52Q83 58 79 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
+          <path d="M109 52Q117 58 121 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
+          <path d="M152 52Q144 58 140 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
+          <path d="M170 52Q178 58 182 66" stroke="#FF8B3D" stroke-width="2.6" fill="none" marker-end="url(#ah)"/>
         </svg>
-        <div class="nm"><span>平板桥</span><span class="verdict bad">易弯易断</span></div>
-        <p>力全压在桥面正中间</p>
+        <div class="nm"><span>平板桥</span><span class="verdict good">多拱支撑</span></div>
+        <p>一串拱把力分给多个桥墩</p>
         <figure><img src="img/sy1.jpg" alt=""><figcaption><span>生活中</span>云龙湖大桥</figcaption></figure>
       </div>
       <div class="law">
@@ -494,11 +504,12 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap
     </div>
   </div>
   <div class="gains">
+    <div class="gains-k">我们的<br>收获</div>
     <div class="card gain">
-      <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M31 15A12.5 12.5 0 1 0 32.5 24"/><path d="M32 6V15H23"/></svg></div><h5>失败不是坏事</h5></div>
+      <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M31 15A12.5 12.5 0 1 0 32.5 24"/><path d="M32 6V15H23"/></svg></div><h5>失败指明改进方向</h5></div>
     </div>
     <div class="card gain">
-      <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14H36"/><path d="M7 34Q20 0 33 34"/></svg></div><h5>形状变了，力就变了</h5></div>
+      <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14H36"/><path d="M7 34Q20 0 33 34"/></svg></div><h5>形状决定力往哪走</h5></div>
     </div>
     <div class="card gain">
       <div class="gh"><div class="ic"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L35 33H5Z"/><path d="M12.5 19.5H27.5" stroke-width="2.6"/></svg></div><h5>三角形最稳</h5></div>
