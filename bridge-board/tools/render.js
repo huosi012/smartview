@@ -1,5 +1,5 @@
 // Render the board: measure layout, export PDF and preview PNGs.
-// usage: node render.js <source dir> <out dir> [--pdf] [--theme=wood]
+// usage: node render.js <source dir> <out dir> [--pdf] [--theme=yellow]
 // Writes preview.png (screen size) and, with --pdf, board.pdf at 760 x 1760 mm.
 const path = require('path');
 const { chromium } = require('/opt/node-tools/node_modules/playwright');

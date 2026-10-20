@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>桥梁探究展板</title>
 <script>
-// ?theme=wood switches the palette (and the step-strip images) for export
+// ?theme=yellow switches the palette (and the step-strip images) for export
 const theme = new URLSearchParams(location.search).get('theme');
 if (theme) {
   document.documentElement.dataset.theme = theme;
@@ -91,25 +91,56 @@ b,strong{font-weight:900}
 [stroke="#CFE0F2"]{stroke:var(--cable)}
 [fill="#2E4562"]{fill:var(--hole)}
 
-/* wood theme: deep coffee instead of navy, warm neutrals */
-:root[data-theme="wood"]{
-  --navy:#4B2E1E;
-  --navy-2:#6E4630;
-  --navy-tint:#F6EBDD;
-  --ink:#3B2A1F;
-  --muted:#7B6555;
-  --line:#EFD8C3;
-  --shadow:rgba(75,46,30,.08);
-  --tag-bg:rgba(75,46,30,.85);
-  --cap-shade:rgba(40,22,12,.8);
-  --on-dark-muted:#CDB49C;
-  --on-dark-soft:#E3CDB8;
-  --on-dark-text:#FBF3EA;
-  --on-dark-text2:#F3E6D8;
-  --pier:#A98C76;
-  --cable:#F1DDC5;
-  --hole:#5E3B27;
+/* yellow theme (工程黄): engineering yellow + warm charcoal, for the green lawn */
+:root[data-theme="yellow"]{
+  --orange:#FFC20E;
+  --orange-2:#FFD34D;
+  --orange-deep:#C98F00;
+  --orange-soft:#FFEFB8;
+  --orange-tint:#FFF7DB;
+  --navy:#2E2A26;
+  --navy-2:#4A453F;
+  --navy-tint:#F2F0EB;
+  --ink:#2E2A26;
+  --muted:#6B655C;
+  --cream:#FFFDF7;
+  --yellow:#FFC20E;
+  --line:#EEE5CC;
+  --shadow:rgba(46,42,38,.08);
+  --tag-bg:rgba(46,42,38,.85);
+  --cap-shade:rgba(20,18,16,.8);
+  --on-dark-muted:#B9B2A7;
+  --on-dark-soft:#D9D3C9;
+  --on-dark-text:#F8F6F1;
+  --on-dark-text2:#EEEAE2;
+  --pier:#8E877D;
+  --cable:#E9E3D7;
+  --hole:#403B35;
+  --amber-text:#A36F00;
 }
+[data-theme="yellow"] .board{background-image:
+  linear-gradient(rgba(46,42,38,.035) .35mm, transparent .35mm),
+  linear-gradient(90deg, rgba(46,42,38,.035) .35mm, transparent .35mm)}
+[data-theme="yellow"] .header{color:var(--navy);background:linear-gradient(160deg,#FFD84A 0%,#FFC20E 45%,#F5AE00 100%)}
+[data-theme="yellow"] .title{text-shadow:2.2mm 2.2mm 0 #fff}
+[data-theme="yellow"] .team{box-shadow:1.8mm 1.8mm 0 var(--navy)}
+[data-theme="yellow"] .tm,[data-theme="yellow"] .tm .v.cells b,[data-theme="yellow"] .sh .step{border-color:#EBD9A0}
+/* text sitting on yellow turns charcoal */
+[data-theme="yellow"] .tm .k,[data-theme="yellow"] .sh .num,[data-theme="yellow"] .process .k,[data-theme="yellow"] .flow span,
+[data-theme="yellow"] .st p .tg.f,[data-theme="yellow"] .final .photo .cap,[data-theme="yellow"] .goal i,
+[data-theme="yellow"] .steps figcaption{color:var(--navy)}
+/* accent-colored text on light backgrounds uses a readable dark amber */
+[data-theme="yellow"] .sh .en,[data-theme="yellow"] .intro .lead em,[data-theme="yellow"] .st h4 small,
+[data-theme="yellow"] .sh .step,[data-theme="yellow"] .flow i,[data-theme="yellow"] .reqs span{color:var(--amber-text)}
+[data-theme="yellow"] .challenge{background:var(--navy);box-shadow:1.6mm 1.6mm 0 var(--orange)}
+[data-theme="yellow"] .invite{color:var(--navy)}
+[data-theme="yellow"] .invite .big{color:var(--navy);text-shadow:none}
+[data-theme="yellow"] .steps{background:#FFFBEF}
+[data-theme="yellow"] [fill="#FFF9F3"]{fill:var(--cream)}
+[data-theme="yellow"] [fill="#B9461A"]{fill:var(--amber-text)}
+[data-theme="yellow"] [stroke="#B9461A"]{stroke:var(--amber-text)}
+[data-theme="yellow"] [fill="#FFF2E6"]{fill:var(--orange-tint)}
+[data-theme="yellow"] [fill="#F26B21"]{fill:var(--orange-deep)}
 
 /* ---------- header ---------- */
 .header{

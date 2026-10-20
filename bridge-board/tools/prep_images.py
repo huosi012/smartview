@@ -64,8 +64,8 @@ save(Image.open(MEDIA / "image17.jpeg"), "sy4.jpg")
 save(warm(Image.open(EXTRA / "2.jpg"), lift=1.03, shift=0.02, con=1.0), "kids.jpg", q=93)
 
 # Assembly diagram: slice the 3x3 sequence into nine cells, recolor.
-# Line color per theme: default (navy) and wood (deep coffee).
-LINE = {"": (30, 55, 86), "wood": (75, 46, 30)}
+# Line color per theme: default (navy) and yellow (warm charcoal).
+LINE = {"": (30, 55, 86), "yellow": (46, 42, 38)}
 ORANGE = (242, 107, 33)
 WOOD = (255, 226, 196)
 diag = Image.open(EXTRA / "1.jpg").convert("L")
