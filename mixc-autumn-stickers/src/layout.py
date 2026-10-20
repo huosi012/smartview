@@ -4,7 +4,10 @@ The SVGs open directly in Illustrator (File > Open, then Save As .ai). The
 artboard is the trim size in mm; the background image runs 20 mm past every
 edge as bleed, the same way the summer .ai file was set up.
 
-usage: python3 layout.py <font_dir> <out_dir>   (out_dir must contain backgrounds/)
+usage: python3 layout.py <font_dir> <out_dir> [v1|v2]   (out_dir must contain backgrounds/)
+
+v1 = red-brown macro leaf, v2 = 大兴安岭 autumn forest. Only the colours of a few
+elements differ between them, depending on what sits behind.
 """
 import re
 import sys
@@ -83,7 +86,8 @@ def rect(x, y, w, h, color=INK):
     return dict(kind="rect", x=x, y=y, w=w, h=h, fill=color)
 
 
-def build(fonts):
+def build(fonts, variant="v1"):
+    v2 = variant == "v2"
     en, en_semi, cn, cn_med = fonts["Outfit-700"], fonts["Outfit-600"], fonts["NotoSansSC-700"], fonts["NotoSansSC-500"]
     en_size = 73 / en.cap  # cap height 73 mm, as in the summer file
     designs = {}
@@ -100,7 +104,8 @@ def build(fonts):
 
     # ---- B 150x45: knot icons + brand lockup
     logos = [
-        logo_at_crop("icons", "B", 774, 122, CREAM, opacity=0.92),
+        # v1: icons sit on the leaf; v2: on the sky
+        logo_at_crop("icons", "B", 774, 122, INK if v2 else CREAM, opacity=1 if v2 else 0.92),
         logo_at_crop("callig", "B", 1072, 210, INK),
         p(cn_med.path("®", 22, 1083, 333)[0]),
         # small seal: same trace as the big one at 0.385x, ink box starts at (60, 29) units
@@ -121,8 +126,9 @@ def build(fonts):
 
     # ---- C 110x50: three stacked phrases on rules + Foci health
     text = [
-        p(en.path("Foci", en_size, 50, 371)[0]),
-        p(en.path("health", en_size, 50, 456)[0]),
+        # v2: on the dark hillside, so cream
+        p(en.path("Foci", en_size, 50, 371)[0], CREAM if v2 else INK),
+        p(en.path("health", en_size, 50, 456)[0], CREAM if v2 else INK),
     ]
     for word, right, rule_x0, rule_x1, base, rule_y in [
         ("秋收", 970, 279, 1000, 182, 189.5),
@@ -243,12 +249,12 @@ def write_pdf(out: Path, key, w, h, text, logos, bg_jpg: Path):
     c.save()
 
 
-def main(font_dir, out_dir):
+def main(font_dir, out_dir, variant="v1"):
     fonts = {n: Font(Path(font_dir) / f"{n}.ttf") for n in ["Outfit-700", "Outfit-600", "NotoSansSC-700", "NotoSansSC-500"]}
     out = Path(out_dir)
     (out / "layered").mkdir(parents=True, exist_ok=True)
     (out / "pdf").mkdir(parents=True, exist_ok=True)
-    for key, (w, h, text, logos) in build(fonts).items():
+    for key, (w, h, text, logos) in build(fonts, variant).items():
         name = f"{key}_{SIZES[key]}cm"
         bg = f"bg_{name}.jpg"
         write_svg(out / "layered" / f"{name}.svg", key, w, h, text, logos, f"../backgrounds/{bg}")
@@ -257,4 +263,4 @@ def main(font_dir, out_dir):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(*sys.argv[1:4])

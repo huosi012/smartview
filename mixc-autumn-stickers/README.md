@@ -1,9 +1,19 @@
 # 万象城 · 佛慈 柜体车贴 · 秋冬版
 
-夏日版（绿色本草）换成秋冬版：**红棕色调背景 + 秋冬文案**，版式、logo 位置与夏日版保持一致。
+夏日版（绿色本草）的秋冬替换稿，共两个方向，**版式、文案、logo 位置相同，只换背景**：
+
+- **v2 · 大兴安岭秋林**（推荐）：雾气里的「五花山」秋林（落叶松金黄、柞树红棕、枫叶红、樟子松墨绿），配飘落的枫叶 / 柞树叶 / 白桦叶，边上有虚化的白桦树干和枫叶枝。配色不限于红棕，整体偏暖。
+- **v1 · 红棕叶片**：沿用夏日版的大叶片微距构图，换成红棕色调。
+
 贴在中岛柜下方柜门和侧板上（见 `assets/reference/cabinet-placement.jpg` 红框位置）。
 
-![overview](output/preview/overview.jpg)
+**v2 · 大兴安岭秋林**
+
+![v2 overview](output/v2/preview/overview.jpg)
+
+**v1 · 红棕叶片**
+
+![v1 overview](output/v1/preview/overview.jpg)
 
 ## 尺寸与数量
 
@@ -16,12 +26,14 @@
 
 ## 文件
 
+每个版本一个文件夹：`output/v1/`（红棕叶片）、`output/v2/`（大兴安岭秋林），里面结构相同：
+
 | 路径 | 用途 |
 |---|---|
-| `output/backgrounds/bg_*.jpg` | **背景大图**，四边各含 2 cm 出血，1:1 约 102 dpi，RGB。用来替换夏日 AI 里的背景 |
-| `output/pdf/*.pdf` | 完整稿 PDF：背景 + 已转曲文字 + logo，四边各 2 cm 出血，TrimBox = 成品尺寸。**AI 可直接打开** |
-| `output/layered/*.svg` | 分层稿（Background / Text / Logo 三个图层），AI 可直接打开；背景图以相对路径链接 `../backgrounds/` |
-| `output/preview/*.jpg` | 效果预览图（给客户看） |
+| `backgrounds/bg_*.jpg` | **背景大图**，四边各含 2 cm 出血，1:1 约 102 dpi，RGB。用来替换夏日 AI 里的背景 |
+| `pdf/*.pdf` | 完整稿 PDF：背景 + 已转曲文字 + logo，四边各 2 cm 出血，TrimBox = 成品尺寸。**AI 可直接打开** |
+| `layered/*.svg` | 分层稿（Background / Text / Logo 三个图层），AI 可直接打开；背景图以相对路径链接 `../backgrounds/` |
+| `preview/*.jpg` | 效果预览图（给客户看） |
 
 ## 秋冬文案
 
@@ -42,12 +54,14 @@
 
 **方式一（推荐，logo 用原版矢量）**：打开夏日源文件「万象城-1929夏日活动装饰-转曲.ai」
 
-1. 把四个背景换成 `output/backgrounds/` 里对应的图。图片尺寸为成品四边各加 20 mm（150×45 用 1540×490 mm，110×50 用 1140×540 mm），左上角对齐画板左上角外 20 mm 处（x = −20 mm，y = −20 mm）。
-2. 按上面的文案改字（位置参考 `output/preview/`）。
-3. logo 改色：浅色区域用深棕 `#3B1A10`；B 稿左上角三个图标压在叶子上，改奶油色 `#F6E3C8`。
+1. 把四个背景换成 `output/v2/backgrounds/`（或 `v1`）里对应的图。图片尺寸为成品四边各加 20 mm（150×45 用 1540×490 mm，110×50 用 1140×540 mm），左上角对齐画板左上角外 20 mm 处（x = −20 mm，y = −20 mm）。
+2. 按上面的文案改字（位置参考 `output/v2/preview/`）。
+3. 改色：浅色区域的文字和 logo 用深棕 `#3B1A10`。两版不同的地方：
+   - v1：B 稿左上角三个图标压在叶子上，改奶油色 `#F6E3C8`。
+   - v2：B 稿三个图标在天空上，用深棕；C 稿「Foci health」压在深色山林上，改奶油色 `#F6E3C8`。
 4. 转曲，另存为 `.ai`。
 
-**方式二**：AI 直接打开 `output/pdf/*.pdf`（或 `output/layered/*.svg`），把其中的描摹 logo 换成源文件里的矢量 logo，另存为 `.ai`。打开后如果画板是含出血的尺寸，用画板工具四边各收 20 mm 即可。
+**方式二**：AI 直接打开 `output/v2/pdf/*.pdf`（或 `layered/*.svg`），把其中的描摹 logo 换成源文件里的矢量 logo，另存为 `.ai`。打开后如果画板是含出血的尺寸，用画板工具四边各收 20 mm 即可。
 
 **PS**：直接打开 PDF（分辨率设 100 ppi 以上），或把背景图拖进原 PS 文件替换。
 
@@ -56,16 +70,18 @@
 - **效果图里的 logo 是从夏日版截图描出来的，只能用来示意位置，不能直接印刷。** B 稿里「佛｜慈｜康｜选 / FOCI HEALTH」这一行是用思源黑体 / Outfit 重新排的，和原版字形不完全一样。出片前请换成源文件里的正版矢量 logo。
 - 字体：英文 Outfit Bold（与夏日版的几何无衬线体接近），中文 思源黑体 Bold（Noto Sans SC）。PDF 和 SVG 里的文字已经转曲，不缺字体。如果要沿用夏日版的原字体，在 AI 里重新打字即可。
 - 背景图是 RGB，出片前按印厂要求转 CMYK。红棕色转 CMYK 时基本不会偏色。
-- 主要配色：叶片 `#8E3418` / `#B2552B` / `#D68C5B`，浅底 `#F6E7D6`，文字 `#3B1A10`。
+- 主要配色：v1 叶片 `#8E3418` / `#B2552B` / `#D68C5B`，浅底 `#F6E7D6`；v2 秋林 `#DBA634`（落叶松）/ `#9C4A22`（柞树）/ `#B8361F`（枫）/ `#3A4F33`（樟子松），天空 `#D9E3E4` → `#F5E6D2`；文字 `#3B1A10`。
+- v2 的秋林、树叶、白桦都是程序绘制的（环境里拿不到可商用的实拍素材）。如果客户想要实拍感，可以把 `backgrounds/` 换成正版图库的大兴安岭秋景照片，版式不用动。
 
 ## 重新生成
 
-背景是程序生成的（WebGL 叶脉渲染 + 景深模糊 + 颗粒），参数都在 `src/bg.js` 的 `DESIGNS` 里，可以调叶子的位置、宽度、颜色和模糊程度。版式和文案在 `src/layout.py`。
+背景是程序生成的：v1 在 `src/bg.js`（WebGL 叶脉渲染 + 景深模糊），v2 在 `src/forest.js`（山脊、树冠、雾、白桦、落叶、枫叶枝）。每张图的参数都在各自的 `DESIGNS` / `FOREST_DESIGNS` 里，配色在 `forest.js` 顶部的 `SPECIES` / `LEAF_COLORS`。版式和文案在 `src/layout.py`。
 
 ```bash
 # 需要 node + playwright(Chromium)，python3 + pillow fonttools uharfbuzz reportlab（描摹 logo 另需 potracer）
-./build.sh                      # 默认 40 px/cm（约 102 dpi）
-PX_PER_CM=30 ./build.sh         # 快速出小图
+./build.sh                      # 两个版本都出，默认 40 px/cm（约 102 dpi）
+VARIANTS=v2 ./build.sh          # 只出 v2
+PX_PER_CM=20 ./build.sh         # 快速出小图
 # logo 描摹（只有换参考截图时才需要重跑）：
 python3 src/trace_logo.py assets/reference/summer-version.png assets/logo-preview
 ```
