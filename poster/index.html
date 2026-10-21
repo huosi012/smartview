@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>星爵台球俱乐部 X展架 80×180cm</title>
+<!--
+  设计画布 800 × 1800 px，对应成品 80 × 180 cm（1px = 1mm）。
+  导出：node render.mjs  →  output/ 目录
+  文案都在下面的 HTML 里，直接改字即可；微信群二维码放到 poster/wechat-qr.png 会自动替换占位框。
+-->
+<style>
+  @font-face { font-family: "QingKe"; src: url(fonts/ZCOOLQingKeHuangYou.ttf); }
+  @font-face { font-family: "MaShan"; src: url(fonts/MaShanZheng.ttf); }
+  @font-face { font-family: "NotoSans"; font-weight: 500; src: url(fonts/NotoSansSC-500.ttf); }
+  @font-face { font-family: "NotoSans"; font-weight: 700; src: url(fonts/NotoSansSC-700.ttf); }
+  @font-face { font-family: "NotoSans"; font-weight: 900; src: url(fonts/NotoSansSC-900.ttf); }
+  @font-face { font-family: "NotoSerif"; font-weight: 900; src: url(fonts/NotoSerifSC-900.ttf); }
+  @font-face { font-family: "Anton"; src: url(fonts/Anton.ttf); }
+  @font-face { font-family: "Oswald"; font-weight: 700; src: url(fonts/Oswald-700.ttf); }
+
+  :root {
+    --felt-hi: #2f6a3a;
+    --felt: #1c4a28;
+    --felt-dk: #0b2615;
+    --gold-hi: #fff8cf;
+    --gold: #ffd95e;
+    --gold-mid: #f2b52c;
+    --gold-lo: #b8740c;
+    --ink: #2a1300;
+    --red: #e3261c;
+    --red-dk: #8c0c0c;
+    --cream: #fff9e6;
+    --gold-grad: linear-gradient(180deg, #fffbe2 0%, #ffe77e 30%, #f6bb2f 52%, #fff2a6 70%, #e7a21b 100%);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 800px; background: #0b2615; }
+
+  .poster {
+    position: relative;
+    width: 800px;
+    height: 1800px;
+    overflow: hidden;
+    font-family: "NotoSans", sans-serif;
+    color: var(--cream);
+    background:
+      radial-gradient(ellipse 70% 32% at 50% 20%, rgba(255, 236, 160, .20), transparent 70%),
+      radial-gradient(ellipse 120% 80% at 50% 45%, var(--felt-hi) 0%, var(--felt) 45%, var(--felt-dk) 100%);
+    isolation: isolate;
+  }
+  /* 台呢绒面质感 */
+  .poster::before {
+    content: "";
+    position: absolute; inset: 0; z-index: -1;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px;
+    mix-blend-mode: overlay;
+    opacity: .38;
+  }
+  /* 四周压暗 */
+  .poster::after {
+    content: "";
+    position: absolute; inset: 0; z-index: -1;
+    background: radial-gradient(ellipse 85% 60% at 50% 50%, transparent 60%, rgba(0, 0, 0, .45) 100%);
+    pointer-events: none;
+  }
+
+  /* 金字：描边层 + 渐变填充层 */
+  .fx { position: relative; display: inline-block; isolation: isolate; white-space: nowrap; }
+  .fx::before {
+    content: attr(data-text);
+    position: absolute; left: 0; top: 0; z-index: -1;
+    color: var(--sc, var(--ink));
+    -webkit-text-stroke: var(--sw, 8px) var(--sc, var(--ink));
+    text-shadow: 0 var(--sd, 5px) 0 var(--sc, var(--ink));
+  }
+  .fx > .fill {
+    background: var(--fill, var(--gold-grad));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- 顶部店招 ---------- */
+  .brand {
+    position: relative;
+    margin: 28px auto 0;
+    width: 640px; height: 92px;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    background: linear-gradient(180deg, #2b2b2b, #111 70%, #000);
+    clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .5);
+  }
+  .brand::after {
+    content: ""; position: absolute; left: 6%; right: 6%; bottom: 8px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .brand svg { width: 58px; height: 58px; flex: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.6)); }
+  .brand .name { font-weight: 900; font-size: 46px; letter-spacing: 3px; --sw: 0px; --sd: 0px; }
+  .brand .name > .fill { --fill: linear-gradient(180deg, #ffffff 0%, #fff4c9 45%, #f3c95a 100%); }
+  .brand .tag {
+    font-weight: 900; font-size: 28px; color: var(--ink);
+    padding: 3px 11px 5px; border-radius: 8px;
+    background: var(--gold-grad);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.5), 0 2px 0 var(--gold-lo);
+    transform: translateY(2px);
+  }
+
+  /* ---------- 主视觉 ---------- */
+  .hero { position: relative; height: 300px; margin-top: 4px; }
+  .hero .side {
+    position: absolute; top: 30px;
+    writing-mode: vertical-rl;
+    font-family: "MaShan"; font-size: 58px; line-height: 1; letter-spacing: 8px;
+    color: #f6e7b0;
+    text-shadow: 0 3px 0 rgba(0,0,0,.45), 0 0 18px rgba(255, 220, 120, .25);
+  }
+  .hero .side.l { left: 52px; }
+  .hero .side.r { right: 52px; }
+
+  .diamond {
+    position: absolute; left: 50%; top: 158px;
+    width: 218px; height: 218px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border: 3px solid var(--gold);
+    background: radial-gradient(circle, rgba(0,0,0,.28), rgba(0,0,0,.08));
+    box-shadow: 0 0 30px rgba(255, 215, 94, .25), inset 0 0 30px rgba(255, 215, 94, .12);
+  }
+  .diamond::after {
+    content: ""; position: absolute; inset: 12px;
+    border: 1.5px solid rgba(255, 217, 94, .7);
+  }
+  .hero .en {
+    position: absolute; left: 50%; top: -2px; transform: translateX(-50%); z-index: 2;
+    padding: 2px 16px 3px 20px; border-radius: 14px;
+    font-family: "Oswald"; font-size: 15px; letter-spacing: 5px; color: var(--gold); white-space: nowrap;
+    background: #0d2b17; border: 1.5px solid var(--gold);
+  }
+  .hero .logo {
+    position: absolute; left: 0; right: 0; top: 34px;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: "QingKe"; font-size: 124px; line-height: 1.0; letter-spacing: 6px;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.55));
+  }
+  .hero .logo .fx { --sw: 16px; --sd: 8px; --sc: #2a1200; }
+  .hero .megaphone {
+    position: absolute; left: 500px; top: 22px; width: 80px; height: 80px;
+    transform: rotate(-18deg);
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,.5));
+  }
+  .spark { position: absolute; width: 26px; height: 26px; }
+
+  /* ---------- 欢迎语 / 时间 / 标题 ---------- */
+  .welcome {
+    text-align: center; margin-top: 2px;
+    font-family: "NotoSerif"; font-weight: 900; font-size: 44px; letter-spacing: 8px;
+  }
+  .welcome .fx { --sw: 9px; --sd: 4px; --sc: #2a1200; }
+
+  .time {
+    position: relative; width: 640px; height: 72px; margin: 20px auto 0;
+    border-radius: 36px;
+    background: linear-gradient(180deg, #fffbe0 0%, #ffe46a 40%, #f6b927 100%);
+    box-shadow: 0 6px 0 #a5650a, 0 12px 20px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.8);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 38px; color: var(--red-dk); letter-spacing: 1px;
+  }
+  .time::before {
+    content: ""; position: absolute; inset: -8px; border-radius: 44px;
+    border: 2.5px dashed var(--gold);
+  }
+
+  .benefit {
+    position: relative; text-align: center; margin-top: 18px;
+    font-family: "QingKe"; font-weight: 400; font-size: 72px; letter-spacing: 6px; line-height: 1.05;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,.5));
+  }
+  .benefit .fx { --sw: 11px; --sd: 5px; --sc: #2a1200; --fill: linear-gradient(180deg, #fffde8 0%, #fff27a 35%, #ffd31f 60%, #ffb800 100%); }
+  .benefit::before, .benefit::after {
+    content: ""; position: absolute; top: 50%; width: 70px; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .benefit::before { left: 34px; }
+  .benefit::after { right: 34px; transform: scaleX(-1); }
+
+  /* ---------- 活动标签 ---------- */
+  .act { padding: 0 46px; }
+  .tab { display: flex; align-items: center; gap: 0; height: 50px; }
+  .tab .bar { width: 10px; height: 50px; background: var(--gold-grad); border-radius: 3px; margin-right: 8px; }
+  .tab .label {
+    height: 46px; padding: 0 42px 0 20px;
+    display: flex; align-items: center;
+    font-weight: 900; font-size: 32px; letter-spacing: 4px; color: #5a1a00;
+    background: linear-gradient(180deg, #fff7c4, #ffd95e 45%, #eda920);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 22px) 100%, 0 100%);
+  }
+  .tab .chev { margin-left: 4px; height: 34px; }
+
+  /* ---------- 活动一 ---------- */
+  .act1 { margin-top: 16px; }
+  .items { list-style: none; margin-top: 12px; display: grid; gap: 8px; }
+  .items li {
+    position: relative; display: flex; gap: 14px; align-items: flex-start;
+    padding: 10px 16px 10px 14px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, rgba(0,0,0,.30), rgba(0,0,0,.14));
+    border: 1px solid rgba(255, 217, 94, .28);
+  }
+  .no {
+    flex: none; width: 40px; height: 40px; margin-top: 7px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: "Oswald"; font-style: normal; font-size: 26px; color: var(--ink);
+    background: var(--gold-grad);
+    box-shadow: 0 2px 0 var(--gold-lo);
+  }
+  .items .body { flex: 1; }
+  .items p {
+    display: flex; align-items: center; flex-wrap: wrap; column-gap: 8px;
+    min-height: 54px;
+    font-weight: 700; font-size: 26px; line-height: 1.35; color: #fff;
+    text-shadow: 0 2px 2px rgba(0,0,0,.5);
+  }
+  .items em {
+    font-style: normal; font-family: "NotoSerif"; font-weight: 900; font-size: 36px;
+    color: #ffe24a; text-shadow: 0 3px 0 #3b1a00, 0 0 12px rgba(255, 210, 60, .35);
+  }
+  .items small { font-size: 22px; font-weight: 500; color: #e9f3e4; }
+  .items .em-num { font-family: "Oswald"; font-size: 38px; }
+
+  /* 「送」爆炸贴 */
+  .song {
+    position: relative; flex: none;
+    width: 66px; height: 66px; margin: -6px 0;
+    display: inline-grid; place-items: center;
+    font-weight: 900; font-size: 32px; color: var(--red); font-style: normal;
+  }
+  .song svg { position: absolute; inset: 0; z-index: 0; filter: drop-shadow(0 3px 2px rgba(0,0,0,.45)); }
+  .song span { position: relative; z-index: 1; transform: rotate(-8deg); }
+
+  /* ---------- 活动二 ---------- */
+  .act2 { margin-top: 16px; }
+  .act2 .tab .hint {
+    margin-left: auto; text-align: right;
+    font-weight: 700; font-size: 20px; line-height: 1.35; color: #f7e9b0;
+  }
+  .prices { position: relative; margin-top: 12px; }
+  .rows { width: 430px; display: grid; gap: 6px; }
+  .row {
+    display: flex; align-items: center; height: 52px; padding: 0 16px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, rgba(0,0,0,.32), rgba(0,0,0,0));
+    border-left: 4px solid var(--gold);
+  }
+  .c, .u { font-weight: 900; font-size: 26px; color: #fff; }
+  .c { margin-right: 6px; }
+  .u { margin-left: 4px; }
+  .n {
+    font-family: "Anton"; font-size: 48px; line-height: 1; letter-spacing: 1px;
+    color: #ffe24a; text-shadow: 0 3px 0 #3b1a00, 0 0 10px rgba(255, 210, 60, .35);
+    min-width: 0;
+  }
+  .give {
+    margin: 0 14px; width: 40px; height: 40px; border-radius: 50%; flex: none;
+    display: grid; place-items: center;
+    font-weight: 900; font-size: 24px; color: #fff;
+    background: radial-gradient(circle at 35% 30%, #ff6a55, var(--red) 55%, #9e0f0b);
+    box-shadow: 0 2px 0 #5c0606, 0 0 0 2px rgba(255,255,255,.35);
+  }
+  .balls { position: absolute; right: -12px; top: -38px; width: 300px; height: 227px; overflow: visible; }
+
+  .vip { position: relative; display: grid; gap: 8px; margin-top: 8px; }
+  .vip .card {
+    position: relative; display: flex; align-items: center; height: 78px; padding: 0 12px 0 16px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, rgba(0,0,0,.40), rgba(0,0,0,.18));
+    border: 2px solid rgba(255, 217, 94, .85);
+    box-shadow: 0 0 22px rgba(255, 210, 60, .18), inset 0 0 18px rgba(255, 210, 60, .10);
+  }
+  .vip .n { font-size: 54px; }
+  .vip .gift {
+    flex: none; margin-left: auto; height: 62px; padding: 0 14px 0 10px;
+    display: flex; align-items: center; gap: 10px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f2392c, #b4120d);
+    border: 2px solid #ffd95e;
+    box-shadow: 0 4px 0 #5c0606;
+  }
+  .gift .plus {
+    font-weight: 900; font-size: 20px; line-height: 1.1; color: #5a1a00; text-align: center;
+    padding: 5px 6px; border-radius: 8px; background: var(--gold-grad);
+  }
+  .gift .txt { line-height: 1.12; white-space: nowrap; }
+  .gift .txt b { display: block; font-weight: 900; font-size: 26px; color: #ffe24a; text-shadow: 0 2px 0 #5c0606; }
+  .gift .txt b .num { font-family: "Oswald"; font-size: 30px; }
+  .gift .txt > span { display: block; font-weight: 900; font-size: 22px; color: #fff; letter-spacing: 2px; }
+
+  .end {
+    position: relative; width: 480px; height: 46px; margin: 12px auto 0;
+    display: grid; place-items: center;
+    font-weight: 900; font-size: 28px; letter-spacing: 4px; color: #fff;
+    background: linear-gradient(180deg, #f2392c, #b4120d);
+    clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+    text-shadow: 0 2px 0 #5c0606;
+  }
+
+  /* ---------- 底部联系方式 ---------- */
+  .foot {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 186px;
+    padding: 18px 56px 0 46px;
+    display: flex; gap: 22px;
+    background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.6));
+    border-top: 3px solid var(--gold);
+  }
+  .foot .info { flex: 1; display: grid; align-content: start; gap: 12px; }
+  .foot .line { display: flex; align-items: center; gap: 10px; }
+  .foot .ico {
+    flex: none; width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--gold-grad);
+  }
+  .foot .ico svg { width: 24px; height: 24px; }
+  .foot .k { font-weight: 900; font-size: 30px; color: #fff; }
+  .foot .tel { font-family: "Anton"; font-size: 52px; letter-spacing: 3px; color: #ffe24a; line-height: 1; text-shadow: 0 3px 0 #3b1a00; }
+  .foot .addr { align-items: flex-start; }
+  .foot .addr .ico { margin-top: 2px; }
+  .foot .addr p { font-weight: 700; font-size: 24px; line-height: 1.45; color: #fff; }
+  .foot .addr p .k { font-size: 24px; }
+
+  .qr { flex: none; width: 124px; text-align: center; }
+  .qr .box {
+    width: 108px; height: 108px; margin: 0 auto; padding: 5px;
+    background: #fff; border-radius: 10px; border: 3px solid var(--gold);
+    display: grid; place-items: center; overflow: hidden;
+  }
+  .qr img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .qr .ph { display: none; font-weight: 700; font-size: 17px; line-height: 1.4; color: #888; }
+  .qr.empty .box { border-style: dashed; }
+  .qr.empty .ph { display: block; }
+  .qr .cap { margin-top: 4px; font-weight: 700; font-size: 14px; line-height: 1.3; color: #f7e9b0; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="poster" id="poster">
+
+  <!-- 店招 -->
+  <header class="brand">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <radialGradient id="b8" cx="35%" cy="30%" r="75%">
+          <stop offset="0" stop-color="#6a6a6a"/><stop offset=".35" stop-color="#1b1b1b"/><stop offset="1" stop-color="#000"/>
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="50" r="47" fill="url(#b8)" stroke="#ffd95e" stroke-width="3"/>
+      <circle cx="47" cy="45" r="21" fill="#fff"/>
+      <text x="47" y="55" text-anchor="middle" font-family="Oswald" font-size="28" fill="#111">8</text>
+      <ellipse cx="33" cy="24" rx="10" ry="5" fill="#fff" opacity=".35" transform="rotate(-30 33 24)"/>
+    </svg>
+    <span class="name fx">星爵台球俱乐部</span>
+    <span class="tag">棋牌</span>
+  </header>
+
+  <!-- 主视觉 -->
+  <section class="hero">
+    <div class="side l">以球会友</div>
+    <div class="side r">以球会友</div>
+    <div class="diamond"></div>
+    <div class="en">GRAND OPENING</div>
+    <div class="logo">
+      <span class="fx">开业</span>
+      <span class="fx">钜惠</span>
+    </div>
+    <svg class="megaphone" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff6c4"/><stop offset=".5" stop-color="#ffd95e"/><stop offset="1" stop-color="#d79414"/>
+        </linearGradient>
+      </defs>
+      <g stroke="#2a1200" stroke-width="4" stroke-linejoin="round" fill="url(#mg)">
+        <path d="M14 42 h14 l34 -22 v60 l-34 -22 h-14 z"/>
+        <path d="M24 58 l6 22 h12 l-6 -22 z"/>
+      </g>
+      <g stroke="#ffd95e" stroke-width="5" stroke-linecap="round" fill="none">
+        <path d="M72 38 q8 12 0 24"/>
+        <path d="M80 30 q14 20 0 40"/>
+        <path d="M88 22 q20 28 0 56"/>
+      </g>
+    </svg>
+    <svg class="spark" style="left:214px; top:44px" viewBox="0 0 20 20"><path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#fff3b0"/></svg>
+    <svg class="spark" style="left:582px; top:250px; width:20px; height:20px" viewBox="0 0 20 20"><path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#fff3b0"/></svg>
+    <svg class="spark" style="left:206px; top:268px; width:16px; height:16px" viewBox="0 0 20 20"><path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#ffd95e"/></svg>
+  </section>
+
+  <div class="welcome"><span class="fx">欢迎您的光临</span></div>
+
+  <div class="time">活动时间：9月23号至9月31号</div>
+
+  <h2 class="benefit"><span class="fx">开业福利来袭</span></h2>
+
+  <!-- 活动一 -->
+  <section class="act act1">
+    <div class="tab"><i class="bar"></i><div class="label">活动一</div><svg class="chev" data-chev></svg></div>
+    <ol class="items">
+      <li>
+        <i class="no">1</i>
+        <div class="body">
+          <p>活动期间只要进店开台消费每桌<i class="song" data-song></i><em>两瓶饮料</em></p>
+        </div>
+      </li>
+      <li>
+        <i class="no">2</i>
+        <div class="body">
+          <p>活动期间转发朋友圈 抖音快手集赞10个赞以上</p>
+          <p><i class="song" data-song></i><em><span class="em-num">25</span>元台费</em><small>超出25元正常计费。</small></p>
+        </div>
+      </li>
+      <li>
+        <i class="no">3</i>
+        <div class="body">
+          <p>活动期间加微信进微信群 不定期发布红包，</p>
+          <p>手气最佳<i class="song" data-song></i><em>两小时台费</em></p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 活动二 -->
+  <section class="act act2">
+    <div class="tab"><i class="bar"></i><div class="label">活动二</div><svg class="chev" data-chev></svg></div>
+    <div class="prices">
+      <svg class="balls" id="balls" viewBox="0 0 330 250" aria-hidden="true"></svg>
+      <div class="rows">
+        <div class="row"><span class="c">充</span><span class="n">200</span><span class="u">元</span><i class="give">送</i><span class="n">100</span><span class="u">元</span></div>
+        <div class="row"><span class="c">充</span><span class="n">300</span><span class="u">元</span><i class="give">送</i><span class="n">200</span><span class="u">元</span></div>
+        <div class="row"><span class="c">充</span><span class="n">500</span><span class="u">元</span><i class="give">送</i><span class="n">300</span><span class="u">元</span></div>
+      </div>
+      <div class="vip">
+        <div class="card">
+          <span class="c">充</span><span class="n">1000</span><span class="u">元</span><i class="give">送</i><span class="n">800</span><span class="u">元</span>
+          <div class="gift"><div class="plus">再<br>送</div><div class="txt"><b>价值<span class="num">388</span>元</b><span>精美会员杆</span></div></div>
+        </div>
+        <div class="card">
+          <span class="c">充</span><span class="n">2000</span><span class="u">元</span><i class="give">送</i><span class="n">2000</span><span class="u">元</span>
+          <div class="gift"><div class="plus">再<br>送</div><div class="txt"><b>价值<span class="num">688</span>元</b><span>精美会员杆</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="end">活动结束恢复正常充值！</div>
+  </section>
+
+  <!-- 联系方式 -->
+  <footer class="foot">
+    <div class="info">
+      <div class="line">
+        <i class="ico"><svg viewBox="0 0 24 24"><path fill="#5a1a00" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></i>
+        <span class="k">电话：</span><span class="tel">18805197663</span>
+      </div>
+      <div class="line addr">
+        <i class="ico"><svg viewBox="0 0 24 24"><path fill="#5a1a00" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></i>
+        <p><span class="k">地址：</span>平阳路街道平阳路大马村<br>东正街十排一号商铺</p>
+      </div>
+    </div>
+    <div class="qr">
+      <div class="box">
+        <img src="wechat-qr.png" alt="" onerror="this.closest('.qr').classList.add('empty'); this.remove()">
+        <span class="ph">微信群<br>二维码</span>
+      </div>
+      <div class="cap">扫码加微信进群<br>享更多活动优惠</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // 金字：拆成描边层 + 填充层
+  document.querySelectorAll('.fx').forEach(el => {
+    el.dataset.text = el.textContent.trim();
+    el.innerHTML = '<span class="fill">' + el.innerHTML.trim() + '</span>';
+  });
+
+  // 「送」爆炸贴
+  const burst = (() => {
+    const pts = [];
+    for (let i = 0; i < 28; i++) {
+      const a = (Math.PI * 2 * i) / 28 - Math.PI / 2;
+      const r = i % 2 ? 40 : 50;
+      pts.push((50 + r * Math.cos(a)).toFixed(1) + ',' + (50 + r * Math.sin(a)).toFixed(1));
+    }
+    return pts.join(' ');
+  })();
+  document.querySelectorAll('[data-song]').forEach(el => {
+    el.innerHTML =
+      '<svg viewBox="0 0 100 100"><defs><radialGradient id="sg" cx="40%" cy="35%" r="70%">' +
+      '<stop offset="0" stop-color="#fffbd0"/><stop offset=".5" stop-color="#ffe600"/><stop offset="1" stop-color="#ffb300"/></radialGradient></defs>' +
+      '<polygon points="' + burst + '" fill="url(#sg)" stroke="#e3261c" stroke-width="4" stroke-linejoin="round"/></svg><span>送</span>';
+  });
+
+  // 标签后的箭头
+  document.querySelectorAll('[data-chev]').forEach(svg => {
+    const n = 7, w = 26;
+    svg.setAttribute('viewBox', `0 0 ${n * w} 40`);
+    svg.setAttribute('width', n * w);
+    let g = '';
+    for (let i = 0; i < n; i++) {
+      const x = i * w;
+      g += `<path d="M${x} 4 L${x + 14} 4 L${x + 26} 20 L${x + 14} 36 L${x} 36 L${x + 12} 20 Z" fill="#ffd95e" opacity="${(1 - i / n).toFixed(2)}"/>`;
+    }
+    svg.innerHTML = g;
+  });
+
+  // 台球插画
+  (() => {
+    const svg = document.getElementById('balls');
+    let defs = `
+      <radialGradient id="shade" cx="36%" cy="30%" r="72%">
+        <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+        <stop offset=".28" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".72" stop-color="#000" stop-opacity="0"/>
+        <stop offset="1" stop-color="#000" stop-opacity=".5"/>
+      </radialGradient>
+      <filter id="blur"><feGaussianBlur stdDeviation="4"/></filter>
+      <linearGradient id="cue" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2c6bd1"/><stop offset=".02" stop-color="#2c6bd1"/>
+        <stop offset=".02" stop-color="#f6f1e4"/><stop offset=".06" stop-color="#f6f1e4"/>
+        <stop offset=".06" stop-color="#f2d9a6"/><stop offset=".55" stop-color="#d9a860"/>
+        <stop offset=".55" stop-color="#1a1a1a"/><stop offset=".6" stop-color="#1a1a1a"/>
+        <stop offset=".6" stop-color="#6b2a10"/><stop offset="1" stop-color="#2b0e04"/>
+      </linearGradient>
+      <linearGradient id="cueShine" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/>
+      </linearGradient>`;
+    let body = '';
+    // 球杆
+    body += `<g transform="translate(118 168) rotate(-24)">
+      <rect x="0" y="-6" width="230" height="12" rx="6" fill="url(#cue)"/>
+      <rect x="0" y="-6" width="230" height="12" rx="6" fill="url(#cueShine)"/></g>`;
+    const ball = (id, cx, cy, r, color, num, stripe) => {
+      let s = `<ellipse cx="${cx + r * .15}" cy="${cy + r * .92}" rx="${r * .95}" ry="${r * .26}" fill="#000" opacity=".45" filter="url(#blur)"/>`;
+      if (stripe) {
+        defs += `<clipPath id="c${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;
+        s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fbf8ef"/>`;
+        s += `<rect x="${cx - r}" y="${cy - r * .5}" width="${r * 2}" height="${r}" fill="${color}" clip-path="url(#c${id})" transform="rotate(-14 ${cx} ${cy})"/>`;
+      } else {
+        s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+      }
+      if (num) {
+        s += `<circle cx="${cx - r * .08}" cy="${cy - r * .06}" r="${r * .42}" fill="#fff"/>`;
+        s += `<text x="${cx - r * .08}" y="${cy + r * .14}" text-anchor="middle" font-family="Oswald" font-size="${r * .52}" fill="#111">${num}</text>`;
+      }
+      s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#shade)"/>`;
+      s += `<ellipse cx="${cx - r * .38}" cy="${cy - r * .45}" rx="${r * .2}" ry="${r * .11}" fill="#fff" opacity=".85" transform="rotate(-35 ${cx - r * .38} ${cy - r * .45})"/>`;
+      return s;
+    };
+    body += ball('9', 196, 72, 38, '#f5c400', 9, true);
+    body += ball('3', 272, 88, 38, '#d4201a', 3);
+    body += ball('2', 132, 120, 34, '#1f4fbf', 2);
+    body += ball('8', 214, 150, 46, '#151515', 8);
+    body += ball('1', 292, 176, 40, '#f7c600', 1);
+    body += ball('0', 120, 200, 38, '#fbf8ef', 0);
+    svg.innerHTML = `<defs>${defs}</defs>${body}`;
+  })();
+</script>
+</body>
+</html>
