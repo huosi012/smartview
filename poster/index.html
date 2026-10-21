@@ -238,10 +238,19 @@
 
   /* ---------- 活动二 ---------- */
   .act2 { margin-top: 16px; }
-  .act2 .tab .hint {
-    margin-left: auto; text-align: right;
-    font-weight: 700; font-size: 20px; line-height: 1.35; color: #f7e9b0;
+  .act2 .tab .note {
+    margin-left: 14px; height: 42px; padding: 0 10px 0 4px;
+    display: flex; align-items: center; gap: 4px;
+    border-radius: 21px; white-space: nowrap;
+    background: rgba(0, 0, 0, .38); border: 1.5px solid var(--gold);
+    font-weight: 900; font-size: 22px; color: #fff;
   }
+  .act2 .tab .note b {
+    height: 32px; padding: 0 12px; border-radius: 16px;
+    display: grid; place-items: center;
+    color: #ffe24a; background: linear-gradient(180deg, #f2392c, #b4120d);
+  }
+  .act2 .tab .note em { font-style: normal; color: #ffe24a; }
   .prices { position: relative; margin-top: 12px; }
   .rows { width: 430px; display: grid; gap: 6px; }
   .row {
@@ -304,7 +313,7 @@
 
   /* ---------- 底部联系方式 ---------- */
   .foot {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 186px;
+    position: absolute; left: 0; right: 0; bottom: 0; height: 200px;
     padding: 18px 56px 0 46px;
     display: flex; gap: 22px;
     background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.6));
@@ -324,9 +333,9 @@
   .foot .addr p { font-weight: 700; font-size: 24px; line-height: 1.45; color: #fff; }
   .foot .addr p .k { font-size: 24px; }
 
-  .qr { flex: none; width: 124px; text-align: center; }
+  .qr { flex: none; width: 136px; text-align: center; }
   .qr .box {
-    width: 108px; height: 108px; margin: 0 auto; padding: 5px;
+    width: 124px; height: 124px; margin: 0 auto; padding: 0;
     background: #fff; border-radius: 10px; border: 3px solid var(--gold);
     display: grid; place-items: center; overflow: hidden;
   }
@@ -423,7 +432,7 @@
 
   <!-- 活动二 -->
   <section class="act act2">
-    <div class="tab"><i class="bar"></i><div class="label">活动二</div><svg class="chev" data-chev></svg></div>
+    <div class="tab"><i class="bar"></i><div class="label">活动二</div><div class="note"><b>储值卡</b>【<em>仅限台费</em>（台球+麻将）】</div></div>
     <div class="prices">
       <svg class="balls" id="balls" viewBox="0 0 330 250" aria-hidden="true"></svg>
       <div class="rows">
@@ -450,7 +459,7 @@
     <div class="info">
       <div class="line">
         <i class="ico"><svg viewBox="0 0 24 24"><path fill="#5a1a00" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></i>
-        <span class="k">电话：</span><span class="tel">18805197663</span>
+        <span class="k">电话：</span><span class="tel">18734427700</span>
       </div>
       <div class="line addr">
         <i class="ico"><svg viewBox="0 0 24 24"><path fill="#5a1a00" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></i>
