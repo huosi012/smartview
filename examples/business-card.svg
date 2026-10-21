@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 名片：成品 90×54mm，四周各 3mm 出血 → 画布 96×60mm。viewBox 每毫米 10 个单位。
+     导出：aiexport convert examples/business-card.svg --bleed 3
+     顶层 <g id="…"> 在 Illustrator 里打开 SVG 时会成为图层（见 illustrator/save_as_native_ai.jsx）。 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="96mm" height="60mm" viewBox="0 0 960 600">
+  <defs>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fca311"/>
+      <stop offset="1" stop-color="#e85d04"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fca311" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fca311" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g id="背景">
+    <rect width="960" height="600" fill="#14213d"/>
+    <circle cx="820" cy="140" r="260" fill="url(#glow)"/>
+    <rect width="70" height="600" fill="url(#accent)"/>
+  </g>
+
+  <g id="标志">
+    <circle cx="800" cy="160" r="62" fill="none" stroke="#fca311" stroke-width="10"/>
+    <circle cx="840" cy="135" r="22" fill="#ffffff" opacity="0.85"/>
+  </g>
+
+  <g id="文字" font-family="'Noto Sans CJK SC', 'Source Han Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="130" y="210" font-size="68" font-weight="bold" fill="#ffffff">星野设计工作室</text>
+    <text x="132" y="262" font-size="22" letter-spacing="7" fill="#fca311">STARFIELD DESIGN STUDIO</text>
+    <rect x="132" y="300" width="80" height="4" fill="#fca311"/>
+    <text x="130" y="390" font-size="30" fill="#ffffff">林晓 · 创意总监</text>
+    <text x="130" y="450" font-size="24" fill="#e5e5e5">电话 138 0000 0000</text>
+    <text x="130" y="495" font-size="24" fill="#e5e5e5">邮箱 hello@starfield.design</text>
+  </g>
+</svg>
