@@ -11,7 +11,9 @@
 //        direction       1 = 前排从右往左走、按编号顺序经过中间；-1 = 反方向
 //        slowWhenOpen    放大某人时背景圈的转速比例（0 = 停住）
 //        introOnLoad     打开页面即播放入场动画；false 则等按 S 键再出场
-//        centerY/radiusX/radiusY/frontScale/backScale  圈的位置、大小、前后远近
+//        arcOnly         true = 只显示前半圈（下方弧形），露出背景中间的内容
+//        centerY/radiusX/radiusY/cardScale/frontScale/backScale  圈的位置、大小、卡片大小、前后远近
+//        （这些都可以在资料窗口“照片圈布局”里拖滑块调，不用改这里）
 //    · people     ：人员列表，顺序 = 控制面板与“下一位”的顺序
 //        name 姓名 / unit 单位 / bio 正面行为介绍（分段用 \n）
 //        highlight  （可选）一句话事迹，金色大字显示在姓名下方；留空则不显示
@@ -31,9 +33,9 @@ window.SMARTVIEW_CONFIG = {
     "direction": 1,
     "slowWhenOpen": 0,
     "introOnLoad": true,
-    "centerY": 520,
+    "centerY": 600,
     "radiusX": 1180,
-    "radiusY": 190,
+    "radiusY": 170,
     "frontScale": 1.05,
     "backScale": 0.5
   },

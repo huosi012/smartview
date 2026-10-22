@@ -316,18 +316,33 @@
   var people = cfg.people;
   var N = people.length;
   var C = Object.assign({
-    secondsPerTurn: 60, direction: 1, slowWhenOpen: 0, introOnLoad: true,
-    centerY: 520, radiusX: 1180, radiusY: 190, frontScale: 1.05, backScale: 0.5
+    secondsPerTurn: 60, direction: 1, slowWhenOpen: 0, introOnLoad: true, arcOnly: false, cardScale: 1,
+    centerY: 600, radiusX: 1180, radiusY: 170, frontScale: 1.05, backScale: 0.5
   }, cfg.carousel || {});
 
   document.title = (cfg.title || '互动大屏') + ' · 互动大屏';
-  if (cfg.background) {
-    body.classList.add('custom-bg');
-    document.getElementById('bg').style.background = '#8a0910 url("' + cfg.background + '") center / cover no-repeat';
+  // 底图：比例接近 14:5 时拉伸铺满（不裁边），相差较大时等比铺满（裁掉多出的部分）
+  var bgUrl = '';
+  function setBackground(url) {
+    var bg = document.getElementById('bg');
+    bgUrl = url;
+    body.classList.toggle('custom-bg', !!url);
+    bg.style.background = url ? '#8a0910 url("' + url + '") center / cover no-repeat' : '';
+    if (!url) return;
+    var probe = new Image();
+    probe.onload = function () {
+      var ratio = probe.naturalWidth / probe.naturalHeight / (STAGE_W / STAGE_H);
+      if (Math.abs(ratio - 1) <= 0.12) bg.style.backgroundSize = '100% 100%';
+    };
+    probe.src = url;
   }
-  var showHeader = cfg.showHeader !== false;   // 背景图自带标志和标题时可关闭
-  document.getElementById('logo').src = showHeader && cfg.logo || '';
-  document.getElementById('title').src = showHeader && cfg.titleImage || '';
+  // 内置标志和标题：背景图上已经有时关闭
+  function setHeader(show) {
+    document.getElementById('logo').src = show && cfg.logo || '';
+    document.getElementById('title').src = show && cfg.titleImage || '';
+  }
+  setBackground(cfg.background || '');
+  setHeader(cfg.showHeader !== false);
 
   // ---------- 舞台缩放 ----------
   function fitStage() {
@@ -424,13 +439,23 @@
 
   // 卡片底边的轨迹正好是一个椭圆：在这里画出金色光环
   function drawFloor() {
-    var ringCY = C.centerY + CH * (C.frontScale + C.backScale) / 4;
-    var ringRY = C.radiusY + CH * (C.frontScale - C.backScale) / 4;
+    var ringCY = C.centerY + CH * C.cardScale * (C.frontScale + C.backScale) / 4;
+    var ringRY = C.radiusY + CH * C.cardScale * (C.frontScale - C.backScale) / 4;
+    var cx = STAGE_W / 2;
     function ellipse(dx, dy, attrs) {
-      return '<ellipse cx="' + STAGE_W / 2 + '" cy="' + ringCY + '" rx="' + (C.radiusX + dx) + '" ry="' + (ringRY + dy) + '" ' + attrs + '/>';
+      if (C.arcOnly) {   // 只画前半圈（下半个椭圆），两端渐隐
+        var rx = C.radiusX + dx, ry = ringRY + dy;
+        return '<path d="M' + (cx - rx) + ' ' + ringCY + ' A' + rx + ' ' + ry + ' 0 0 0 ' + (cx + rx) + ' ' + ringCY + '" ' +
+          attrs.replace('url(#rim)', 'url(#rimArc)').replace('url(#plat)', 'url(#platArc)') + '/>';
+      }
+      return '<ellipse cx="' + cx + '" cy="' + ringCY + '" rx="' + (C.radiusX + dx) + '" ry="' + (ringRY + dy) + '" ' + attrs + '/>';
     }
     document.getElementById('floor').innerHTML =
       '<defs>' +
+        '<linearGradient id="rimArc"><stop offset="0" stop-color="#fff3cc" stop-opacity="0"/><stop offset=".22" stop-color="#fff3cc"/>' +
+          '<stop offset=".78" stop-color="#fff3cc"/><stop offset="1" stop-color="#fff3cc" stop-opacity="0"/></linearGradient>' +
+        '<radialGradient id="platArc" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#ffe2a0" stop-opacity="0"/>' +
+          '<stop offset=".75" stop-color="#ffc06a" stop-opacity=".22"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient>' +
         '<radialGradient id="plat"><stop offset="0" stop-color="#ffe2a0" stop-opacity=".5"/>' +
           '<stop offset=".7" stop-color="#ffc06a" stop-opacity=".18"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient>' +
         '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a" stop-opacity=".25"/>' +
@@ -559,11 +584,13 @@
     var e = easeOut(a);
     theta += C.direction * (1 - e) * Math.PI * 1.2;   // 入场时顺着转动方向旋转着散开
     var depth = (1 + Math.cos(theta)) / 2;     // 1 = 最前，0 = 最后
-    var s = (C.backScale + (C.frontScale - C.backScale) * depth) * (0.25 + 0.75 * e);
+    var s = (C.backScale + (C.frontScale - C.backScale) * depth) * C.cardScale * (0.25 + 0.75 * e);
+    // “只显示前半圈”：转到后面的卡片淡出，露出背景中间的内容
+    var vis = C.arcOnly ? easeOut(clamp((depth - 0.4) / 0.2, 0, 1)) : 1;
     return {
       x: STAGE_W / 2 + C.radiusX * Math.sin(theta) * e,
       y: C.centerY + C.radiusY * Math.cos(theta) * e,
-      s: s, depth: depth, alpha: e
+      s: s, depth: depth, alpha: e * vis
     };
   }
   function photoRect(q, it) {
@@ -918,9 +945,125 @@
     });
   }
 
+  // 资料窗口里调背景、布局时，先在大屏上实时预览（不保存）
+  function currentLook() {
+    return { carousel: Object.assign({}, C), showHeader: cfg.showHeader !== false, background: cfg.background || '' };
+  }
+  function previewLook(look) {
+    if (look.carousel) {
+      Object.assign(C, look.carousel);
+      if (items) sizeCards();
+    }
+    if ('showHeader' in look) setHeader(look.showHeader);
+    if ('background' in look) setBackground(look.background);
+  }
+
+  // 背景排版参考图（5600×2000）：按某个布局，标出照片圈转一整圈会扫过的区域，
+  // 以及顶部可以放标志、大标题、日期的安全区，给背景设计做参考
+  function guideImage(layout) {
+    var L = Object.assign({}, C, layout), W = STAGE_W, H = STAGE_H, PX_PER_M = STAGE_W / 14;
+    var widths = items.map(function (it) { return it.cw; }).sort(function (a, b) { return a - b; });
+    var cw = widths[Math.floor(widths.length / 2)];
+    var c = document.createElement('canvas');
+    c.width = W * 2; c.height = H * 2;
+    var g = c.getContext('2d');
+    g.scale(2, 2);
+    var font = '"Microsoft YaHei","微软雅黑","PingFang SC","Noto Sans CJK SC","WenQuanYi Zen Hei",sans-serif';
+
+    return new Promise(function (resolve) {
+      if (!bgUrl) return resolve(null);
+      var img = new Image();
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { resolve(null); };
+      img.src = bgUrl;
+    }).then(function (img) {
+      // 底：当前背景（没有自定义背景就画内置红色），再压暗一点
+      if (img) {   // 与大屏上一样：比例接近就拉伸铺满，否则等比铺满
+        var iw = img.naturalWidth, ih = img.naturalHeight;
+        if (Math.abs(iw / ih / (W / H) - 1) <= 0.12) g.drawImage(img, 0, 0, W, H);
+        else {
+          var k2 = Math.max(W / iw, H / ih);
+          g.drawImage(img, (W - iw * k2) / 2, (H - ih * k2) / 2, iw * k2, ih * k2);
+        }
+      } else {
+        var grad = g.createRadialGradient(W / 2, -100, 0, W / 2, -100, 1500);
+        grad.addColorStop(0, '#e2302f'); grad.addColorStop(0.42, '#c8161d'); grad.addColorStop(1, '#8a0910');
+        g.fillStyle = grad; g.fillRect(0, 0, W, H);
+      }
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, 0, W, H);
+
+      // 照片圈扫过的区域：转一整圈，把每个位置的卡片都画上
+      var off = document.createElement('canvas');
+      off.width = W; off.height = H;
+      var o = off.getContext('2d');
+      o.fillStyle = '#39a0ff';
+      var top = H;
+      for (var k = 0; k < 720; k++) {
+        var th = k / 720 * 2 * Math.PI, depth = (1 + Math.cos(th)) / 2;
+        if (L.arcOnly && depth < 0.4) continue;
+        var sc = (L.backScale + (L.frontScale - L.backScale) * depth) * L.cardScale;
+        var x = W / 2 + L.radiusX * Math.sin(th), y = L.centerY + L.radiusY * Math.cos(th);
+        var w = cw * sc + 16, h = CH * sc + 16;
+        o.fillRect(x - w / 2, y - h / 2, w, h);
+        top = Math.min(top, y - h / 2);
+      }
+      // 绿色：照片不会经过的地方（可放标志、标题、日期）；蓝色：照片圈扫过的地方
+      var free = document.createElement('canvas');
+      free.width = W; free.height = H;
+      var f = free.getContext('2d');
+      f.fillStyle = '#3ddc84';
+      f.fillRect(0, 0, W, H);
+      f.globalCompositeOperation = 'destination-out';
+      f.drawImage(off, 0, 0);
+      g.globalAlpha = 0.25; g.drawImage(free, 0, 0);
+      g.globalAlpha = 0.55; g.drawImage(off, 0, 0);
+      g.globalAlpha = 1;
+
+      // 1 米网格和刻度
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1; g.setLineDash([6, 8]);
+      g.fillStyle = '#fff'; g.font = '22px ' + font;
+      for (var m = 1; m < 14; m++) {
+        g.beginPath(); g.moveTo(m * PX_PER_M, 0); g.lineTo(m * PX_PER_M, H); g.stroke();
+        g.fillText(m + 'm', m * PX_PER_M + 6, H - 10);
+      }
+      for (m = 1; m < 5; m++) {
+        g.beginPath(); g.moveTo(0, m * PX_PER_M); g.lineTo(W, m * PX_PER_M); g.stroke();
+        g.fillText(m + 'm', 8, m * PX_PER_M - 8);
+      }
+
+      // 照片最高到达的位置
+      var safe = Math.max(0, Math.floor(top));
+      g.setLineDash([22, 12]); g.lineWidth = 5; g.strokeStyle = '#3ddc84';
+      g.beginPath(); g.moveTo(0, safe); g.lineTo(W, safe); g.stroke();
+      g.setLineDash([]);
+      // 文字：白字加深色描边，压在任何背景上都看得清
+      function label(text, x, y, size, color, align) {
+        g.font = size + 'px ' + font;
+        g.textAlign = align || 'center';
+        g.lineJoin = 'round';
+        g.lineWidth = size / 6;
+        g.strokeStyle = 'rgba(0,0,0,.7)';
+        g.strokeText(text, x, y);
+        g.fillStyle = color;
+        g.fillText(text, x, y);
+      }
+      label('绿色：标志、大标题、日期可以放的地方', W / 2, safe / 2 + 4, 56, '#c9ffe0');
+      label('照片最高只到离顶部 ' + (safe / PX_PER_M).toFixed(1) + ' 米（绿色虚线）' +
+        (L.arcOnly ? '；弧形中间的绿色空处也可以放日期、地点' : ''), W / 2, safe / 2 + 58, 34, '#ffffff');
+      label('蓝色：照片圈转动经过的区域（这里的背景会被照片挡住，只放装饰图案）', W / 2,
+        Math.min(H - 80, L.centerY + L.radiusY + 16), 44, '#e6f3ff');
+      label('背景排版参考图 · 14 米 × 5 米（比例 14:5，建议 5600 × 2000 像素以上）· 照片圈：' +
+        (L.arcOnly ? '下方弧形' : '整圈'), W - 20, H - 44, 26, '#ffffff', 'right');
+      return new Promise(function (resolve) { c.toBlob(resolve, 'image/png'); });
+    });
+  }
+
   function openData(doc) {
     if (!window.SmartviewImporter) { alert('缺少导入模块 importer.js'); return; }
-    window.SmartviewImporter.open(doc, { config: function () { return cfg; }, save: saveConfig, isBundle: IS_BUNDLE });
+    window.SmartviewImporter.open(doc, {
+      config: function () { return cfg; }, look: currentLook, preview: previewLook, guide: guideImage,
+      save: saveConfig, isBundle: IS_BUNDLE
+    });
   }
 
   if (window.__smartviewNotice) {
@@ -932,7 +1075,10 @@
   }
 
   // 供调试 / 自动化使用
-  window.smartview = { open: open, close: closeAll, step: step, intro: replayIntro, control: openControl, data: function () { openData(document); } };
+  window.smartview = {
+    open: open, close: closeAll, step: step, intro: replayIntro, control: openControl,
+    data: function () { openData(document); }, guide: guideImage
+  };
 })();
 </script>
 </body>

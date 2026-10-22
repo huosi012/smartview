@@ -11,6 +11,11 @@
 
   var PHOTO_MAX_SIDE = 1600;
   var BACKGROUND_MAX_SIDE = 7000;
+  // 照片圈的两种布局：整圈（背景顶部留给标题）/ 下方弧形（只显示前半圈，露出背景中间）
+  var PRESETS = {
+    ring: { arcOnly: false, centerY: 600, radiusX: 1180, radiusY: 170, cardScale: 1 },
+    arc: { arcOnly: true, centerY: 570, radiusX: 1180, radiusY: 270, cardScale: 0.95 }
+  };
   var DEFAULT_BG = 'radial-gradient(ellipse 90% 120% at 50% -10%, #e2302f 0%, #c8161d 42%, #8a0910 100%)';
   var NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
   var NS_A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
@@ -434,6 +439,11 @@
     '.svi-bgthumb{width:196px;height:70px;border-radius:6px;border:1px solid #d9c3a0;background:#a50f16 center/cover no-repeat;' +
       'display:flex;align-items:center;justify-content:center;color:#ffd27a;font-size:12px}' +
     '.svi-bgthumb.drag{outline:3px solid #c8161d}' +
+    '.svi-layout{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 18px;border-bottom:1px solid #ecdcc4;background:#fff}' +
+    '.svi-layout b{color:#8a0910}.svi-layout label{display:flex;align-items:center;gap:6px;white-space:nowrap}' +
+    '.svi-layout input[type=range]{width:110px}.svi-layout output{min-width:2.2em;color:#8a6a4a}' +
+    '.svi-backdrop{transition:background .15s}.svi-panel{transition:opacity .15s}' +
+    '.svi-backdrop.peek{background:transparent}.svi-backdrop.peek .svi-panel{opacity:.12}' +
     '.svi-bg label{display:flex;align-items:center;gap:6px;white-space:nowrap}.svi-bg input[type=checkbox]{width:18px;height:18px;margin:0}.svi-bg label,.svi-bg input,.svi-bgthumb{cursor:pointer}' +
     '.svi-msg{padding:10px 18px;background:#fff3dc;border-bottom:1px solid #ecdcc4;white-space:pre-line}.svi-msg:empty{display:none}' +
     '.svi-msg .err{color:#c8161d;font-weight:bold}.svi-msg .ok{color:#1d7a35;font-weight:bold}' +
@@ -442,7 +452,7 @@
     '.svi-panel th{position:sticky;top:0;z-index:1;background:#fffaf2;text-align:left;padding:10px 6px;border-bottom:2px solid #e4cfa8;white-space:nowrap}' +
     '.svi-panel td{padding:8px 6px;border-bottom:1px solid #eee2cf;vertical-align:top}' +
     '.svi-panel td.no{color:#8a6a4a;font-weight:bold;padding-top:14px}' +
-    '.svi-panel input:not([type=checkbox]),.svi-panel textarea{width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border:1px solid #d9c3a0;border-radius:6px;background:#fff;resize:vertical}' +
+    '.svi-panel input:not([type=checkbox]):not([type=range]),.svi-panel textarea{width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border:1px solid #d9c3a0;border-radius:6px;background:#fff;resize:vertical}' +
     '.svi-panel input.bad{border-color:#c8161d;background:#fff0f0}' +
     '.svi-thumb{position:relative;width:136px;height:102px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;' +
       'background:#f1e2c6;color:#9a6a3a;font-size:12px;border:1px solid #d9c3a0}' +
@@ -475,6 +485,9 @@
       return { name: p.name || '', unit: p.unit || '', highlight: p.highlight || '', bio: p.bio || '', photo: p.photo || '', focus: p.focus };
     });
     var bg = cfg.background || '', bgSize = null, showHeader = cfg.showHeader !== false;
+    var look = api.look ? api.look() : { carousel: Object.assign({}, cfg.carousel), showHeader: showHeader, background: bg };
+    var car = Object.assign({}, look.carousel);   // 正在调整的照片圈布局
+    var saved = false;
     var dirty = false, photoTarget = -1;
     var sel = -1;   // 选中的那位（红框）：粘贴的照片放给他
 
@@ -498,6 +511,17 @@
           '<button data-act="bgreset">恢复默认红色背景</button>' +
           '<label><input type="checkbox" data-role="header"> 显示顶部标志和标题（背景图上已经有的话请取消）</label>' +
           '<input type="file" hidden accept="image/*" data-role="bgfile">' +
+        '</div>' +
+        '<div class="svi-layout"><b>照片圈布局</b>' +
+          '<button data-act="preset-ring" title="照片围成一整圈转，背景顶部约三分之一留给标题和日期">整圈</button>' +
+          '<button data-act="preset-arc" title="只显示前半圈，在下方形成弧形，露出背景中间的内容">下方弧形</button>' +
+          '<label><input type="checkbox" data-c="arcOnly"> 只显示前半圈</label>' +
+          '<label>上下<input type="range" data-c="centerY" min="300" max="800" step="5"></label>' +
+          '<label>宽窄<input type="range" data-c="radiusX" min="700" max="1300" step="10"></label>' +
+          '<label>纵深<input type="range" data-c="radiusY" min="40" max="420" step="5"></label>' +
+          '<label>卡片大小<input type="range" data-c="cardScale" min="0.6" max="1.5" step="0.05"></label>' +
+          '<label>转一圈<input type="range" data-c="secondsPerTurn" min="20" max="180" step="5"><output data-o="secondsPerTurn"></output>秒</label>' +
+          '<button data-act="guide" title="按当前布局，标出照片圈经过的区域，给背景设计做参考">下载背景排版参考图</button>' +
         '</div>' +
         '<div class="svi-msg"></div>' +
         '<div class="svi-wrap"><table><thead><tr><th>#</th><th>照片</th><th style="width:9%">姓名</th><th style="width:13%">单位</th>' +
@@ -531,7 +555,9 @@
       thumb.style.backgroundImage = bg ? 'url("' + src(bg) + '")' : DEFAULT_BG;
       thumb.textContent = bg ? '' : '默认';
       if (bg && bgSize) {
-        if (Math.abs(bgSize[0] / bgSize[1] / 2.8 - 1) > 0.03) warn.push('比例不是 14:5，边缘会被裁掉一些');
+        var off = Math.abs(bgSize[0] / bgSize[1] / 2.8 - 1);
+        if (off > 0.12) warn.push('比例与 14:5 相差较大，边缘会被裁掉一些');
+        else if (off > 0.02) warn.push('比例不是正好 14:5，会稍微拉伸铺满（不裁边）');
         if (bgSize[0] < 2800) warn.push('分辨率偏低，大屏上可能模糊');
       }
       root.querySelector('.svi-bginfo').innerHTML =
@@ -543,11 +569,21 @@
     function setBackground(file) {
       say('正在读取背景图片…');
       toJpeg(file, BACKGROUND_MAX_SIDE, 0.92).then(function (r) {
+        var first = !bg;
         bg = r.url;
         bgSize = [r.width, r.height];
         dirty = true;
+        var note = '';
+        if (first) {
+          // 自己的背景一般已有标志和标题：关掉内置的；照片圈改成下方弧形，露出背景中间的内容
+          showHeader = false;
+          if (!car.arcOnly) Object.assign(car, PRESETS.arc);
+          note = '已关闭内置的标志和标题，照片圈改成“下方弧形”，露出背景中间的内容；可以在“照片圈布局”里调整。';
+        }
         renderBg();
-        say('<span class="ok">✓</span> 已选择背景图片“' + esc(file.name) + '”，点“保存并应用到大屏”后生效。');
+        renderLayout();
+        api.preview && api.preview({ background: bg, showHeader: showHeader, carousel: car });
+        say('<span class="ok">✓</span> 已换上背景图片“' + esc(file.name) + '”（大屏上已能看到效果）。' + note + '点“保存并应用到大屏”后保存。');
       }).catch(function () { say('<span class="err">这张图片无法读取：' + esc(file.name) + '</span>'); });
     }
 
@@ -579,8 +615,10 @@
 
     function close() {
       if (dirty && !doc.defaultView.confirm('修改还没有保存，确定关闭吗？')) return;
+      if (!saved && api.preview) api.preview(look);   // 没保存：大屏恢复原样
       root.remove();
       doc.removeEventListener('paste', onPaste);
+      doc.removeEventListener('pointerup', unpeek);
       doc.body.classList.remove('importing');
     }
 
@@ -735,7 +773,19 @@
         case 'paste': pasteFromClipboard(i); break;
         case 'photo': photoTarget = i; photoInput.value = ''; photoInput.click(); break;
         case 'bg': bgInput.value = ''; bgInput.click(); break;
-        case 'bgreset': bg = ''; bgSize = null; dirty = true; renderBg(); break;
+        case 'bgreset':
+          bg = ''; bgSize = null; showHeader = true; Object.assign(car, PRESETS.ring); dirty = true;
+          renderBg(); renderLayout();
+          api.preview && api.preview({ background: '', showHeader: true, carousel: car });
+          say('已换回内置红色背景、标志和标题，照片圈恢复整圈。');
+          break;
+        case 'preset-ring': case 'preset-arc':
+          Object.assign(car, PRESETS[btn.getAttribute('data-act') === 'preset-arc' ? 'arc' : 'ring']);
+          dirty = true; renderLayout(); api.preview && api.preview({ carousel: car });
+          break;
+        case 'guide':
+          if (api.guide) api.guide(car).then(function (blob) { download(doc, blob, (cfg.title || '大屏') + '-背景排版参考图.png'); });
+          break;
         case 'add':
           rows.push({ name: '', unit: '', highlight: '', bio: '', photo: '' });
           dirty = true;
@@ -810,7 +860,35 @@
     });
     filesInput.addEventListener('change', function () { importFiles(filesInput.files); });
     bgInput.addEventListener('change', function () { if (bgInput.files[0]) setBackground(bgInput.files[0]); });
-    headerBox.addEventListener('change', function () { showHeader = headerBox.checked; dirty = true; });
+    headerBox.addEventListener('change', function () {
+      showHeader = headerBox.checked;
+      dirty = true;
+      api.preview && api.preview({ showHeader: showHeader });
+    });
+
+    // 照片圈布局：拖动滑块时大屏实时变化，资料窗口暂时变透明，方便看效果
+    function renderLayout() {
+      each(root.querySelectorAll('.svi-layout [data-c]'), function (input) {
+        var key = input.getAttribute('data-c');
+        if (input.type === 'checkbox') input.checked = !!car[key];
+        else input.value = car[key];
+      });
+      each(root.querySelectorAll('.svi-layout [data-o]'), function (o) { o.textContent = car[o.getAttribute('data-o')]; });
+    }
+    var layoutRow = root.querySelector('.svi-layout');
+    layoutRow.addEventListener('input', function (e) {
+      var key = e.target.getAttribute('data-c');
+      if (!key) return;
+      car[key] = e.target.type === 'checkbox' ? e.target.checked : +e.target.value;
+      dirty = true;
+      renderLayout();
+      api.preview && api.preview({ carousel: car });
+    });
+    layoutRow.addEventListener('pointerdown', function (e) {
+      if (e.target.type === 'range') root.classList.add('peek');
+    });
+    doc.addEventListener('pointerup', unpeek);
+    function unpeek() { root.classList.remove('peek'); }
     photoInput.addEventListener('change', function () {
       var file = photoInput.files[0], i = photoTarget;
       if (!file || i < 0) return;
@@ -856,8 +934,8 @@
       });
       dirty = false;
       say('正在保存…');
-      api.save(Object.assign({}, cfg, { people: people, background: bg, showHeader: showHeader }), doc.defaultView).then(function (ok) {
-        if (ok) return;
+      api.save(Object.assign({}, cfg, { people: people, background: bg, showHeader: showHeader, carousel: car }), doc.defaultView).then(function (ok) {
+        if (ok) { saved = true; return; }
         dirty = true;
         say('<span class="err">已取消保存，修改还没有生效。</span>');
       }, function (e) {
@@ -872,6 +950,7 @@
       guide();
     }
     renderBg();
+    renderLayout();
     render();
   }
 
