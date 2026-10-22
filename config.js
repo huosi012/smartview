@@ -4,7 +4,8 @@
 //  修改说明：
 //    · 只改引号里的内容；不要删掉逗号、括号。整行以 // 开头的是注释。
 //    · background ：14m×5m 底图路径。留空 "" 则使用内置的红色背景。
-//    · logo/titleImage ：左上角标志、顶部标题图片（透明 PNG）。底图自带时改为 ""。
+//    · logo/titleImage ：左上角标志、顶部标题图片（透明 PNG）
+//    · showHeader ：是否显示上面的标志和标题；底图上已经有时改为 false
 //    · carousel   ：旋转圈参数
 //        secondsPerTurn  转一圈的秒数（越大越慢）
 //        direction       1 = 前排从右往左走、按编号顺序经过中间；-1 = 反方向
@@ -22,6 +23,7 @@ window.SMARTVIEW_CONFIG = {
   "background": "",
   "logo": "assets/logo.png",
   "titleImage": "assets/title.png",
+  "showHeader": true,
   "tagline": "我为核安全文化代言",
   "bioLabel": "个人简介",
   "carousel": {
@@ -29,9 +31,9 @@ window.SMARTVIEW_CONFIG = {
     "direction": 1,
     "slowWhenOpen": 0,
     "introOnLoad": true,
-    "centerY": 560,
+    "centerY": 520,
     "radiusX": 1180,
-    "radiusY": 150,
+    "radiusY": 190,
     "frontScale": 1.05,
     "backScale": 0.5
   },

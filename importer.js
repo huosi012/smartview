@@ -10,6 +10,8 @@
   'use strict';
 
   var PHOTO_MAX_SIDE = 1600;
+  var BACKGROUND_MAX_SIDE = 7000;
+  var DEFAULT_BG = 'radial-gradient(ellipse 90% 120% at 50% -10%, #e2302f 0%, #c8161d 42%, #8a0910 100%)';
   var NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
   var NS_A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
   var NS_R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
@@ -95,11 +97,11 @@
     return false;
   }
 
-  // ---------------------------------------------------------------- 照片：摆正方向、缩小、转 JPEG
+  // ---------------------------------------------------------------- 图片：摆正方向、缩小、转 JPEG
 
-  function toPhoto(blob) {
+  function toJpeg(blob, maxSide, quality) {
     return createImageBitmap(blob).then(function (bmp) {
-      var s = Math.min(1, PHOTO_MAX_SIDE / Math.max(bmp.width, bmp.height));
+      var s = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
       var c = document.createElement('canvas');
       c.width = Math.max(1, Math.round(bmp.width * s));
       c.height = Math.max(1, Math.round(bmp.height * s));
@@ -108,8 +110,12 @@
       g.fillRect(0, 0, c.width, c.height);
       g.drawImage(bmp, 0, 0, c.width, c.height);
       if (bmp.close) bmp.close();
-      return c.toDataURL('image/jpeg', 0.88);
+      return { url: c.toDataURL('image/jpeg', quality), width: c.width, height: c.height };
     });
+  }
+
+  function toPhoto(blob) {
+    return toJpeg(blob, PHOTO_MAX_SIDE, 0.88).then(function (r) { return r.url; });
   }
 
   function zipPhoto(zip, path) {
@@ -422,6 +428,12 @@
     '.svi-panel button.svi-primary{background:#c8161d;border-color:#c8161d;color:#fff;font-weight:bold}' +
     '.svi-panel select{font:inherit;padding:6px 8px;border-radius:7px;border:1px solid #d9c3a0}' +
     '.svi-tip{color:#8a6a4a}' +
+    '.svi-bg{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid #ecdcc4;background:#fff}' +
+    '.svi-bg b{color:#8a0910}.svi-bginfo{color:#5a4030}.svi-bginfo .warn{color:#c8161d}' +
+    '.svi-bgthumb{width:196px;height:70px;border-radius:6px;border:1px solid #d9c3a0;background:#a50f16 center/cover no-repeat;' +
+      'display:flex;align-items:center;justify-content:center;color:#ffd27a;font-size:12px}' +
+    '.svi-bgthumb.drag{outline:3px solid #c8161d}' +
+    '.svi-bg label{display:flex;align-items:center;gap:6px;white-space:nowrap}.svi-bg input[type=checkbox]{width:18px;height:18px;margin:0}.svi-bg label,.svi-bg input,.svi-bgthumb{cursor:pointer}' +
     '.svi-msg{padding:10px 18px;background:#fff3dc;border-bottom:1px solid #ecdcc4;white-space:pre-line}.svi-msg:empty{display:none}' +
     '.svi-msg .err{color:#c8161d;font-weight:bold}.svi-msg .ok{color:#1d7a35;font-weight:bold}' +
     '.svi-wrap{flex:1;overflow:auto;padding:0 18px}' +
@@ -429,11 +441,11 @@
     '.svi-panel th{position:sticky;top:0;z-index:1;background:#fffaf2;text-align:left;padding:10px 6px;border-bottom:2px solid #e4cfa8;white-space:nowrap}' +
     '.svi-panel td{padding:8px 6px;border-bottom:1px solid #eee2cf;vertical-align:top}' +
     '.svi-panel td.no{color:#8a6a4a;font-weight:bold;padding-top:14px}' +
-    '.svi-panel input,.svi-panel textarea{width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border:1px solid #d9c3a0;border-radius:6px;background:#fff;resize:vertical}' +
+    '.svi-panel input:not([type=checkbox]),.svi-panel textarea{width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border:1px solid #d9c3a0;border-radius:6px;background:#fff;resize:vertical}' +
     '.svi-panel input.bad{border-color:#c8161d;background:#fff0f0}' +
-    '.svi-thumb{width:84px;height:112px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;' +
+    '.svi-thumb{width:136px;height:102px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;' +
       'background:#f1e2c6;color:#9a6a3a;font-size:12px;border:1px solid #d9c3a0}' +
-    '.svi-thumb img{width:100%;height:100%;object-fit:cover}.svi-thumb.drag{outline:3px solid #c8161d}' +
+    '.svi-thumb img{width:100%;height:100%;object-fit:contain}.svi-thumb.drag{outline:3px solid #c8161d}' +
     '.svi-ops{white-space:nowrap}.svi-ops button{padding:4px 9px;margin:0 2px}' +
     '.svi-panel footer{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid #ecdcc4;background:#fff}' +
     '.svi-note{margin-left:auto;color:#8a6a4a}';
@@ -456,13 +468,14 @@
     var rows = (cfg.people || []).map(function (p) {
       return { name: p.name || '', unit: p.unit || '', highlight: p.highlight || '', bio: p.bio || '', photo: p.photo || '', focus: p.focus };
     });
+    var bg = cfg.background || '', bgSize = null, showHeader = cfg.showHeader !== false;
     var dirty = false, photoTarget = -1;
 
     var root = doc.createElement('div');
     root.className = 'svi-backdrop';
     root.innerHTML =
       '<div class="svi-panel">' +
-        '<header><h2>人员资料</h2><span class="svi-count"></span><button class="svi-x" data-act="close" title="关闭">×</button></header>' +
+        '<header><h2>人员资料与背景</h2><span class="svi-count"></span><button class="svi-x" data-act="close" title="关闭">×</button></header>' +
         '<div class="svi-bar">' +
           '<button class="svi-primary" data-act="pick">导入 Word / Excel / 照片</button>' +
           '<select data-role="mode"><option value="replace">导入时替换整个名单</option><option value="append">导入时追加到名单后面</option></select>' +
@@ -470,6 +483,14 @@
           '<span class="svi-tip">也可以直接把文件拖进这个窗口</span>' +
           '<input type="file" multiple hidden accept=".docx,.xlsx,image/*" data-role="files">' +
           '<input type="file" hidden accept="image/*" data-role="photo">' +
+        '</div>' +
+        '<div class="svi-bg"><b>大屏背景</b>' +
+          '<div class="svi-bgthumb" data-act="bg" title="点击选择背景图片，也可以把图片拖到这里"></div>' +
+          '<span class="svi-bginfo"></span>' +
+          '<button data-act="bg">选择背景图片…</button>' +
+          '<button data-act="bgreset">恢复默认红色背景</button>' +
+          '<label><input type="checkbox" data-role="header"> 显示顶部标志和标题（背景图上已经有的话请取消）</label>' +
+          '<input type="file" hidden accept="image/*" data-role="bgfile">' +
         '</div>' +
         '<div class="svi-msg"></div>' +
         '<div class="svi-wrap"><table><thead><tr><th>#</th><th>照片</th><th style="width:9%">姓名</th><th style="width:13%">单位</th>' +
@@ -487,12 +508,46 @@
     var filesInput = root.querySelector('[data-role=files]');
     var photoInput = root.querySelector('[data-role=photo]');
     var modeSelect = root.querySelector('[data-role=mode]');
+    var bgInput = root.querySelector('[data-role=bgfile]');
+    var headerBox = root.querySelector('[data-role=header]');
 
     function say(html) { msg.innerHTML = html; }
     function guide() { say(esc(GUIDE)); }
     function src(photo) {
       if (!photo || /^data:/.test(photo)) return photo;
       try { return new URL(photo, location.href).href; } catch (e) { return photo; }
+    }
+
+    // 背景：14m×5m，建议 14:5、宽 5000 像素以上
+    function renderBg() {
+      var thumb = root.querySelector('.svi-bgthumb'), warn = [];
+      thumb.style.backgroundImage = bg ? 'url("' + src(bg) + '")' : DEFAULT_BG;
+      thumb.textContent = bg ? '' : '默认';
+      if (bg && bgSize) {
+        if (Math.abs(bgSize[0] / bgSize[1] / 2.8 - 1) > 0.03) warn.push('比例不是 14:5，边缘会被裁掉一些');
+        if (bgSize[0] < 2800) warn.push('分辨率偏低，大屏上可能模糊');
+      }
+      root.querySelector('.svi-bginfo').innerHTML =
+        (bg ? '自定义图片' + (bgSize ? '（' + bgSize[0] + '×' + bgSize[1] + '）' : '') : '内置红色背景') +
+        (warn.length ? ' <span class="warn">' + esc(warn.join('；')) + '</span>' : '');
+      headerBox.checked = showHeader;
+    }
+
+    function setBackground(file) {
+      say('正在读取背景图片…');
+      toJpeg(file, BACKGROUND_MAX_SIDE, 0.92).then(function (r) {
+        bg = r.url;
+        bgSize = [r.width, r.height];
+        dirty = true;
+        renderBg();
+        say('<span class="ok">✓</span> 已选择背景图片“' + esc(file.name) + '”，点“保存并应用到大屏”后生效。');
+      }).catch(function () { say('<span class="err">这张图片无法读取：' + esc(file.name) + '</span>'); });
+    }
+
+    if (bg) {
+      var probe = new Image();
+      probe.onload = function () { bgSize = [probe.naturalWidth, probe.naturalHeight]; renderBg(); };
+      probe.src = src(bg);
     }
 
     function render() {
@@ -601,6 +656,8 @@
           download(doc, buildXlsx(rows), (cfg.title || '大屏') + '-人员资料.xlsx');
           break;
         case 'photo': photoTarget = i; photoInput.value = ''; photoInput.click(); break;
+        case 'bg': bgInput.value = ''; bgInput.click(); break;
+        case 'bgreset': bg = ''; bgSize = null; dirty = true; renderBg(); break;
         case 'add':
           rows.push({ name: '', unit: '', highlight: '', bio: '', photo: '' });
           dirty = true;
@@ -627,6 +684,8 @@
       if (e.key === 'Escape') close();
     });
     filesInput.addEventListener('change', function () { importFiles(filesInput.files); });
+    bgInput.addEventListener('change', function () { if (bgInput.files[0]) setBackground(bgInput.files[0]); });
+    headerBox.addEventListener('change', function () { showHeader = headerBox.checked; dirty = true; });
     photoInput.addEventListener('change', function () {
       var file = photoInput.files[0], i = photoTarget;
       if (!file || i < 0) return;
@@ -634,12 +693,12 @@
         .catch(function () { say('<span class="err">这张照片无法读取：' + esc(file.name) + '</span>'); });
     });
 
-    // 拖放：拖到照片框 = 换这个人的照片；拖到其他地方 = 导入
+    // 拖放：拖到照片框 = 换这个人的照片；拖到背景框 = 换背景；拖到其他地方 = 导入
     panel.addEventListener('dragover', function (e) {
       e.preventDefault();
       panel.classList.add('drag');
-      each(root.querySelectorAll('.svi-thumb.drag'), function (t) { t.classList.remove('drag'); });
-      var thumb = e.target.closest && e.target.closest('.svi-thumb');
+      each(root.querySelectorAll('.svi-thumb.drag, .svi-bgthumb.drag'), function (t) { t.classList.remove('drag'); });
+      var thumb = e.target.closest && e.target.closest('.svi-thumb, .svi-bgthumb');
       if (thumb) thumb.classList.add('drag');
     });
     panel.addEventListener('dragleave', function (e) {
@@ -650,7 +709,10 @@
       panel.classList.remove('drag');
       var thumb = e.target.closest && e.target.closest('.svi-thumb');
       var files = e.dataTransfer.files;
-      if (thumb && files.length === 1 && /^image\//.test(files[0].type)) {
+      var single = files.length === 1 && /^image\//.test(files[0].type);
+      if (single && e.target.closest && e.target.closest('.svi-bgthumb')) {
+        setBackground(files[0]);
+      } else if (thumb && single) {
         var i = +thumb.closest('tr').getAttribute('data-i');
         toPhoto(files[0]).then(function (photo) { rows[i].photo = photo; dirty = true; render(); });
       } else {
@@ -669,7 +731,7 @@
       });
       dirty = false;
       say('正在保存…');
-      api.save(Object.assign({}, cfg, { people: people }), doc.defaultView).then(function (ok) {
+      api.save(Object.assign({}, cfg, { people: people, background: bg, showHeader: showHeader }), doc.defaultView).then(function (ok) {
         if (ok) return;
         dirty = true;
         say('<span class="err">已取消保存，修改还没有生效。</span>');
@@ -684,6 +746,7 @@
     } else {
       guide();
     }
+    renderBg();
     render();
   }
 

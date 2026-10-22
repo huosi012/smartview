@@ -58,26 +58,31 @@
   #ring { position: absolute; inset: 0; z-index: 3; }
   .card {
     position: absolute; left: 0; top: 0;
-    width: var(--cw); height: var(--ch);
+    height: var(--ch);   /* 宽度按照片比例逐张设置 */
     transform-origin: 50% 50%; will-change: transform, opacity;
     cursor: pointer;
   }
+  /* 卡片相框：金边 + 米白衬纸 + 红色名牌；宽度跟随照片比例，照片完整显示 */
   .card .frame {
-    position: absolute; inset: 0; border-radius: 14px; overflow: hidden;
-    background: linear-gradient(180deg, #fffaf0, #f3e2bd);
-    box-shadow: 0 0 0 3px rgba(240, 200, 110, .95), 0 18px 36px rgba(50, 0, 0, .5);
+    position: absolute; inset: 0; border-radius: 12px; overflow: hidden;
+    background: linear-gradient(150deg, #fbe8b4 0%, #d6a14a 30%, #fff2c8 52%, #b98029 78%, #f3d58c 100%);
+    box-shadow: 0 18px 36px rgba(50, 0, 0, .5);
   }
-  .card .ph { position: absolute; left: 7px; top: 7px; right: 7px; height: var(--ph); border-radius: 9px; }
+  .card .mat {
+    position: absolute; left: 5px; top: 5px; right: 5px; height: calc(var(--ph) + 10px);
+    border-radius: 8px 8px 0 0; background: #fffaf0; box-shadow: inset 0 0 0 1px rgba(160, 110, 40, .45);
+  }
+  .card .ph { position: absolute; left: 10px; top: 10px; right: 10px; height: var(--ph); border-radius: 3px; }
   .card .plate {
-    position: absolute; left: 0; right: 0; bottom: 0; height: var(--plate); box-sizing: border-box;
+    position: absolute; left: 5px; right: 5px; bottom: 5px; height: var(--plate); box-sizing: border-box;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: linear-gradient(180deg, #c81a21, #8c0910);
-    border-top: 3px solid #e9c46a;
+    border-radius: 0 0 8px 8px; background: linear-gradient(180deg, #c81a21, #8c0910);
+    box-shadow: inset 0 2px 0 rgba(255, 220, 140, .9);
   }
-  .card .cname { color: var(--gold); font-weight: bold; font-size: calc(var(--cw) * .15); line-height: 1.15; letter-spacing: .08em; white-space: nowrap; max-width: 92%; overflow: hidden; }
-  .card .cunit { color: #fff1d6; font-size: calc(var(--cw) * .085); line-height: 1.3; white-space: nowrap; max-width: 92%; overflow: hidden; opacity: .95; }
-  .card .shade { position: absolute; inset: -3px; border-radius: 16px; background: #2b0004; pointer-events: none; }
-  .card:hover .frame, .card.picked .frame { box-shadow: 0 0 0 6px var(--gold), 0 0 50px 14px rgba(255, 200, 90, .7); }
+  .card .cname { color: var(--gold); font-weight: bold; font-size: calc(var(--plate) * .44); line-height: 1.15; letter-spacing: .08em; white-space: nowrap; max-width: 92%; overflow: hidden; }
+  .card .cunit { color: #fff1d6; font-size: calc(var(--plate) * .26); line-height: 1.3; white-space: nowrap; max-width: 92%; overflow: hidden; opacity: .95; }
+  .card .shade { position: absolute; inset: 0; border-radius: 12px; background: #2b0004; pointer-events: none; }
+  .card:hover .frame, .card.picked .frame { box-shadow: 0 0 0 5px var(--gold), 0 0 50px 14px rgba(255, 200, 90, .7); }
 
   /* 照片（卡片与放大层共用） */
   .ph { overflow: hidden; background: #ddd; }
@@ -87,8 +92,8 @@
     background: linear-gradient(160deg, #fbecd0, #e2bd7e);
     color: rgba(120, 50, 10, .7); container-type: size;
   }
-  .ph.empty svg { width: 52%; fill: rgba(255, 255, 255, .85); }
-  .ph.empty span { font-size: 7cqw; letter-spacing: .1em; margin-top: 4cqh; }
+  .ph.empty svg { height: 55%; fill: rgba(255, 255, 255, .85); }
+  .ph.empty span { font-size: min(7cqw, 9cqh); letter-spacing: .1em; margin-top: 4cqh; }
 
   /* ---------- 放大层：人物展板 ---------- */
   #dim {
@@ -134,19 +139,35 @@
   .corner.bl { left: 6px; bottom: 6px; transform: scaleY(-1); }
   .corner.br { right: 6px; bottom: 6px; transform: scale(-1); }
 
-  /* 照片：金色相框 + 光晕 */
+  /* 照片相框：金框 + 米白衬纸 + 内金线 + 四角纹饰；框的比例跟随照片 */
   .zoom {
     position: absolute; border-radius: 12px;
-    background: linear-gradient(135deg, #fff3c4 0%, #dea544 28%, #fff0bd 50%, #c08428 76%, #ffe6a3 100%);
+    background: linear-gradient(135deg, #fff4c8 0%, #d9a03e 22%, #fff1c0 46%, #b9822a 70%, #ffe7a8 100%);
     box-shadow: 0 0 0 0 rgba(255, 210, 122, 0);
     transition: box-shadow .9s ease, border-radius .9s ease;
   }
-  .zoom .ph { position: absolute; inset: 0; border-radius: inherit; transition: inset .9s ease, border-radius .9s ease; }
-  .detail.active .zoom {
-    border-radius: 20px;
-    box-shadow: 0 0 0 3px rgba(120, 60, 0, .45), 0 0 100px 24px rgba(255, 196, 90, .32), 0 40px 120px rgba(0, 0, 0, .7);
+  .zoom::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(180deg, #fffdf6, #f6ead0);
+    box-shadow: inset 0 0 0 2px rgba(150, 100, 30, .55), 0 0 0 2px rgba(255, 250, 230, .6);
+    transition: inset .9s ease, border-radius .9s ease;
   }
-  .detail.active .zoom .ph { inset: 14px; border-radius: 9px; }
+  .zoom .ph { position: absolute; inset: 0; z-index: 1; border-radius: inherit; transition: inset .9s ease, border-radius .9s ease, box-shadow .9s ease; }
+  .detail.active .zoom {
+    border-radius: 16px;
+    box-shadow: 0 0 0 3px rgba(120, 60, 0, .5), 0 0 100px 24px rgba(255, 196, 90, .32), 0 40px 120px rgba(0, 0, 0, .7);
+  }
+  .detail.active .zoom::before { inset: 14px; border-radius: 6px; }
+  .detail.active .zoom .ph { inset: 28px; border-radius: 2px; box-shadow: 0 0 0 2px #c99a3c, 0 6px 20px rgba(80, 40, 0, .25); }
+  .fc {
+    position: absolute; z-index: 2; width: 92px; height: 92px; opacity: 0; transition: opacity .3s;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff6d0'/%3E%3Cstop offset='.45' stop-color='%23dca443'/%3E%3Cstop offset='1' stop-color='%238a5a14'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M9 92V32Q9 9 32 9h60' fill='none' stroke='%237a4a0c' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M9 92V32Q9 9 32 9h60' fill='none' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M26 92V42q0-16 16-16h50' fill='none' stroke='%23a06a1c' stroke-width='2.5'/%3E%3Cpath d='M30 15l9 9-9 9-9-9z' fill='%23c8161d' stroke='%23fff0c0' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat;
+  }
+  .fc.tl { left: -12px; top: -12px; }
+  .fc.tr { right: -12px; top: -12px; transform: scaleX(-1); }
+  .fc.bl { left: -12px; bottom: -12px; transform: scaleY(-1); }
+  .fc.br { right: -12px; bottom: -12px; transform: scale(-1); }
+  .detail.active .fc { opacity: 1; transition: opacity .6s ease .7s; }
 
   /* 两侧内容：依次浮现 */
   .zone { position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -250,7 +271,7 @@
   <div><b>点击照片</b>圈先转到中间，再放大该人员（鼠标移到圈上会暂停转动）</div>
   <div><b>点击任意处</b>返回</div>
   <div><b>C</b>打开后台控制面板（人员名单）</div>
-  <div><b>I</b>人员资料：导入 Word / Excel / 照片，修改后保存</div>
+  <div><b>I</b>人员资料与背景：导入 Word / Excel / 照片、选择背景，修改后保存</div>
   <div><b>数字键</b>放大第 N 位（两位数连续输入，如 1 2）</div>
   <div><b>→ / PageDown / 空格</b>按顺序放大下一位</div>
   <div><b>← / PageUp</b>上一位</div>
@@ -276,7 +297,7 @@
 
   var STAGE_W = 2800, STAGE_H = 1000;
   // 放大后的版面（舞台像素）
-  var LAYOUT = { photoMaxH: 860, photoMaxW: 960, boardX: 130, boardY: 130, boardH: 740, gap: 80, inset: 80, padY: 60 };
+  var LAYOUT = { photoMaxH: 860, photoMaxW: 1000, frame: 28, boardX: 70, boardMinH: 600, boardMaxH: 760, overhang: 50, gap: 70, inset: 70, padY: 50 };
   var FLY_MS = 900;
   var INTRO_MS = 1600, INTRO_STAGGER_MS = 70;
   var SILHOUETTE = '<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="20"/><path d="M12 96c2-22 18-34 38-34s36 12 38 34z"/></svg>';
@@ -296,7 +317,7 @@
   var N = people.length;
   var C = Object.assign({
     secondsPerTurn: 60, direction: 1, slowWhenOpen: 0, introOnLoad: true,
-    centerY: 560, radiusX: 1180, radiusY: 150, frontScale: 1.05, backScale: 0.5
+    centerY: 520, radiusX: 1180, radiusY: 190, frontScale: 1.05, backScale: 0.5
   }, cfg.carousel || {});
 
   document.title = (cfg.title || '互动大屏') + ' · 互动大屏';
@@ -304,8 +325,9 @@
     body.classList.add('custom-bg');
     document.getElementById('bg').style.background = '#8a0910 url("' + cfg.background + '") center / cover no-repeat';
   }
-  document.getElementById('logo').src = cfg.logo || '';
-  document.getElementById('title').src = cfg.titleImage || '';
+  var showHeader = cfg.showHeader !== false;   // 背景图自带标志和标题时可关闭
+  document.getElementById('logo').src = showHeader && cfg.logo || '';
+  document.getElementById('title').src = showHeader && cfg.titleImage || '';
 
   // ---------- 舞台缩放 ----------
   function fitStage() {
@@ -356,12 +378,16 @@
     return null;
   }
 
-  // 照片居中；展板横贯全屏，左侧放姓名单位，右侧放个人简介
+  // 照片（连相框）居中，相框比例跟随照片；展板横贯全屏，上下比相框各短一截
+  // 左侧放姓名单位，右侧放个人简介
   function layout(aspect) {
-    var h = LAYOUT.photoMaxH, w = h * aspect;
-    if (w > LAYOUT.photoMaxW) { w = LAYOUT.photoMaxW; h = w / aspect; }
+    var F = LAYOUT.frame;
+    var ih = LAYOUT.photoMaxH - 2 * F, iw = ih * aspect;
+    if (iw > LAYOUT.photoMaxW - 2 * F) { iw = LAYOUT.photoMaxW - 2 * F; ih = iw / aspect; }
+    var w = iw + 2 * F, h = ih + 2 * F;
     var photo = { x: (STAGE_W - w) / 2, y: (STAGE_H - h) / 2, w: w, h: h };
-    var board = { x: LAYOUT.boardX, y: LAYOUT.boardY, w: STAGE_W - LAYOUT.boardX * 2, h: LAYOUT.boardH };
+    var bh = clamp(h - 2 * LAYOUT.overhang, LAYOUT.boardMinH, LAYOUT.boardMaxH);
+    var board = { x: LAYOUT.boardX, y: (STAGE_H - bh) / 2, w: STAGE_W - LAYOUT.boardX * 2, h: bh };
     var top = board.y + LAYOUT.padY, height = board.h - LAYOUT.padY * 2;
     var leftX = board.x + LAYOUT.inset, rightX = photo.x + w + LAYOUT.gap;
     return {
@@ -372,34 +398,50 @@
     };
   }
 
-  // ---------- 卡片尺寸（随人数自适应） ----------
-  var CW = Math.round(clamp(2 * Math.PI * C.radiusX / N * 0.8, 150, 320));
-  var PAD = 7;
-  var PH = Math.round((CW - PAD * 2) * 4 / 3);
-  var PLATE = Math.round(CW * 0.3);
-  var CH = PAD + PH + PLATE;
-  ringEl.style.setProperty('--cw', CW + 'px');
-  ringEl.style.setProperty('--ch', CH + 'px');
-  ringEl.style.setProperty('--ph', PH + 'px');
-  ringEl.style.setProperty('--plate', PLATE + 'px');
-  // 卡片底边的轨迹正好是一个椭圆：在这里画出金色光环
-  var ringCY = C.centerY + CH * (C.frontScale + C.backScale) / 4;
-  var ringRY = C.radiusY + CH * (C.frontScale - C.backScale) / 4;
-  function ellipse(dx, dy, attrs) {
-    return '<ellipse cx="' + STAGE_W / 2 + '" cy="' + ringCY + '" rx="' + (C.radiusX + dx) + '" ry="' + (ringRY + dy) + '" ' + attrs + '/>';
+  // ---------- 卡片尺寸：高度统一，宽度跟随照片比例（照片完整显示，不会把人裁掉） ----------
+  var PAD = 10;                         // 照片到卡片边缘：5 金边 + 5 衬纸
+  var PH = 200, PLATE = 74, CH = 294;   // 照片高、名牌高、卡片高；图片读完后由 sizeCards() 计算
+  function sizeCards() {
+    var known = items.filter(function (it) { return it.natural; })
+      .map(function (it) { return it.natural; }).sort(function (a, b) { return a - b; });
+    var median = known.length ? known[Math.floor(known.length / 2)] : 4 / 3;
+    var slot = 2 * Math.PI * C.radiusX / N;            // 最前排相邻两张卡片的间距
+    PH = Math.round(clamp((clamp(slot * 0.86, 140, 440) - PAD * 2) / median, 120, 330));
+    PLATE = Math.round(clamp(PH * 0.4, 60, 96));
+    CH = PH + PLATE + 20;
+    ringEl.style.setProperty('--ch', CH + 'px');
+    ringEl.style.setProperty('--ph', PH + 'px');
+    ringEl.style.setProperty('--plate', PLATE + 'px');
+    items.forEach(function (it) {
+      it.aspect = it.natural || median;   // 没有照片的人按多数照片的比例
+      it.cw = Math.round(PH * clamp(it.aspect, 0.6, 1.8) + PAD * 2);
+      it.card.style.width = it.cw + 'px';
+      fitText(it.cname, PLATE * 0.44, PLATE * 0.24);
+      fitText(it.cunit, PLATE * 0.26, PLATE * 0.16);
+    });
+    drawFloor();
   }
-  document.getElementById('floor').innerHTML =
-    '<defs>' +
-      '<radialGradient id="plat"><stop offset="0" stop-color="#ffe2a0" stop-opacity=".5"/>' +
-        '<stop offset=".7" stop-color="#ffc06a" stop-opacity=".18"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient>' +
-      '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a" stop-opacity=".25"/>' +
-        '<stop offset="1" stop-color="#fff3cc" stop-opacity="1"/></linearGradient>' +
-      '<filter id="rimGlow" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>' +
-    '</defs>' +
-    ellipse(180, 70, 'fill="url(#plat)"') +
-    ellipse(0, 0, 'fill="none" stroke="url(#rim)" stroke-width="22" filter="url(#rimGlow)"') +
-    ellipse(0, 0, 'fill="none" stroke="url(#rim)" stroke-width="4"') +
-    ellipse(60, 22, 'fill="none" stroke="#ffd27a" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 16"');
+
+  // 卡片底边的轨迹正好是一个椭圆：在这里画出金色光环
+  function drawFloor() {
+    var ringCY = C.centerY + CH * (C.frontScale + C.backScale) / 4;
+    var ringRY = C.radiusY + CH * (C.frontScale - C.backScale) / 4;
+    function ellipse(dx, dy, attrs) {
+      return '<ellipse cx="' + STAGE_W / 2 + '" cy="' + ringCY + '" rx="' + (C.radiusX + dx) + '" ry="' + (ringRY + dy) + '" ' + attrs + '/>';
+    }
+    document.getElementById('floor').innerHTML =
+      '<defs>' +
+        '<radialGradient id="plat"><stop offset="0" stop-color="#ffe2a0" stop-opacity=".5"/>' +
+          '<stop offset=".7" stop-color="#ffc06a" stop-opacity=".18"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a" stop-opacity=".25"/>' +
+          '<stop offset="1" stop-color="#fff3cc" stop-opacity="1"/></linearGradient>' +
+        '<filter id="rimGlow" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>' +
+      '</defs>' +
+      ellipse(180, 70, 'fill="url(#plat)"') +
+      ellipse(0, 0, 'fill="none" stroke="url(#rim)" stroke-width="22" filter="url(#rimGlow)"') +
+      ellipse(0, 0, 'fill="none" stroke="url(#rim)" stroke-width="4"') +
+      ellipse(60, 22, 'fill="none" stroke="#ffd27a" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 16"');
+  }
 
   var particles = document.getElementById('particles');
   for (var k = 0; k < 40; k++) {
@@ -414,10 +456,11 @@
   // ---------- 构建卡片与放大层 ----------
   var zTop = 10;
   var items = people.map(function (p, i) {
-    var it = { i: i, p: 0, dir: 0, open: false };
+    var it = { i: i, p: 0, dir: 0, open: false, natural: 0, aspect: 4 / 3, cw: Math.round(PH * 4 / 3 + PAD * 2) };
 
     it.card = el('div', 'card', ringEl);
     var frame = el('div', 'frame', it.card);
+    el('div', 'mat', frame);
     fillPhoto(el('div', 'ph', frame), p);
     var plate = el('div', 'plate', frame);
     it.cname = el('div', 'cname', plate);
@@ -473,11 +516,11 @@
 
     it.zoom = el('div', 'zoom', it.detail);
     var img = fillPhoto(el('div', 'ph', it.zoom), p);
+    ['tl', 'tr', 'bl', 'br'].forEach(function (c) { el('i', 'fc ' + c, it.zoom); });
 
-    it.aspect = 3 / 4;
     it.ready = img ? new Promise(function (resolve) {
       function done() {
-        if (img.naturalWidth) it.aspect = img.naturalWidth / img.naturalHeight;
+        if (img.naturalWidth) it.natural = img.naturalWidth / img.naturalHeight;
         resolve();
       }
       if (img.complete) done(); else { img.onload = done; img.onerror = done; }
@@ -497,18 +540,17 @@
     fitText(it.bio, 56, 28);
   }
   var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  fontsReady.then(function () {
-    items.forEach(function (it) {
-      fitText(it.cname, CW * 0.15, CW * 0.08);
-      fitText(it.cunit, CW * 0.085, CW * 0.05);
-      it.ready.then(function () { applyLayout(it); });
-    });
+  // 照片都读完（知道了比例）再排卡片、开始入场
+  Promise.all([fontsReady].concat(items.map(function (it) { return it.ready; }))).then(function () {
+    sizeCards();
+    items.forEach(applyLayout);
+    if (C.introOnLoad) introStart = performance.now() + 200;
   });
 
   // ---------- 旋转圈 ----------
   var angle = 0;
   var speedFactor = 1, hovering = 0;
-  var introStart = C.introOnLoad ? performance.now() + 300 : Infinity;
+  var introStart = Infinity;   // 照片读完后才开始入场（见上方 sizeCards）
 
   // 第 i 张卡片当前的位置、缩放、远近
   function pose(i, now) {
@@ -524,11 +566,11 @@
       s: s, depth: depth, alpha: e
     };
   }
-  function photoRect(q) {
+  function photoRect(q, it) {
     return {
-      x: q.x + (PAD - CW / 2) * q.s,
+      x: q.x + (PAD - it.cw / 2) * q.s,
       y: q.y + (PAD - CH / 2) * q.s,
-      w: (CW - PAD * 2) * q.s,
+      w: (it.cw - PAD * 2) * q.s,
       h: PH * q.s
     };
   }
@@ -556,7 +598,7 @@
     items.forEach(function (it, i) {
       var q = pose(i, now);
       var c = it.card;
-      c.style.transform = 'translate3d(' + (q.x - CW / 2) + 'px,' + (q.y - CH / 2) + 'px,0) scale(' + q.s + ')';
+      c.style.transform = 'translate3d(' + (q.x - it.cw / 2) + 'px,' + (q.y - CH / 2) + 'px,0) scale(' + q.s + ')';
       c.style.zIndex = Math.round(q.depth * 1000);
       c.style.opacity = it.p > 0 ? 0 : q.alpha;
       c.style.pointerEvents = q.alpha > 0.5 ? '' : 'none';
@@ -564,7 +606,7 @@
 
       if (it.dir) {
         it.p = clamp(it.p + it.dir * dt * 1000 / FLY_MS, 0, 1);
-        place(it.zoom, lerpRect(photoRect(q), it.target, easeInOut(it.p)));
+        place(it.zoom, lerpRect(photoRect(q, it), it.target, easeInOut(it.p)));
         if (it.p === 1 || it.p === 0) {
           if (it.p === 0) it.detail.classList.remove('visible');
           it.dir = 0;
@@ -612,7 +654,7 @@
     if (!it.target) applyLayout(it);
     it.detail.style.zIndex = ++zTop;
     it.detail.classList.add('visible');
-    if (it.p === 0) place(it.zoom, photoRect(pose(i, performance.now())));
+    if (it.p === 0) place(it.zoom, photoRect(pose(i, performance.now()), it));
     it.dir = 1;
     requestAnimationFrame(function () { if (it.dir === 1 || it.p === 1) it.detail.classList.add('active'); });
     body.classList.add('open');
@@ -673,13 +715,13 @@
       'main{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:16px}' +
       '.p{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:#3a1416;border:3px solid transparent;color:#fff;text-align:left;cursor:pointer;font:inherit}' +
       '.p:hover{background:#56201f}.p.on{border-color:#ffd27a;background:#7a1d1f}.p.hide{display:none}' +
-      '.p .t{width:54px;height:72px;flex:none;border-radius:6px;background:#ddd center/cover no-repeat}' +
+      '.p .t{width:76px;height:57px;flex:none;border-radius:6px;background:#2a0c0d center/contain no-repeat}' +
       '.p .n{font-size:20px;font-weight:bold}.p .u{font-size:13px;opacity:.8}.p .k{font-size:12px;color:#ffd27a}' +
       'footer{padding:4px 16px 16px;font-size:13px;opacity:.7}' +
       '</style></head><body><header><h1>后台控制面板</h1><input id="q" placeholder="输入姓名或单位搜索，回车放大第一个结果">' +
       '<button class="op" id="prev">上一位</button><button class="op" id="next">下一位</button>' +
       '<button class="op back" id="back">返回总览</button><button class="op back" id="intro">重新入场</button>' +
-      '<button class="op back" id="data">人员资料</button></header>' +
+      '<button class="op back" id="data">资料与背景</button></header>' +
       '<main id="list"></main><footer>点击人员 = 大屏放大该人员；再点一次或点“返回总览”= 收回。本窗口可拖到操作员显示器上，大屏窗口保持全屏。</footer></body></html>'
     );
     d.close();
