@@ -37,10 +37,19 @@
             mask-image: radial-gradient(ellipse 70% 90% at 50% 0%, #000 0%, transparent 75%);
   }
   #waves { width: 100%; height: 100%; }
-  #floor {
-    position: absolute; left: 100px; width: 2600px; height: 300px; pointer-events: none;
-    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 210, 122, .45), rgba(255, 170, 80, .12) 55%, rgba(255, 170, 80, 0) 75%);
+  #particles span {
+    position: absolute; bottom: -20px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 240, 190, .95) 0%, rgba(255, 210, 122, 0) 70%);
+    animation: rise linear infinite;
   }
+  @keyframes rise {
+    0% { transform: translateY(0); opacity: 0; }
+    12% { opacity: .9; }
+    80% { opacity: .5; }
+    100% { transform: translateY(-1060px); opacity: 0; }
+  }
+  /* 旋转圈脚下的金色光环（卡片底边正好落在环上） */
+  #floor { position: absolute; left: 0; top: 0; width: 2800px; height: 1000px; pointer-events: none; z-index: 2; }
   #logo { position: absolute; left: 70px; top: 46px; height: 74px; }
   #title { position: absolute; left: 50%; top: 52px; height: 86px; transform: translateX(-50%); }
   #logo[src=""], #title[src=""] { display: none; }
@@ -54,19 +63,21 @@
     cursor: pointer;
   }
   .card .frame {
-    position: absolute; inset: 0; border-radius: 16px; overflow: hidden;
-    background: #fff; box-shadow: 0 16px 36px rgba(50, 0, 0, .5);
+    position: absolute; inset: 0; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(180deg, #fffaf0, #f3e2bd);
+    box-shadow: 0 0 0 3px rgba(240, 200, 110, .95), 0 18px 36px rgba(50, 0, 0, .5);
   }
-  .card .ph { position: absolute; left: 7px; top: 7px; right: 7px; height: var(--ph); border-radius: 11px; }
+  .card .ph { position: absolute; left: 7px; top: 7px; right: 7px; height: var(--ph); border-radius: 9px; }
   .card .plate {
-    position: absolute; left: 0; right: 0; bottom: 0; height: var(--plate);
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--plate); box-sizing: border-box;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: linear-gradient(180deg, #d9262c, #a50d14);
+    background: linear-gradient(180deg, #c81a21, #8c0910);
+    border-top: 3px solid #e9c46a;
   }
   .card .cname { color: var(--gold); font-weight: bold; font-size: calc(var(--cw) * .15); line-height: 1.15; letter-spacing: .08em; white-space: nowrap; max-width: 92%; overflow: hidden; }
-  .card .cunit { color: #fff; font-size: calc(var(--cw) * .085); line-height: 1.3; white-space: nowrap; max-width: 92%; overflow: hidden; opacity: .95; }
-  .card .shade { position: absolute; inset: 0; border-radius: 16px; background: #2b0004; pointer-events: none; }
-  .card:hover .frame, .card.picked .frame { box-shadow: 0 0 0 6px var(--gold), 0 0 40px 10px rgba(255, 200, 90, .6); }
+  .card .cunit { color: #fff1d6; font-size: calc(var(--cw) * .085); line-height: 1.3; white-space: nowrap; max-width: 92%; overflow: hidden; opacity: .95; }
+  .card .shade { position: absolute; inset: -3px; border-radius: 16px; background: #2b0004; pointer-events: none; }
+  .card:hover .frame, .card.picked .frame { box-shadow: 0 0 0 6px var(--gold), 0 0 50px 14px rgba(255, 200, 90, .7); }
 
   /* 照片（卡片与放大层共用） */
   .ph { overflow: hidden; background: #ddd; }
@@ -79,47 +90,115 @@
   .ph.empty svg { width: 52%; fill: rgba(255, 255, 255, .85); }
   .ph.empty span { font-size: 7cqw; letter-spacing: .1em; margin-top: 4cqh; }
 
-  /* ---------- 放大层 ---------- */
+  /* ---------- 放大层：人物展板 ---------- */
   #dim {
     position: absolute; inset: 0; z-index: 5;
-    background: radial-gradient(ellipse at center, rgba(45, 0, 4, .78) 0%, rgba(12, 0, 2, .92) 100%);
+    background:
+      radial-gradient(ellipse 42% 62% at 50% 50%, rgba(170, 24, 30, .5), rgba(170, 24, 30, 0) 72%),
+      radial-gradient(ellipse at center, rgba(42, 0, 4, .84) 0%, rgba(10, 0, 2, .95) 100%);
     opacity: 0; pointer-events: none; transition: opacity .9s ease;
   }
   body.open #dim { opacity: 1; pointer-events: auto; cursor: pointer; }
 
   .detail { position: absolute; inset: 0; z-index: 10; pointer-events: none; visibility: hidden; }
   .detail.visible { visibility: visible; }
+
+  /* 展板：深红底 + 双金线 + 四角纹饰 */
+  .board {
+    position: absolute; border-radius: 30px;
+    background:
+      radial-gradient(ellipse 50% 75% at 50% 35%, rgba(255, 120, 90, .2), rgba(255, 120, 90, 0) 70%),
+      linear-gradient(180deg, #a3121a 0%, #7c0a11 58%, #5a050a 100%);
+    box-shadow: inset 0 0 0 2px rgba(255, 214, 130, .8), 0 40px 120px rgba(0, 0, 0, .6);
+    opacity: 0; transform: scale(.94, .82);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .board::before {
+    content: ""; position: absolute; inset: 18px; border-radius: 20px;
+    border: 1.5px solid rgba(255, 214, 130, .42);
+  }
+  .board::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(105deg, rgba(255, 240, 200, 0) 42%, rgba(255, 240, 200, .14) 50%, rgba(255, 240, 200, 0) 58%);
+    background-size: 300% 100%; background-position: 100% 0;
+  }
+  .detail.active .board { opacity: 1; transform: none; transition: opacity .6s ease .15s, transform .9s cubic-bezier(.2, .8, .2, 1) .15s; }
+  .detail.active .board::after { animation: sheen 1.8s ease .9s both; }
+  @keyframes sheen { from { background-position: 100% 0; } to { background-position: 0 0; } }
+  .corner {
+    position: absolute; width: 96px; height: 96px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23ffd27a'%3E%3Cpath d='M6 90V30Q6 6 30 6h60' stroke-width='4'/%3E%3Cpath d='M18 90V38q0-20 20-20h52' stroke-width='1.6' opacity='.7'/%3E%3C/g%3E%3Cpath d='M32 24l8 8-8 8-8-8z' fill='%23ffd27a'/%3E%3C/svg%3E") no-repeat;
+  }
+  .corner.tl { left: 6px; top: 6px; }
+  .corner.tr { right: 6px; top: 6px; transform: scaleX(-1); }
+  .corner.bl { left: 6px; bottom: 6px; transform: scaleY(-1); }
+  .corner.br { right: 6px; bottom: 6px; transform: scale(-1); }
+
+  /* 照片：金色相框 + 光晕 */
   .zoom {
     position: absolute; border-radius: 12px;
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    background: linear-gradient(135deg, #fff3c4 0%, #dea544 28%, #fff0bd 50%, #c08428 76%, #ffe6a3 100%);
+    box-shadow: 0 0 0 0 rgba(255, 210, 122, 0);
     transition: box-shadow .9s ease, border-radius .9s ease;
   }
-  .zoom .ph { position: absolute; inset: 0; border-radius: inherit; }
-  .detail.active .zoom { border-radius: 18px; box-shadow: 0 0 0 12px #fff, 0 0 0 16px var(--gold), 0 40px 120px 20px rgba(0, 0, 0, .7); }
+  .zoom .ph { position: absolute; inset: 0; border-radius: inherit; transition: inset .9s ease, border-radius .9s ease; }
+  .detail.active .zoom {
+    border-radius: 20px;
+    box-shadow: 0 0 0 3px rgba(120, 60, 0, .45), 0 0 100px 24px rgba(255, 196, 90, .32), 0 40px 120px rgba(0, 0, 0, .7);
+  }
+  .detail.active .zoom .ph { inset: 14px; border-radius: 9px; }
 
-  .info-left, .info-right { position: absolute; opacity: 0; transition: opacity .3s ease, transform .3s ease; }
-  .info-left { top: 0; height: 1000px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; text-align: right; transform: translateX(-60px); }
-  .info-right { transform: translateX(60px); }
-  .detail.active .info-left, .detail.active .info-right {
+  /* 两侧内容：依次浮现 */
+  .zone { position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .zone-left { justify-content: center; }
+  .zone > * { opacity: 0; transform: translateY(26px); transition: opacity .25s ease, transform .25s ease; }
+  .detail.active .zone > * {
     opacity: 1; transform: none;
-    transition: opacity .6s ease .45s, transform .7s cubic-bezier(.2, .8, .2, 1) .45s;
+    transition: opacity .6s ease, transform .8s cubic-bezier(.2, .8, .2, 1);
+    transition-delay: calc(.5s + var(--k) * .09s);
   }
-  .tag { color: var(--gold); font-size: 46px; letter-spacing: .3em; margin-right: -.3em; }
+  .tag { display: flex; align-items: center; gap: 24px; color: var(--gold); font-size: 40px; white-space: nowrap; }
+  .tag span { letter-spacing: .32em; margin-right: -.32em; }
+  .tag::before, .tag::after { content: ""; width: 80px; height: 2px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
+  .tag::after { transform: scaleX(-1); }
   .name {
-    color: #fff; font-weight: bold; font-size: 180px; line-height: 1.25; letter-spacing: .12em; margin-right: -.12em;
-    white-space: nowrap; max-width: 100%; overflow: hidden; text-shadow: 0 6px 24px rgba(0, 0, 0, .6);
+    margin-top: 14px; max-width: 100%; white-space: nowrap; overflow: hidden;
+    font-size: 160px; font-weight: bold; line-height: 1.22; letter-spacing: .14em; padding-left: .14em;
+    background: linear-gradient(180deg, #fff8dc 0%, #ffe39a 46%, #e0a43a 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .45));
   }
-  .bar { width: 300px; height: 10px; margin: 26px 0 34px; border-radius: 5px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
-  .unit { color: var(--gold); font-size: 76px; font-weight: bold; letter-spacing: .1em; margin-right: -.1em; white-space: nowrap; max-width: 100%; overflow: hidden; }
-  .bio-card {
-    position: absolute; inset: 0; box-sizing: border-box; padding: 54px 60px;
-    display: flex; flex-direction: column;
-    background: rgba(255, 255, 255, .96); border-radius: 24px; box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
+  .divider { display: flex; align-items: center; gap: 18px; width: 72%; margin: 22px 0 30px; }
+  .divider i { flex: 1; height: 2px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
+  .divider i:last-child { transform: scaleX(-1); }
+  .divider b { width: 16px; height: 16px; background: var(--gold); transform: rotate(45deg); box-shadow: 0 0 18px rgba(255, 210, 122, .9); }
+  .unit {
+    max-width: 92%; box-sizing: border-box; white-space: nowrap; overflow: hidden;
+    padding: 12px 58px; border-radius: 999px;
+    font-size: 56px; font-weight: bold; letter-spacing: .14em; color: #fff1cf;
+    background: linear-gradient(180deg, rgba(255, 214, 130, .24), rgba(255, 214, 130, .06));
+    box-shadow: inset 0 0 0 2px rgba(255, 214, 130, .85);
   }
-  .bio-label { flex: none; display: flex; align-items: center; gap: 22px; color: var(--red); font-size: 52px; font-weight: bold; letter-spacing: .15em; margin-bottom: 30px; }
-  .bio-label::before { content: ""; width: 14px; height: 56px; border-radius: 7px; background: var(--red); }
-  .bio-text { flex: 1; min-height: 0; overflow: hidden; color: var(--ink); line-height: 1.6; text-align: justify; }
-  .bio-text p { margin: 0; text-indent: 2em; }
+  .highlight {
+    margin-top: 40px; width: 100%; box-sizing: border-box; padding: 0 16px;
+    font-size: 42px; font-weight: bold; line-height: 1.5; color: #fff3d6;
+    max-height: 4.5em; overflow: hidden;
+  }
+  .highlight .seg { display: inline-block; max-width: 100%; text-wrap: balance; }
+  .highlight .q { color: var(--gold); font-family: Georgia, "Times New Roman", serif; font-size: 1.5em; line-height: 0; vertical-align: -.2em; margin: 0 .08em; }
+  .heading { flex: none; display: flex; align-items: center; gap: 26px; width: 100%; color: var(--gold); font-size: 50px; font-weight: bold; white-space: nowrap; }
+  .heading span { letter-spacing: .3em; margin-right: -.3em; }
+  .heading i { position: relative; flex: 1; height: 2px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
+  .heading i:last-child { transform: scaleX(-1); }
+  .heading i::after { content: ""; position: absolute; right: -6px; top: -5px; width: 12px; height: 12px; background: var(--gold); transform: rotate(45deg); }
+  .bio {
+    flex: 1; min-height: 0; width: 100%; margin-top: 32px; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: safe center;
+    font-size: 56px; line-height: 1.7; color: #fff3e2; text-align: justify;
+  }
+  .bio p { margin: 0; text-indent: 2em; }
+  .bio.short { text-align: center; }
+  .bio.short p { text-indent: 0; }
 
   #help {
     position: fixed; right: 20px; bottom: 20px; z-index: 100; display: none;
@@ -152,7 +231,8 @@
     <path d="M0 930 C 600 850 1100 1000 1700 940 S 2500 860 2800 900 L 2800 1000 L 0 1000 Z" fill="url(#silk-gold)"/>
     <path d="M0 960 C 700 900 1300 1010 1900 975 S 2550 930 2800 950" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3"/>
   </svg>
-  <div id="floor" class="deco"></div>
+  <div id="particles" class="deco"></div>
+  <svg id="floor" viewBox="0 0 2800 1000" aria-hidden="true"></svg>
   <img id="logo" alt="">
   <img id="title" alt="">
   <div id="ring"></div>
@@ -180,7 +260,7 @@
 
   var STAGE_W = 2800, STAGE_H = 1000;
   // 放大后的版面（舞台像素）
-  var LAYOUT = { photoMaxH: 840, photoMaxW: 1000, gap: 90, margin: 120, panelTop: 120, panelH: 760 };
+  var LAYOUT = { photoMaxH: 860, photoMaxW: 960, boardX: 130, boardY: 130, boardH: 740, gap: 80, inset: 80, padY: 60 };
   var FLY_MS = 900;
   var INTRO_MS = 1600, INTRO_STAGGER_MS = 70;
   var SILHOUETTE = '<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="20"/><path d="M12 96c2-22 18-34 38-34s36 12 38 34z"/></svg>';
@@ -238,11 +318,11 @@
   function lerpRect(a, b, t) {
     return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t };
   }
-  // 逐步缩小字号直到内容放得下
+  // 逐步缩小字号直到内容放得下（高度留 0.3 个字的余量，忽略字形本身略超出行高的部分）
   function fitText(node, maxPx, minPx) {
     var size = maxPx;
     node.style.fontSize = size + 'px';
-    while (size > minPx && (node.scrollHeight > node.clientHeight + 1 || node.scrollWidth > node.clientWidth + 1)) {
+    while (size > minPx && (node.scrollHeight > node.clientHeight + size * 0.3 || node.scrollWidth > node.clientWidth + 1)) {
       size -= 2;
       node.style.fontSize = size + 'px';
     }
@@ -260,15 +340,19 @@
     return null;
   }
 
+  // 照片居中；展板横贯全屏，左侧放姓名单位，右侧放个人简介
   function layout(aspect) {
     var h = LAYOUT.photoMaxH, w = h * aspect;
     if (w > LAYOUT.photoMaxW) { w = LAYOUT.photoMaxW; h = w / aspect; }
     var photo = { x: (STAGE_W - w) / 2, y: (STAGE_H - h) / 2, w: w, h: h };
-    var rightX = photo.x + w + LAYOUT.gap;
+    var board = { x: LAYOUT.boardX, y: LAYOUT.boardY, w: STAGE_W - LAYOUT.boardX * 2, h: LAYOUT.boardH };
+    var top = board.y + LAYOUT.padY, height = board.h - LAYOUT.padY * 2;
+    var leftX = board.x + LAYOUT.inset, rightX = photo.x + w + LAYOUT.gap;
     return {
       photo: photo,
-      left: { x: LAYOUT.margin, w: photo.x - LAYOUT.gap - LAYOUT.margin },
-      right: { x: rightX, y: LAYOUT.panelTop, w: STAGE_W - LAYOUT.margin - rightX, h: LAYOUT.panelH }
+      board: board,
+      left: { x: leftX, y: top, w: photo.x - LAYOUT.gap - leftX, h: height },
+      right: { x: rightX, y: top, w: board.x + board.w - LAYOUT.inset - rightX, h: height }
     };
   }
 
@@ -282,8 +366,34 @@
   ringEl.style.setProperty('--ch', CH + 'px');
   ringEl.style.setProperty('--ph', PH + 'px');
   ringEl.style.setProperty('--plate', PLATE + 'px');
-  var floor = document.getElementById('floor');
-  floor.style.top = (C.centerY + C.radiusY + CH * C.frontScale / 2 - 170) + 'px';
+  // 卡片底边的轨迹正好是一个椭圆：在这里画出金色光环
+  var ringCY = C.centerY + CH * (C.frontScale + C.backScale) / 4;
+  var ringRY = C.radiusY + CH * (C.frontScale - C.backScale) / 4;
+  function ellipse(dx, dy, attrs) {
+    return '<ellipse cx="' + STAGE_W / 2 + '" cy="' + ringCY + '" rx="' + (C.radiusX + dx) + '" ry="' + (ringRY + dy) + '" ' + attrs + '/>';
+  }
+  document.getElementById('floor').innerHTML =
+    '<defs>' +
+      '<radialGradient id="plat"><stop offset="0" stop-color="#ffe2a0" stop-opacity=".5"/>' +
+        '<stop offset=".7" stop-color="#ffc06a" stop-opacity=".18"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a" stop-opacity=".25"/>' +
+        '<stop offset="1" stop-color="#fff3cc" stop-opacity="1"/></linearGradient>' +
+      '<filter id="rimGlow" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>' +
+    '</defs>' +
+    ellipse(180, 70, 'fill="url(#plat)"') +
+    ellipse(0, 0, 'fill="none" stroke="url(#rim)" stroke-width="22" filter="url(#rimGlow)"') +
+    ellipse(0, 0, 'fill="none" stroke="url(#rim)" stroke-width="4"') +
+    ellipse(60, 22, 'fill="none" stroke="#ffd27a" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 16"');
+
+  var particles = document.getElementById('particles');
+  for (var k = 0; k < 40; k++) {
+    var dot = el('span', '', particles);
+    var size = 6 + Math.random() * 12;
+    dot.style.left = (Math.random() * STAGE_W) + 'px';
+    dot.style.width = dot.style.height = size + 'px';
+    dot.style.animationDuration = (14 + Math.random() * 16) + 's';
+    dot.style.animationDelay = (-Math.random() * 30) + 's';
+  }
 
   // ---------- 构建卡片与放大层 ----------
   var zTop = 10;
@@ -303,25 +413,50 @@
     it.card.addEventListener('mouseenter', function () { hovering++; });
     it.card.addEventListener('mouseleave', function () { hovering = Math.max(0, hovering - 1); });
 
+    // 放大后的人物展板
     it.detail = el('div', 'detail', stage);
-    it.zoom = el('div', 'zoom', it.detail);
-    var img = fillPhoto(el('div', 'ph', it.zoom), p);
+    it.board = el('div', 'board', it.detail);
+    ['tl', 'tr', 'bl', 'br'].forEach(function (c) { el('i', 'corner ' + c, it.board); });
 
-    it.left = el('div', 'info-left', it.detail);
-    el('div', 'tag', it.left).textContent = cfg.tagline || '';
+    it.left = el('div', 'zone zone-left', it.detail);
+    if (cfg.tagline) el('span', '', el('div', 'tag', it.left)).textContent = cfg.tagline;
     it.name = el('div', 'name', it.left);
     it.name.textContent = p.name;
-    el('div', 'bar', it.left);
-    it.unit = el('div', 'unit', it.left);
-    it.unit.textContent = p.unit || '';
+    var divider = el('div', 'divider', it.left);
+    el('i', '', divider); el('b', '', divider); el('i', '', divider);
+    if (p.unit) {
+      it.unit = el('div', 'unit', it.left);
+      it.unit.textContent = p.unit;
+    }
+    if (p.highlight) {
+      // 按逗号分句，尽量在句读处换行
+      it.highlight = el('div', 'highlight', it.left);
+      var parts = String(p.highlight).match(/[^，,；;。！？]+[，,；;。！？]?/g) || [String(p.highlight)];
+      parts.forEach(function (part, k) {
+        var seg = el('span', 'seg', it.highlight);
+        if (k === 0) el('span', 'q', seg).textContent = '\u201c';
+        seg.appendChild(document.createTextNode(part));
+        if (k === parts.length - 1) el('span', 'q', seg).textContent = '\u201d';
+      });
+    }
 
-    it.right = el('div', 'info-right', it.detail);
-    var card = el('div', 'bio-card', it.right);
-    el('div', 'bio-label', card).textContent = cfg.bioLabel || '个人简介';
-    it.bio = el('div', 'bio-text', card);
-    String(p.bio || '').split(/\n+/).forEach(function (para) {
+    it.right = el('div', 'zone zone-right', it.detail);
+    var heading = el('div', 'heading', it.right);
+    el('i', '', heading);
+    el('span', '', heading).textContent = cfg.bioLabel || '个人简介';
+    el('i', '', heading);
+    it.bio = el('div', 'bio', it.right);
+    var bioText = String(p.bio || '').trim();
+    if (bioText.replace(/\s/g, '').length <= 30) it.bio.classList.add('short');
+    bioText.split(/\n+/).forEach(function (para) {
       if (para.trim()) el('p', '', it.bio).textContent = para.trim();
     });
+    // 两侧内容依次浮现的先后顺序
+    [].forEach.call(it.left.children, function (c, k) { c.style.setProperty('--k', k); });
+    [].forEach.call(it.right.children, function (c, k) { c.style.setProperty('--k', k + 2); });
+
+    it.zoom = el('div', 'zoom', it.detail);
+    var img = fillPhoto(el('div', 'ph', it.zoom), p);
 
     it.aspect = 3 / 4;
     it.ready = img ? new Promise(function (resolve) {
@@ -337,12 +472,13 @@
   function applyLayout(it) {
     var L = layout(it.aspect);
     it.target = L.photo;
-    it.left.style.left = L.left.x + 'px';
-    it.left.style.width = L.left.w + 'px';
+    place(it.board, L.board);
+    place(it.left, L.left);
     place(it.right, L.right);
-    fitText(it.name, 180, 70);
-    fitText(it.unit, 76, 36);
-    fitText(it.bio, 60, 28);
+    fitText(it.name, 160, 70);
+    if (it.unit) fitText(it.unit, 56, 30);
+    if (it.highlight) fitText(it.highlight, 42, 28);
+    fitText(it.bio, 56, 28);
   }
   var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
   fontsReady.then(function () {
