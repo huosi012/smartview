@@ -26,6 +26,7 @@
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+  function isImageFile(f) { return /^image\//.test(f.type) || !!IMAGE_TYPES[ext(f.name)]; }
   function ext(name) { var m = /\.([^.\/]+)$/.exec(name || ''); return m ? m[1].toLowerCase() : ''; }
   function baseName(name) { return String(name || '').replace(/^.*[\\\/]/, '').replace(/\.[^.]+$/, '').trim(); }
 
@@ -443,9 +444,12 @@
     '.svi-panel td.no{color:#8a6a4a;font-weight:bold;padding-top:14px}' +
     '.svi-panel input:not([type=checkbox]),.svi-panel textarea{width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border:1px solid #d9c3a0;border-radius:6px;background:#fff;resize:vertical}' +
     '.svi-panel input.bad{border-color:#c8161d;background:#fff0f0}' +
-    '.svi-thumb{width:136px;height:102px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;' +
+    '.svi-thumb{position:relative;width:136px;height:102px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;' +
       'background:#f1e2c6;color:#9a6a3a;font-size:12px;border:1px solid #d9c3a0}' +
     '.svi-thumb img{width:100%;height:100%;object-fit:contain}.svi-thumb.drag{outline:3px solid #c8161d}' +
+    '.svi-thumb .tip{display:none;position:absolute;left:0;right:0;bottom:0;padding:2px 0;background:rgba(200,22,29,.9);color:#fff;font-size:12px;text-align:center}' +
+    '.svi-panel tr.sel td{background:#fff1e0}.svi-panel tr.sel .svi-thumb{outline:3px solid #c8161d;outline-offset:2px}.svi-panel tr.sel .svi-thumb .tip{display:block}' +
+    '.svi-pops{display:flex;gap:4px;margin-top:6px;width:136px}.svi-panel .svi-pops button{flex:1;padding:3px 0;font-size:12px}' +
     '.svi-ops{white-space:nowrap}.svi-ops button{padding:4px 9px;margin:0 2px}' +
     '.svi-panel footer{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid #ecdcc4;background:#fff}' +
     '.svi-note{margin-left:auto;color:#8a6a4a}';
@@ -454,7 +458,9 @@
     '支持三种资料，可以一起拖进来：\n' +
     '① Word（.docx）：每人一段，第一行写“单位-姓名”（如“中电华元-李哲”），下面是正面行为介绍，照片插在介绍后面。\n' +
     '② Excel（.xlsx）：表头写“姓名、单位、一句话事迹、正面行为介绍、照片文件名”，照片可以直接插在对应行里。点“下载 Excel 表”可得到模板。\n' +
-    '③ 照片文件：文件名写成姓名（如“李哲.jpg”），或与 Excel“照片文件名”一列一致，会自动配给对应的人。';
+    '③ 照片文件：文件名写成姓名（如“李哲.jpg”）会配给对应的人；文件名对不上的，按顺序配给还没照片的人。\n' +
+    '④ 粘贴照片：在 Word / 微信里复制照片，回到这里按 Ctrl+V（或点“粘贴”），会放到选中的那位（红框），' +
+      '然后自动跳到下一位没照片的人，可以连续“复制 → 粘贴”。';
 
   function open(doc, api) {
     if (doc.querySelector('.svi-backdrop')) return;
@@ -470,6 +476,7 @@
     });
     var bg = cfg.background || '', bgSize = null, showHeader = cfg.showHeader !== false;
     var dirty = false, photoTarget = -1;
+    var sel = -1;   // 选中的那位（红框）：粘贴的照片放给他
 
     var root = doc.createElement('div');
     root.className = 'svi-backdrop';
@@ -480,7 +487,7 @@
           '<button class="svi-primary" data-act="pick">导入 Word / Excel / 照片</button>' +
           '<select data-role="mode"><option value="replace">导入时替换整个名单</option><option value="append">导入时追加到名单后面</option></select>' +
           '<button data-act="template">下载 Excel 表（含当前名单，可作模板）</button>' +
-          '<span class="svi-tip">也可以直接把文件拖进这个窗口</span>' +
+          '<span class="svi-tip">也可以把文件直接拖进来；复制的照片按 Ctrl+V 粘贴</span>' +
           '<input type="file" multiple hidden accept=".docx,.xlsx,image/*" data-role="files">' +
           '<input type="file" hidden accept="image/*" data-role="photo">' +
         '</div>' +
@@ -552,10 +559,12 @@
 
     function render() {
       tbody.innerHTML = rows.map(function (r, i) {
-        return '<tr data-i="' + i + '">' +
+        return '<tr data-i="' + i + '"' + (i === sel ? ' class="sel"' : '') + '>' +
           '<td class="no">' + (i + 1) + '</td>' +
-          '<td><div class="svi-thumb" data-act="photo" title="点击更换照片，也可以把照片拖到这里">' +
-            (r.photo ? '<img src="' + esc(src(r.photo)) + '" alt="">' : '无照片<br>点击添加') + '</div></td>' +
+          '<td><div class="svi-thumb" data-act="select" title="点一下选中，然后按 Ctrl+V 粘贴照片；也可以把照片拖到这里，双击选文件">' +
+            (r.photo ? '<img src="' + esc(src(r.photo)) + '" alt="">' : '无照片') + '<span class="tip">Ctrl+V 粘贴到这里</span></div>' +
+            '<div class="svi-pops"><button data-act="paste" title="先在别处复制照片，再点这里">粘贴</button>' +
+            '<button data-act="photo">选文件</button></div></td>' +
           '<td><input data-f="name" value="' + esc(r.name) + '"' + (r.name ? '' : ' class="bad"') + ' placeholder="必填"></td>' +
           '<td><input data-f="unit" value="' + esc(r.unit) + '"></td>' +
           '<td><textarea data-f="highlight" rows="3">' + esc(r.highlight) + '</textarea></td>' +
@@ -571,6 +580,7 @@
     function close() {
       if (dirty && !doc.defaultView.confirm('修改还没有保存，确定关闭吗？')) return;
       root.remove();
+      doc.removeEventListener('paste', onPaste);
       doc.body.classList.remove('importing');
     }
 
@@ -591,11 +601,86 @@
       return best;
     }
 
+    function markSel() {
+      each(tbody.children, function (tr) { tr.classList.toggle('sel', +tr.getAttribute('data-i') === sel); });
+    }
+
+    // 从第 start 位起（到末尾后从头接着找），列出还没照片的人
+    function missingFrom(start, taken) {
+      var list = [];
+      for (var k = 0; k < rows.length; k++) {
+        var i = (start + k) % rows.length;
+        if (!rows[i].photo && !taken[i]) list.push(i);
+      }
+      return list;
+    }
+
+    // 把一批照片放到人身上，返回提示文字：
+    //  · 单张粘贴（如从微信、Word 复制的图片）：放给选中的那位（没选中就给第一位没照片的人）
+    //  · 多张（拖入、或从文件夹复制后粘贴）：先按文件名对姓名，对不上的按顺序放给还没照片的人（从选中的那位开始）
+    //  放完自动选中下一位没照片的人，方便接着粘贴
+    function placeImages(files, pasted) {
+      var plan = [], taken = {}, rest = [], label = function (f) { return '“' + f.name + '”'; };
+      if (pasted && files.length === 1) {
+        var target = sel >= 0 ? sel : missingFrom(0, taken)[0];
+        if (target === undefined) rest.push(files[0]); else plan.push({ file: files[0], i: target, label: '照片' });
+      } else {
+        files.forEach(function (f) {
+          var i = matchPhoto(f);
+          if (i >= 0 && !plan.some(function (s) { return s.i === i; })) plan.push({ file: f, i: i, byName: true, label: label(f) });
+          else rest.push(f);
+        });
+        plan.forEach(function (s) { taken[s.i] = true; });
+        rest.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh', { numeric: true }); });
+        var slots = missingFrom(sel >= 0 ? sel : 0, taken);
+        rest = rest.filter(function (f) {
+          var i = slots.shift();
+          if (i === undefined) return true;
+          plan.push({ file: f, i: i, label: label(f) });
+          return false;
+        });
+      }
+      return plan.reduce(function (p, step) {
+        return p.then(function () {
+          return toPhoto(step.file).then(function (photo) { rows[step.i].photo = photo; dirty = true; })
+            .catch(function () { step.failed = true; });
+        });
+      }, Promise.resolve()).then(function () {
+        var ok = plan.filter(function (s) { return !s.failed; });
+        var who = function (s) { return '“' + (rows[s.i].name || '第 ' + (s.i + 1) + ' 行') + '”'; };
+        var notes = [];
+        var last = ok.length ? ok[ok.length - 1].i : sel;
+        var next = rows.length ? missingFrom(last + 1, {})[0] : undefined;
+        sel = next === undefined ? -1 : next;
+        if (pasted && files.length === 1 && ok.length) {
+          notes.push('<span class="ok">✓</span> 已把照片放给' + esc(who(ok[0])) + '。' +
+            (sel >= 0 ? '下一张会放给' + esc(who({ i: sel })) + '，可以接着复制、粘贴。' : '所有人都有照片了。'));
+        } else {
+          var byName = ok.filter(function (s) { return s.byName; }), inOrder = ok.filter(function (s) { return !s.byName; });
+          if (byName.length) notes.push('<span class="ok">✓</span> 按姓名配上照片 ' + byName.length + ' 张');
+          if (inOrder.length) notes.push('<span class="ok">✓</span> 按顺序配给：' +
+            esc(inOrder.map(function (s) { return s.label + ' → ' + who(s); }).join('、')) + '（不对的话，把照片拖到正确的人身上即可）');
+        }
+        var failed = plan.filter(function (s) { return s.failed; });
+        if (failed.length) notes.push('<span class="err">无法读取：' + esc(failed.map(function (s) { return s.file.name; }).join('、')) + '</span>');
+        if (!rows.length && files.length) notes.push('<span class="err">名单里还没有人，请先导入资料或“添加一人”。</span>');
+        else if (rest.length) notes.push('<span class="err">还有 ' + rest.length + ' 张照片没地方放（大家都已经有照片了）。要替换某人的照片，先点一下他的照片框再粘贴。</span>');
+        return notes;
+      });
+    }
+
+    function show(notes) {
+      say(notes.join('\n'));
+      render();
+      var tr = tbody.querySelector('tr.sel');
+      if (tr) tr.scrollIntoView({ block: 'center' });
+    }
+
     function importFiles(list) {
       var files = Array.prototype.slice.call(list || []);
       if (!files.length) return;
       var docs = files.filter(function (f) { return /^(docx|xlsx)$/.test(ext(f.name)); });
-      var images = files.filter(function (f) { return /^image\//.test(f.type) || IMAGE_TYPES[ext(f.name)]; });
+      var images = files.filter(isImageFile);
       var skipped = files.filter(function (f) { return docs.indexOf(f) < 0 && images.indexOf(f) < 0; });
       say('正在读取…');
 
@@ -617,30 +702,21 @@
       });
       chain.then(function (people) {
         if (people.length) {
-          rows = modeSelect.value === 'append' ? rows.concat(people) : people;
+          if (modeSelect.value === 'append') rows = rows.concat(people);
+          else { rows = people; sel = -1; }
           dirty = true;
         }
-        var unmatched = [];
-        return images.reduce(function (p, file) {
-          return p.then(function () {
-            var i = matchPhoto(file);
-            if (i < 0) { unmatched.push(file.name); return; }
-            return toPhoto(file).then(function (photo) { rows[i].photo = photo; dirty = true; })
-              .catch(function () { unmatched.push(file.name + '（无法读取）'); });
-          });
-        }, Promise.resolve()).then(function () {
-          if (images.length) notes.push('<span class="ok">✓</span> 配上照片 ' + (images.length - unmatched.length) + ' 张');
-          if (unmatched.length) notes.push('<span class="err">以下照片没找到对应的人（文件名请写成姓名）：' + esc(unmatched.join('、')) + '</span>');
+        return (images.length ? placeImages(images, false) : Promise.resolve([])).then(function (imageNotes) {
+          notes = notes.concat(imageNotes);
           skipped.forEach(function (f) {
             var tip = /^(doc|wps)$/.test(ext(f.name)) ? '请用 Word/WPS 另存为 .docx 再导入'
               : /^(xls|et|csv)$/.test(ext(f.name)) ? '请用 Excel/WPS 另存为 .xlsx 再导入' : '不支持这种文件';
             notes.push('<span class="err">✗ “' + esc(f.name) + '”：' + tip + '</span>');
           });
           var noPhoto = rows.filter(function (r) { return !r.photo; }).map(function (r) { return r.name || '（未填姓名）'; });
-          if (noPhoto.length) notes.push('缺少照片：' + esc(noPhoto.join('、')) + '（点表格里的照片框可以补上）');
+          if (noPhoto.length) notes.push('缺少照片：' + esc(noPhoto.join('、')) + '（复制照片后按 Ctrl+V 粘贴，或把照片拖进来）');
           if (people.length || images.length) notes.push('请核对下面的内容，可以直接修改，然后点“保存并应用到大屏”。');
-          say(notes.join('\n'));
-          render();
+          show(notes);
         });
       });
     }
@@ -655,6 +731,8 @@
         case 'template':
           download(doc, buildXlsx(rows), (cfg.title || '大屏') + '-人员资料.xlsx');
           break;
+        case 'select': sel = i; markSel(); say('已选中' + esc(rows[i].name ? '“' + rows[i].name + '”' : '第 ' + (i + 1) + ' 行') + '：现在按 Ctrl+V 粘贴照片。'); break;
+        case 'paste': pasteFromClipboard(i); break;
         case 'photo': photoTarget = i; photoInput.value = ''; photoInput.click(); break;
         case 'bg': bgInput.value = ''; bgInput.click(); break;
         case 'bgreset': bg = ''; bgSize = null; dirty = true; renderBg(); break;
@@ -679,6 +757,53 @@
       if (f === 'name') e.target.classList.toggle('bad', !e.target.value.trim());
       dirty = true;
     });
+    root.addEventListener('focusin', function (e) {
+      var tr = e.target.closest && e.target.closest('tbody tr');
+      if (tr) { sel = +tr.getAttribute('data-i'); markSel(); }
+    });
+    root.addEventListener('dblclick', function (e) {
+      var thumb = e.target.closest && e.target.closest('.svi-thumb');
+      if (thumb) { photoTarget = +thumb.closest('tr').getAttribute('data-i'); photoInput.value = ''; photoInput.click(); }
+    });
+
+    // Ctrl+V：剪贴板里有照片就放给选中的那位；粘的是文字（在输入框里）则照常
+    function onPaste(e) {
+      var dt = e.clipboardData;
+      if (!dt) return;
+      var files = Array.prototype.filter.call(dt.files || [], isImageFile);
+      if (!files.length) each(dt.items || [], function (item) {
+        var f = item.kind === 'file' && /^image\//.test(item.type) && item.getAsFile();
+        if (f) files.push(f);
+      });
+      if (!files.length) return;
+      if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName) && (dt.getData('text/plain') || '').trim()) return;
+      e.preventDefault();
+      say('正在读取照片…');
+      placeImages(files, true).then(show);
+    }
+    doc.addEventListener('paste', onPaste);
+
+    // “粘贴”按钮：读系统剪贴板（浏览器会问一次是否允许）
+    function pasteFromClipboard(i) {
+      sel = i;
+      markSel();
+      var nav = doc.defaultView.navigator;
+      var fallback = '可以点一下照片框，再按 Ctrl+V 粘贴。';
+      if (!nav.clipboard || !nav.clipboard.read) { say(fallback); return; }
+      nav.clipboard.read().then(function (items) {
+        return Promise.all(items.map(function (item) {
+          var type = item.types.filter(function (t) { return /^image\//.test(t); })[0];
+          return type ? item.getType(type) : null;
+        }));
+      }).then(function (blobs) {
+        var blob = blobs.filter(Boolean)[0];
+        if (!blob) { say('<span class="err">剪贴板里没有照片：请先在 Word / 微信里右键照片“复制”，再点“粘贴”。</span>'); return; }
+        return placeImages([new File([blob], 'image.png', { type: blob.type })], true).then(show);
+      }).catch(function () {
+        say('<span class="err">浏览器没有允许读取剪贴板。' + fallback + '</span>');
+      });
+    }
+
     root.addEventListener('keydown', function (e) {
       e.stopPropagation();   // 输入时不触发大屏快捷键
       if (e.key === 'Escape') close();
