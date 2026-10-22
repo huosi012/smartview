@@ -620,6 +620,7 @@
   // ---------- 打开 / 关闭 ----------
   var current = -1;   // 正在放大的人
   var pending = -1;   // 已选中、圈正在转过来的人
+  var lastShown = -1; // 最近放大过的人：收回后按“下一位”从他往后接着走
 
   function setPicked(i, on) {
     if (i >= 0) items[i].card.classList.toggle('picked', on);
@@ -636,6 +637,7 @@
     }
     setPicked(pending, false);
     pending = i;
+    lastShown = i;
     setPicked(i, true);
     var delta = -(angle + i * 2 * Math.PI / N);                     // 让第 i 张转到角度 0（正前方）
     delta -= 2 * Math.PI * Math.round(delta / (2 * Math.PI));        // 走最短的方向
@@ -681,15 +683,26 @@
     syncControl();
   }
 
+  // “下一位 / 上一位”的目标：接着最近放大过的那位走；返回 -1 表示先收回
+  function neighbor(dir) {
+    var base = pending >= 0 ? pending : current >= 0 ? current : lastShown;
+    if (base < 0) return dir > 0 ? 0 : N - 1;
+    var next = base + dir;
+    if (next >= 0 && next < N) return next;
+    // 放完最后一位：先收回；收回后再按，从头开始
+    return pending >= 0 || current >= 0 ? -1 : (next + N) % N;
+  }
+
   function step(dir) {
-    var base = pending >= 0 ? pending : current;
-    var next = base < 0 ? (dir > 0 ? 0 : N - 1) : base + dir;
-    if (next < 0 || next >= N) closeAll(); else open(next);
+    var next = neighbor(dir);
+    if (next < 0) closeAll(); else open(next);
   }
 
   function replayIntro() {
     closeAll();
+    lastShown = -1;   // 重新入场 = 从第 1 位重新开始
     introStart = performance.now();
+    syncControl();
   }
 
   document.getElementById('dim').addEventListener('click', closeAll);
@@ -709,16 +722,17 @@
       'body{margin:0;font-family:"Microsoft YaHei","微软雅黑","PingFang SC","WenQuanYi Zen Hei",sans-serif;background:#1d0a0b;color:#fff}' +
       'header{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:12px 16px;background:#8a0910;z-index:1}' +
       'header h1{font-size:18px;margin:0 12px 0 0;white-space:nowrap}' +
+      '#nextHint{color:#ffd27a;font-size:15px;white-space:nowrap}' +
       'input{flex:1;min-width:120px;font-size:18px;padding:8px 12px;border-radius:8px;border:0}' +
       'button.op{font-size:16px;padding:9px 16px;border-radius:8px;border:0;background:#ffd27a;color:#5a0a0d;font-weight:bold;cursor:pointer}' +
       'button.op.back{background:#fff}' +
       'main{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:16px}' +
       '.p{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:#3a1416;border:3px solid transparent;color:#fff;text-align:left;cursor:pointer;font:inherit}' +
-      '.p:hover{background:#56201f}.p.on{border-color:#ffd27a;background:#7a1d1f}.p.hide{display:none}' +
+      '.p:hover{background:#56201f}.p.on{border-color:#ffd27a;background:#7a1d1f}.p.last{border-color:rgba(255,210,122,.45);border-style:dashed}.p.hide{display:none}' +
       '.p .t{width:76px;height:57px;flex:none;border-radius:6px;background:#2a0c0d center/contain no-repeat}' +
       '.p .n{font-size:20px;font-weight:bold}.p .u{font-size:13px;opacity:.8}.p .k{font-size:12px;color:#ffd27a}' +
       'footer{padding:4px 16px 16px;font-size:13px;opacity:.7}' +
-      '</style></head><body><header><h1>后台控制面板</h1><input id="q" placeholder="输入姓名或单位搜索，回车放大第一个结果">' +
+      '</style></head><body><header><h1>后台控制面板</h1><span id="nextHint"></span><input id="q" placeholder="输入姓名或单位搜索，回车放大第一个结果">' +
       '<button class="op" id="prev">上一位</button><button class="op" id="next">下一位</button>' +
       '<button class="op back" id="back">返回总览</button><button class="op back" id="intro">重新入场</button>' +
       '<button class="op back" id="data">资料与背景</button></header>' +
@@ -773,7 +787,13 @@
   function syncControl() {
     if (!ctrl || ctrl.closed) return;
     var on = pending >= 0 ? pending : current;
-    ctrlButtons.forEach(function (b, i) { b.classList.toggle('on', i === on); });
+    ctrlButtons.forEach(function (b, i) {
+      b.classList.toggle('on', i === on);
+      b.classList.toggle('last', on < 0 && i === lastShown);   // 刚收回的那位：虚线框
+    });
+    var next = neighbor(1);
+    ctrl.document.getElementById('nextHint').textContent =
+      next < 0 ? '下一位：收回（已是最后一位）' : '下一位：第 ' + (next + 1) + ' 位 ' + people[next].name;
   }
   window.addEventListener('beforeunload', function () { if (ctrl && !ctrl.closed) ctrl.close(); });
 
