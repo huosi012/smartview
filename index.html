@@ -208,7 +208,7 @@
   .highlight .seg { display: inline-block; max-width: 100%; text-wrap: balance; }
   .highlight .q { color: var(--gold); font-family: Georgia, "Times New Roman", serif; font-size: 1.5em; line-height: 0; vertical-align: -.2em; margin: 0 .08em; }
   .heading { flex: none; display: flex; align-items: center; gap: 26px; width: 100%; color: var(--gold); font-size: 50px; font-weight: bold; white-space: nowrap; }
-  .heading span { letter-spacing: .3em; margin-right: -.3em; }
+  .heading span { letter-spacing: .2em; margin-right: -.2em; }
   .heading i { position: relative; flex: 1; height: 2px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
   .heading i:last-child { transform: scaleX(-1); }
   .heading i::after { content: ""; position: absolute; right: -6px; top: -5px; width: 12px; height: 12px; background: var(--gold); transform: rotate(45deg); }
@@ -379,7 +379,7 @@
   }
 
   // 照片（连相框）居中，相框比例跟随照片；展板横贯全屏，上下比相框各短一截
-  // 左侧放姓名单位，右侧放个人简介
+  // 左侧放姓名单位，右侧放正面行为介绍
   function layout(aspect) {
     var F = LAYOUT.frame;
     var ih = LAYOUT.photoMaxH - 2 * F, iw = ih * aspect;
@@ -502,7 +502,7 @@
     it.right = el('div', 'zone zone-right', it.detail);
     var heading = el('div', 'heading', it.right);
     el('i', '', heading);
-    el('span', '', heading).textContent = cfg.bioLabel || '个人简介';
+    el('span', '', heading).textContent = cfg.bioLabel || '正面行为介绍';
     el('i', '', heading);
     it.bio = el('div', 'bio', it.right);
     var bioText = String(p.bio || '').trim();

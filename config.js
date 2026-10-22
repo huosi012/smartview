@@ -13,7 +13,7 @@
 //        introOnLoad     打开页面即播放入场动画；false 则等按 S 键再出场
 //        centerY/radiusX/radiusY/frontScale/backScale  圈的位置、大小、前后远近
 //    · people     ：人员列表，顺序 = 控制面板与“下一位”的顺序
-//        name 姓名 / unit 单位 / bio 个人简介（分段用 \n）
+//        name 姓名 / unit 单位 / bio 正面行为介绍（分段用 \n）
 //        highlight  （可选）一句话事迹，金色大字显示在姓名下方；留空则不显示
 //        photo  照片路径，如 "photos/01.jpg"；留空 "" 显示“照片待补充”
 //        focus  （可选）照片裁切焦点，如 "50% 20%" 表示偏上，默认居中
@@ -25,7 +25,7 @@ window.SMARTVIEW_CONFIG = {
   "titleImage": "assets/title.png",
   "showHeader": true,
   "tagline": "我为核安全文化代言",
-  "bioLabel": "个人简介",
+  "bioLabel": "正面行为介绍",
   "carousel": {
     "secondsPerTurn": 60,
     "direction": 1,
@@ -98,112 +98,112 @@ window.SMARTVIEW_CONFIG = {
       "name": "人员09",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员10",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员11",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员12",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员13",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员14",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员15",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员16",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员17",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员18",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员19",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员20",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员21",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员22",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员23",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     },
     {
       "name": "人员24",
       "unit": "单位待补充",
       "highlight": "",
-      "bio": "个人简介待补充。",
+      "bio": "正面行为介绍待补充。",
       "photo": ""
     }
   ]
