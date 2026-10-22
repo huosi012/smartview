@@ -207,6 +207,13 @@
   }
   #help b { color: var(--gold); display: inline-block; min-width: 10em; }
   body.help #help { display: block; }
+  #toast {
+    position: fixed; left: 50%; bottom: 30px; z-index: 900; max-width: 80vw; transform: translateX(-50%);
+    padding: 14px 26px; border-radius: 10px; background: rgba(20, 0, 2, .9); color: var(--gold);
+    font-size: 18px; line-height: 1.6; box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+    opacity: 0; pointer-events: none; transition: opacity .5s;
+  }
+  #toast.show { opacity: 1; }
   #error { position: fixed; inset: 0; display: none; place-items: center; color: #fff; font-size: 22px; background: #400; }
 </style>
 </head>
@@ -243,6 +250,7 @@
   <div><b>点击照片</b>圈先转到中间，再放大该人员（鼠标移到圈上会暂停转动）</div>
   <div><b>点击任意处</b>返回</div>
   <div><b>C</b>打开后台控制面板（人员名单）</div>
+  <div><b>I</b>人员资料：导入 Word / Excel / 照片，修改后保存</div>
   <div><b>数字键</b>放大第 N 位（两位数连续输入，如 1 2）</div>
   <div><b>→ / PageDown / 空格</b>按顺序放大下一位</div>
   <div><b>← / PageUp</b>上一位</div>
@@ -252,11 +260,19 @@
   <div><b>H / ?</b>显示 / 隐藏本帮助</div>
 </div>
 <div id="error"></div>
+<div id="toast"></div>
 
-<script src="config.js"></script>
+<script id="sv-config" src="config.js"></script>
+<script src="importer.js"></script>
 <script>
 (function () {
   'use strict';
+
+  // 页面原始 HTML：导入资料后，据此生成新的大屏文件（必须在改动页面之前取）
+  var SOURCE_HTML = '<!doctype html>\n' + document.documentElement.outerHTML;
+  var IS_BUNDLE = !document.querySelector('script[src]');
+  // 应用新资料时整页会被重写，旧的动画循环据此停止
+  var GEN = window.__smartviewGen = (window.__smartviewGen || 0) + 1;
 
   var STAGE_W = 2800, STAGE_H = 1000;
   // 放大后的版面（舞台像素）
@@ -520,6 +536,7 @@
   var last = performance.now();
   var spin = null;   // 选中某人后，把圈转到正前方：{ from, to, t0, dur }
   function frame(now) {
+    if (window.__smartviewGen !== GEN) return;
     var dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     if (spin) {
@@ -661,7 +678,8 @@
       'footer{padding:4px 16px 16px;font-size:13px;opacity:.7}' +
       '</style></head><body><header><h1>后台控制面板</h1><input id="q" placeholder="输入姓名或单位搜索，回车放大第一个结果">' +
       '<button class="op" id="prev">上一位</button><button class="op" id="next">下一位</button>' +
-      '<button class="op back" id="back">返回总览</button><button class="op back" id="intro">重新入场</button></header>' +
+      '<button class="op back" id="back">返回总览</button><button class="op back" id="intro">重新入场</button>' +
+      '<button class="op back" id="data">人员资料</button></header>' +
       '<main id="list"></main><footer>点击人员 = 大屏放大该人员；再点一次或点“返回总览”= 收回。本窗口可拖到操作员显示器上，大屏窗口保持全屏。</footer></body></html>'
     );
     d.close();
@@ -705,6 +723,7 @@
     d.getElementById('next').addEventListener('click', function () { step(1); });
     d.getElementById('back').addEventListener('click', closeAll);
     d.getElementById('intro').addEventListener('click', replayIntro);
+    d.getElementById('data').addEventListener('click', function () { openData(d); });
     d.addEventListener('keydown', onKey);
     syncControl();
   }
@@ -735,7 +754,8 @@
   }
 
   function onKey(e) {
-    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    if (window.__smartviewGen !== GEN || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (body.classList.contains('importing') || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     var k = e.key;
     if (/^[0-9]$/.test(k)) {
       e.preventDefault();
@@ -760,6 +780,8 @@
         e.preventDefault(); toggleFullscreen(); break;
       case 'c': case 'C':
         openControl(); break;
+      case 'i': case 'I':
+        openData(document); break;
       case 's': case 'S':
         replayIntro(); break;
       case 'h': case 'H': case '?':
@@ -775,13 +797,80 @@
     idle = false;
     body.classList.remove('idle');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(function () { idle = true; body.classList.add('idle'); }, 3000);
+    idleTimer = setTimeout(function () {
+      if (body.classList.contains('importing')) return;
+      idle = true;
+      body.classList.add('idle');
+    }, 3000);
   }
   document.addEventListener('mousemove', wake);
   wake();
 
+  // ---------- 人员资料：导入 / 修改后保存为新的大屏文件 ----------
+  function buildHtml(newCfg) {
+    var start = SOURCE_HTML.indexOf('<script id="sv-config"');
+    var end = SOURCE_HTML.indexOf('<\/script>', start) + '<\/script>'.length;
+    var json = JSON.stringify(newCfg).replace(/<\//g, '<\\/');
+    return SOURCE_HTML.slice(0, start) + '<script id="sv-config">window.SMARTVIEW_CONFIG = ' + json + ';<\/script>' + SOURCE_HTML.slice(end);
+  }
+
+  // 保存新的大屏文件后，用新资料重写本页。返回 Promise：true = 已保存，false = 用户取消
+  function saveConfig(newCfg, win) {
+    win = win || window;
+    var html = buildHtml(newCfg);
+    var d = new Date(), pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var name = (newCfg.title || '大屏') + '-大屏-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) +
+      '-' + pad(d.getHours()) + pad(d.getMinutes()) + '.html';
+    var blob = new Blob([html], { type: 'text/html' });
+    var saved, delay = 300;
+    if (win.showSaveFilePicker) {
+      // 弹出“另存为”窗口，让操作员自己选保存位置（如桌面、U 盘）
+      saved = win.showSaveFilePicker({ suggestedName: name, types: [{ description: '大屏网页文件', accept: { 'text/html': ['.html'] } }] })
+        .then(function (handle) {
+          return handle.createWritable()
+            .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
+            .then(function () { return '已保存新的大屏文件“' + handle.name + '”。以后请打开这个新文件。'; });
+        });
+    } else {
+      var a = win.document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      win.document.body.appendChild(a);
+      a.click();
+      a.remove();
+      delay = 800;   // 稍等下载开始
+      saved = Promise.resolve('已保存新的大屏文件“' + name + '”（在浏览器的“下载”文件夹里）。以后请打开这个新文件。');
+    }
+    return saved.then(function (notice) {
+      window.__smartviewNotice = notice;
+      setTimeout(function () {
+        if (ctrl && !ctrl.closed) ctrl.close();
+        document.open();
+        document.write(html);
+        document.close();
+      }, delay);
+      return true;
+    }, function (err) {
+      if (err && err.name === 'AbortError') return false;
+      throw err;
+    });
+  }
+
+  function openData(doc) {
+    if (!window.SmartviewImporter) { alert('缺少导入模块 importer.js'); return; }
+    window.SmartviewImporter.open(doc, { config: function () { return cfg; }, save: saveConfig, isBundle: IS_BUNDLE });
+  }
+
+  if (window.__smartviewNotice) {
+    var toast = document.getElementById('toast');
+    toast.textContent = window.__smartviewNotice;
+    toast.classList.add('show');
+    window.__smartviewNotice = '';
+    setTimeout(function () { toast.classList.remove('show'); }, 12000);
+  }
+
   // 供调试 / 自动化使用
-  window.smartview = { open: open, close: closeAll, step: step, intro: replayIntro, control: openControl };
+  window.smartview = { open: open, close: closeAll, step: step, intro: replayIntro, control: openControl, data: function () { openData(document); } };
 })();
 </script>
 </body>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把 index.html + config.js + 所有图片打包成一个文件：output/<标题>-大屏.html
+"""把 index.html + config.js + importer.js + 所有图片打包成一个文件：output/<标题>-大屏.html
 
 打包后的文件不依赖其他文件，拷到播放电脑上双击即可打开。
 
@@ -59,11 +59,20 @@ def build_html(cfg, out_path):
     for p in c["people"]:
         if p.get("photo"):
             p["photo"] = data_uri(p["photo"], PHOTO_MAX_SIDE)
-    tag = '<script src="config.js"></script>'
-    if tag not in html:
-        raise SystemExit("index.html 中找不到 config.js 的引用")
     inline = json.dumps(c, ensure_ascii=False).replace("</", "<\\/")
-    out_path.write_text(html.replace(tag, f"<script>window.SMARTVIEW_CONFIG = {inline};</script>"), "utf-8")
+    html = replace_once(html, '<script id="sv-config" src="config.js"></script>',
+                        f'<script id="sv-config">window.SMARTVIEW_CONFIG = {inline};</script>')
+    importer = (ROOT / "importer.js").read_text("utf-8")
+    if "</script" in importer.lower():
+        raise SystemExit("importer.js 里不能出现 </script")
+    html = replace_once(html, '<script src="importer.js"></script>', f"<script>\n{importer}</script>")
+    out_path.write_text(html, "utf-8")
+
+
+def replace_once(html, tag, new):
+    if html.count(tag) != 1:
+        raise SystemExit(f"index.html 中找不到（或有多处）：{tag}")
+    return html.replace(tag, new)
 
 
 def main():
