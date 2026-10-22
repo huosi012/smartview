@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我为核安全文化代言 · 互动大屏</title>
+<style>
+  :root {
+    --red: #c8161d;
+    --gold: #ffd27a;
+    --ink: #2a1a1a;
+    --dur: 900ms;
+    --ease: cubic-bezier(.65, 0, .35, 1);
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+  body {
+    font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Noto Sans CJK SC",
+                 "Source Han Sans SC", "WenQuanYi Zen Hei", sans-serif;
+    -webkit-user-select: none; user-select: none;
+  }
+  body.idle, body.idle * { cursor: none !important; }
+
+  /* 舞台：固定 2800×1000（= 14m×5m），按窗口等比缩放 */
+  #stage {
+    position: absolute; left: 0; top: 0;
+    width: 2800px; height: 1000px;
+    transform-origin: 0 0;
+    overflow: hidden;
+    background: #a50f16;
+  }
+  #poster { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+
+  .hotspot { position: absolute; z-index: 1; border-radius: 12px; cursor: pointer; transition: box-shadow .25s; }
+  .hotspot:hover { box-shadow: 0 0 0 5px rgba(255, 210, 122, .95), 0 0 36px 8px rgba(255, 200, 90, .55); }
+  .hotspot .num { display: none; }
+  body.debug .hotspot { outline: 4px dashed #0f0; }
+  body.debug .hotspot .num {
+    display: block; position: absolute; left: 8px; top: 8px; padding: 2px 14px;
+    background: #0f0; color: #000; font: bold 36px/1.2 sans-serif; border-radius: 6px;
+  }
+  .photo-area { position: absolute; z-index: 2; display: none; outline: 3px solid #ff0; pointer-events: none; }
+  body.debug .photo-area { display: block; }
+
+  #dim {
+    position: absolute; inset: 0; z-index: 5;
+    background: radial-gradient(ellipse at center, rgba(45, 0, 4, .78) 0%, rgba(12, 0, 2, .92) 100%);
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--dur) ease;
+  }
+  body.open #dim { opacity: 1; pointer-events: auto; cursor: pointer; }
+
+  /* 放大层：每人一组 */
+  .detail { position: absolute; inset: 0; z-index: 10; pointer-events: none; visibility: hidden; }
+  .detail.visible { visibility: visible; }
+
+  .zoom {
+    position: absolute; overflow: hidden; border-radius: 10px;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    transition: left var(--dur) var(--ease), top var(--dur) var(--ease),
+                width var(--dur) var(--ease), height var(--dur) var(--ease),
+                box-shadow var(--dur) var(--ease), border-radius var(--dur) var(--ease);
+  }
+  .zoom.snap { transition: none; }
+  .detail.active .zoom {
+    border-radius: 18px;
+    box-shadow: 0 0 0 12px #fff, 0 0 0 16px var(--gold), 0 40px 120px 20px rgba(0, 0, 0, .7);
+  }
+  .zoom .crop, .zoom .orig { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .zoom .crop { background-repeat: no-repeat; transition: opacity var(--dur) ease; }
+  .zoom .orig { object-fit: cover; opacity: 0; transition: opacity var(--dur) ease; }
+  .detail.has-orig.active .zoom .orig { opacity: 1; }
+  .detail.has-orig.active .zoom .crop { opacity: 0; }
+
+  .info-left, .info-right { position: absolute; opacity: 0; transition: opacity .3s ease, transform .3s ease; }
+  .info-left { top: 0; height: 1000px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; text-align: right; transform: translateX(-60px); }
+  .info-right { transform: translateX(60px); }
+  .detail.active .info-left, .detail.active .info-right {
+    opacity: 1; transform: none;
+    transition: opacity .6s ease .45s, transform .7s cubic-bezier(.2, .8, .2, 1) .45s;
+  }
+
+  .tag { color: var(--gold); font-size: 46px; letter-spacing: .3em; margin-right: -.3em; }
+  .name {
+    color: #fff; font-weight: bold; font-size: 180px; line-height: 1.25; letter-spacing: .12em; margin-right: -.12em;
+    white-space: nowrap; max-width: 100%; overflow: hidden;
+    text-shadow: 0 6px 24px rgba(0, 0, 0, .6);
+  }
+  .bar { width: 300px; height: 10px; margin: 26px 0 34px; border-radius: 5px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
+  .unit { color: var(--gold); font-size: 76px; font-weight: bold; letter-spacing: .1em; margin-right: -.1em; white-space: nowrap; max-width: 100%; overflow: hidden; }
+
+  .bio-card {
+    position: absolute; inset: 0; box-sizing: border-box; padding: 54px 60px;
+    display: flex; flex-direction: column;
+    background: rgba(255, 255, 255, .96); border-radius: 24px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
+  }
+  .bio-label { flex: none; display: flex; align-items: center; gap: 22px; color: var(--red); font-size: 52px; font-weight: bold; letter-spacing: .15em; margin-bottom: 30px; }
+  .bio-label::before { content: ""; width: 14px; height: 56px; border-radius: 7px; background: var(--red); }
+  .bio-text { flex: 1; min-height: 0; overflow: hidden; color: var(--ink); line-height: 1.6; text-align: justify; }
+  .bio-text p { margin: 0; text-indent: 2em; }
+
+  #help {
+    position: fixed; right: 20px; bottom: 20px; z-index: 100; display: none;
+    padding: 18px 24px; border-radius: 10px; background: rgba(0, 0, 0, .82); color: #fff;
+    font-size: 15px; line-height: 1.8;
+  }
+  #help b { color: var(--gold); display: inline-block; min-width: 9em; }
+  body.help #help { display: block; }
+  #error { position: fixed; inset: 0; display: none; place-items: center; color: #fff; font-size: 22px; background: #400; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="poster" alt="">
+  <div id="dim"></div>
+</div>
+
+<div id="help">
+  <div><b>点击照片</b>放大该人员</div>
+  <div><b>点击任意处</b>返回总览</div>
+  <div><b>→ / PageDown / 空格</b>按顺序放大下一位</div>
+  <div><b>← / PageUp</b>上一位</div>
+  <div><b>数字键 1–9</b>直接放大第 N 位</div>
+  <div><b>Esc / 0 / B / Home</b>返回总览</div>
+  <div><b>F / F5</b>全屏</div>
+  <div><b>D</b>显示 / 隐藏点击区域（校对用）</div>
+  <div><b>H / ?</b>显示 / 隐藏本帮助</div>
+</div>
+<div id="error"></div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var STAGE_W = 2800, STAGE_H = 1000;
+  // 放大后的版面（舞台像素）。与 tools/build.py 中的 LAYOUT 保持一致。
+  var LAYOUT = { photoMaxH: 840, photoMaxW: 1000, gap: 90, margin: 120, panelTop: 120, panelH: 760 };
+  var DURATION = 900;
+
+  var cfg = window.SMARTVIEW_CONFIG;
+  var stage = document.getElementById('stage');
+  var poster = document.getElementById('poster');
+  var body = document.body;
+
+  if (!cfg || !cfg.people) {
+    var err = document.getElementById('error');
+    err.textContent = '未能读取 config.js，请确认它与本页面在同一文件夹。';
+    err.style.display = 'grid';
+    return;
+  }
+  document.title = (cfg.title || document.title) + ' · 互动大屏';
+  poster.src = cfg.background;
+
+  // ---------- 舞台缩放 ----------
+  function fitStage() {
+    var s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
+    stage.style.transform = 'scale(' + s + ')';
+    stage.style.left = (window.innerWidth - STAGE_W * s) / 2 + 'px';
+    stage.style.top = (window.innerHeight - STAGE_H * s) / 2 + 'px';
+  }
+  window.addEventListener('resize', fitStage);
+  fitStage();
+
+  // ---------- 工具 ----------
+  function pctRect(a) {
+    return { x: a.x / 100 * STAGE_W, y: a.y / 100 * STAGE_H, w: a.w / 100 * STAGE_W, h: a.h / 100 * STAGE_H };
+  }
+  function place(el, r) {
+    el.style.left = r.x + 'px'; el.style.top = r.y + 'px';
+    el.style.width = r.w + 'px'; el.style.height = r.h + 'px';
+  }
+  function el(tag, cls, parent) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  // 逐步缩小字号直到内容放得下
+  function fitText(node, maxPx, minPx) {
+    var size = maxPx;
+    node.style.fontSize = size + 'px';
+    while (size > minPx && (node.scrollHeight > node.clientHeight + 1 || node.scrollWidth > node.clientWidth + 1)) {
+      size -= 2;
+      node.style.fontSize = size + 'px';
+    }
+  }
+
+  function layout(aspect) {
+    var h = LAYOUT.photoMaxH, w = h * aspect;
+    if (w > LAYOUT.photoMaxW) { w = LAYOUT.photoMaxW; h = w / aspect; }
+    var photo = { x: (STAGE_W - w) / 2, y: (STAGE_H - h) / 2, w: w, h: h };
+    var rightX = photo.x + w + LAYOUT.gap;
+    return {
+      photo: photo,
+      left: { x: LAYOUT.margin, w: photo.x - LAYOUT.gap - LAYOUT.margin },
+      right: { x: rightX, y: LAYOUT.panelTop, w: STAGE_W - LAYOUT.margin - rightX, h: LAYOUT.panelH }
+    };
+  }
+
+  // ---------- 构建热区与放大层 ----------
+  var zTop = 10;
+  var details = cfg.people.map(function (p, i) {
+    var hot = el('div', 'hotspot', stage);
+    place(hot, pctRect(p.hotspot || p.photoArea));
+    el('span', 'num', hot).textContent = i + 1;
+    hot.addEventListener('click', function (e) { e.stopPropagation(); open(i); });
+
+    var dbg = el('div', 'photo-area', stage);
+    place(dbg, pctRect(p.photoArea));
+
+    var d = { i: i, token: 0, shown: false, card: pctRect(p.photoArea) };
+    d.el = el('div', 'detail', stage);
+    d.zoom = el('div', 'zoom snap', d.el);
+    var crop = el('div', 'crop', d.zoom);
+    var a = p.photoArea;
+    crop.style.backgroundImage = 'url("' + cfg.background + '")';
+    crop.style.backgroundSize = (10000 / a.w) + '% ' + (10000 / a.h) + '%';
+    crop.style.backgroundPosition = (a.x / (100 - a.w) * 100) + '% ' + (a.y / (100 - a.h) * 100) + '%';
+    place(d.zoom, d.card);
+
+    d.left = el('div', 'info-left', d.el);
+    el('div', 'tag', d.left).textContent = cfg.tagline || '';
+    d.name = el('div', 'name', d.left);
+    d.name.textContent = p.name;
+    el('div', 'bar', d.left);
+    d.unit = el('div', 'unit', d.left);
+    d.unit.textContent = p.unit || '';
+
+    d.right = el('div', 'info-right', d.el);
+    var card = el('div', 'bio-card', d.right);
+    el('div', 'bio-label', card).textContent = cfg.bioLabel || '个人简介';
+    d.bio = el('div', 'bio-text', card);
+    String(p.bio || '').split(/\n+/).forEach(function (para) {
+      if (para.trim()) el('p', '', d.bio).textContent = para.trim();
+    });
+
+    d.aspect = d.card.w / d.card.h;
+    d.ready = Promise.resolve();
+    if (p.photo) {
+      d.el.classList.add('has-orig');
+      var img = el('img', 'orig', d.zoom);
+      d.ready = new Promise(function (resolve) {
+        img.onload = function () { d.aspect = img.naturalWidth / img.naturalHeight; resolve(); };
+        img.onerror = function () { d.el.classList.remove('has-orig'); resolve(); };
+      });
+      img.src = p.photo;
+    }
+    return d;
+  });
+
+  function applyLayout(d) {
+    var L = layout(d.aspect);
+    d.target = L.photo;
+    d.left.style.left = L.left.x + 'px';
+    d.left.style.width = L.left.w + 'px';
+    place(d.right, L.right);
+    fitText(d.name, 180, 70);
+    fitText(d.unit, 76, 36);
+    fitText(d.bio, 60, 28);
+  }
+  var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  details.forEach(function (d) {
+    Promise.all([d.ready, fontsReady]).then(function () { applyLayout(d); });
+  });
+
+  // ---------- 打开 / 关闭 ----------
+  var current = -1;
+
+  function show(d) {
+    var token = ++d.token;
+    d.el.style.zIndex = ++zTop;
+    if (!d.shown) {
+      // 从海报上的原位置起飞
+      d.zoom.classList.add('snap');
+      place(d.zoom, d.card);
+      d.el.classList.add('visible');
+      void d.zoom.offsetWidth;
+      d.zoom.classList.remove('snap');
+    }
+    d.shown = true;
+    requestAnimationFrame(function () {
+      if (token !== d.token) return;
+      d.el.classList.add('active');
+      place(d.zoom, d.target);
+    });
+  }
+
+  function hide(d) {
+    var token = ++d.token;
+    d.el.classList.remove('active');
+    place(d.zoom, d.card);
+    setTimeout(function () {
+      if (token !== d.token) return;
+      d.shown = false;
+      d.el.classList.remove('visible');
+    }, DURATION + 60);
+  }
+
+  function open(i) {
+    if (i < 0 || i >= details.length || i === current) return;
+    if (current >= 0) hide(details[current]);
+    current = i;
+    body.classList.add('open');
+    var d = details[i];
+    if (!d.target) applyLayout(d);
+    show(d);
+  }
+
+  function closeAll() {
+    if (current < 0) return;
+    hide(details[current]);
+    current = -1;
+    body.classList.remove('open');
+  }
+
+  function step(dir) {
+    var n = details.length;
+    var next = current + dir;
+    if (current < 0) next = dir > 0 ? 0 : n - 1;
+    if (next < 0 || next >= n) closeAll(); else open(next);
+  }
+
+  document.getElementById('dim').addEventListener('click', closeAll);
+
+  // ---------- 键盘 / 翻页笔 ----------
+  var digitBuf = '', digitTimer = null;
+  function commitDigits() {
+    clearTimeout(digitTimer);
+    var n = parseInt(digitBuf, 10);
+    digitBuf = '';
+    if (n >= 1) open(n - 1);
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      var r = document.documentElement.requestFullscreen;
+      if (r) r.call(document.documentElement).catch(function () {});
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    var k = e.key;
+    if (/^[0-9]$/.test(k)) {
+      e.preventDefault();
+      if (k === '0' && !digitBuf) { closeAll(); return; }
+      digitBuf += k;
+      clearTimeout(digitTimer);
+      if (details.length <= 9 || digitBuf.length >= String(details.length).length) commitDigits();
+      else digitTimer = setTimeout(commitDigits, 700);
+      return;
+    }
+    switch (k) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter': case 'n': case 'N':
+        e.preventDefault();
+        if (digitBuf) commitDigits(); else step(1);
+        break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace': case 'p': case 'P':
+        e.preventDefault(); step(-1); break;
+      case 'Escape': case 'Home': case 'b': case 'B': case '.':
+        e.preventDefault(); closeAll(); break;
+      case 'f': case 'F': case 'F5':
+        e.preventDefault(); toggleFullscreen(); break;
+      case 'd': case 'D':
+        body.classList.toggle('debug'); break;
+      case 'h': case 'H': case '?':
+        body.classList.toggle('help'); break;
+    }
+  });
+
+  // 鼠标静止 3 秒后隐藏光标，避免在大屏上露出箭头
+  var idleTimer = null;
+  function wake() {
+    body.classList.remove('idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () { body.classList.add('idle'); }, 3000);
+  }
+  document.addEventListener('mousemove', wake);
+  wake();
+
+  // 供调试 / 自动化使用
+  window.smartview = { open: open, close: closeAll, step: step };
+})();
+</script>
+</body>
+</html>
