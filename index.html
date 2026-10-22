@@ -9,8 +9,6 @@
     --red: #c8161d;
     --gold: #ffd27a;
     --ink: #2a1a1a;
-    --dur: 900ms;
-    --ease: cubic-bezier(.65, 0, .35, 1);
   }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
   body {
@@ -21,55 +19,83 @@
   body.idle, body.idle * { cursor: none !important; }
 
   /* 舞台：固定 2800×1000（= 14m×5m），按窗口等比缩放 */
-  #stage {
+  #stage { position: absolute; left: 0; top: 0; width: 2800px; height: 1000px; transform-origin: 0 0; overflow: hidden; }
+
+  /* ---------- 背景 ---------- */
+  #bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 38% 60% at 0% 0%, rgba(255, 190, 170, .35), rgba(255, 190, 170, 0) 70%),
+      radial-gradient(ellipse 90% 120% at 50% -10%, #e2302f 0%, #c8161d 42%, #8a0910 100%);
+    background-size: cover; background-position: center;
+  }
+  .deco { position: absolute; inset: 0; pointer-events: none; }
+  body.custom-bg .deco { display: none; }
+  #rays {
+    background: repeating-conic-gradient(from 0deg at 50% -30%, rgba(255, 255, 255, .07) 0deg 2.5deg, rgba(255, 255, 255, 0) 2.5deg 9deg);
+    -webkit-mask-image: radial-gradient(ellipse 70% 90% at 50% 0%, #000 0%, transparent 75%);
+            mask-image: radial-gradient(ellipse 70% 90% at 50% 0%, #000 0%, transparent 75%);
+  }
+  #waves { width: 100%; height: 100%; }
+  #floor {
+    position: absolute; left: 100px; width: 2600px; height: 300px; pointer-events: none;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 210, 122, .45), rgba(255, 170, 80, .12) 55%, rgba(255, 170, 80, 0) 75%);
+  }
+  #logo { position: absolute; left: 70px; top: 46px; height: 74px; }
+  #title { position: absolute; left: 50%; top: 52px; height: 86px; transform: translateX(-50%); }
+  #logo[src=""], #title[src=""] { display: none; }
+
+  /* ---------- 旋转圈上的卡片 ---------- */
+  #ring { position: absolute; inset: 0; z-index: 3; }
+  .card {
     position: absolute; left: 0; top: 0;
-    width: 2800px; height: 1000px;
-    transform-origin: 0 0;
-    overflow: hidden;
-    background: #a50f16;
+    width: var(--cw); height: var(--ch);
+    transform-origin: 50% 50%; will-change: transform, opacity;
+    cursor: pointer;
   }
-  #poster { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
-
-  .hotspot { position: absolute; z-index: 1; border-radius: 12px; cursor: pointer; transition: box-shadow .25s; }
-  .hotspot:hover { box-shadow: 0 0 0 5px rgba(255, 210, 122, .95), 0 0 36px 8px rgba(255, 200, 90, .55); }
-  .hotspot .num { display: none; }
-  body.debug .hotspot { outline: 4px dashed #0f0; }
-  body.debug .hotspot .num {
-    display: block; position: absolute; left: 8px; top: 8px; padding: 2px 14px;
-    background: #0f0; color: #000; font: bold 36px/1.2 sans-serif; border-radius: 6px;
+  .card .frame {
+    position: absolute; inset: 0; border-radius: 16px; overflow: hidden;
+    background: #fff; box-shadow: 0 16px 36px rgba(50, 0, 0, .5);
   }
-  .photo-area { position: absolute; z-index: 2; display: none; outline: 3px solid #ff0; pointer-events: none; }
-  body.debug .photo-area { display: block; }
+  .card .ph { position: absolute; left: 7px; top: 7px; right: 7px; height: var(--ph); border-radius: 11px; }
+  .card .plate {
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--plate);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, #d9262c, #a50d14);
+  }
+  .card .cname { color: var(--gold); font-weight: bold; font-size: calc(var(--cw) * .15); line-height: 1.15; letter-spacing: .08em; white-space: nowrap; max-width: 92%; overflow: hidden; }
+  .card .cunit { color: #fff; font-size: calc(var(--cw) * .085); line-height: 1.3; white-space: nowrap; max-width: 92%; overflow: hidden; opacity: .95; }
+  .card .shade { position: absolute; inset: 0; border-radius: 16px; background: #2b0004; pointer-events: none; }
+  .card:hover .frame { box-shadow: 0 0 0 6px var(--gold), 0 0 40px 10px rgba(255, 200, 90, .6); }
 
+  /* 照片（卡片与放大层共用） */
+  .ph { overflow: hidden; background: #ddd; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .ph.empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #fbecd0, #e2bd7e);
+    color: rgba(120, 50, 10, .7); container-type: size;
+  }
+  .ph.empty svg { width: 52%; fill: rgba(255, 255, 255, .85); }
+  .ph.empty span { font-size: 7cqw; letter-spacing: .1em; margin-top: 4cqh; }
+
+  /* ---------- 放大层 ---------- */
   #dim {
     position: absolute; inset: 0; z-index: 5;
     background: radial-gradient(ellipse at center, rgba(45, 0, 4, .78) 0%, rgba(12, 0, 2, .92) 100%);
-    opacity: 0; pointer-events: none;
-    transition: opacity var(--dur) ease;
+    opacity: 0; pointer-events: none; transition: opacity .9s ease;
   }
   body.open #dim { opacity: 1; pointer-events: auto; cursor: pointer; }
 
-  /* 放大层：每人一组 */
   .detail { position: absolute; inset: 0; z-index: 10; pointer-events: none; visibility: hidden; }
   .detail.visible { visibility: visible; }
-
   .zoom {
-    position: absolute; overflow: hidden; border-radius: 10px;
+    position: absolute; border-radius: 12px;
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    transition: left var(--dur) var(--ease), top var(--dur) var(--ease),
-                width var(--dur) var(--ease), height var(--dur) var(--ease),
-                box-shadow var(--dur) var(--ease), border-radius var(--dur) var(--ease);
+    transition: box-shadow .9s ease, border-radius .9s ease;
   }
-  .zoom.snap { transition: none; }
-  .detail.active .zoom {
-    border-radius: 18px;
-    box-shadow: 0 0 0 12px #fff, 0 0 0 16px var(--gold), 0 40px 120px 20px rgba(0, 0, 0, .7);
-  }
-  .zoom .crop, .zoom .orig { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .zoom .crop { background-repeat: no-repeat; transition: opacity var(--dur) ease; }
-  .zoom .orig { object-fit: cover; opacity: 0; transition: opacity var(--dur) ease; }
-  .detail.has-orig.active .zoom .orig { opacity: 1; }
-  .detail.has-orig.active .zoom .crop { opacity: 0; }
+  .zoom .ph { position: absolute; inset: 0; border-radius: inherit; }
+  .detail.active .zoom { border-radius: 18px; box-shadow: 0 0 0 12px #fff, 0 0 0 16px var(--gold), 0 40px 120px 20px rgba(0, 0, 0, .7); }
 
   .info-left, .info-right { position: absolute; opacity: 0; transition: opacity .3s ease, transform .3s ease; }
   .info-left { top: 0; height: 1000px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; text-align: right; transform: translateX(-60px); }
@@ -78,21 +104,17 @@
     opacity: 1; transform: none;
     transition: opacity .6s ease .45s, transform .7s cubic-bezier(.2, .8, .2, 1) .45s;
   }
-
   .tag { color: var(--gold); font-size: 46px; letter-spacing: .3em; margin-right: -.3em; }
   .name {
     color: #fff; font-weight: bold; font-size: 180px; line-height: 1.25; letter-spacing: .12em; margin-right: -.12em;
-    white-space: nowrap; max-width: 100%; overflow: hidden;
-    text-shadow: 0 6px 24px rgba(0, 0, 0, .6);
+    white-space: nowrap; max-width: 100%; overflow: hidden; text-shadow: 0 6px 24px rgba(0, 0, 0, .6);
   }
   .bar { width: 300px; height: 10px; margin: 26px 0 34px; border-radius: 5px; background: linear-gradient(90deg, rgba(255, 210, 122, 0), var(--gold)); }
   .unit { color: var(--gold); font-size: 76px; font-weight: bold; letter-spacing: .1em; margin-right: -.1em; white-space: nowrap; max-width: 100%; overflow: hidden; }
-
   .bio-card {
     position: absolute; inset: 0; box-sizing: border-box; padding: 54px 60px;
     display: flex; flex-direction: column;
-    background: rgba(255, 255, 255, .96); border-radius: 24px;
-    box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
+    background: rgba(255, 255, 255, .96); border-radius: 24px; box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
   }
   .bio-label { flex: none; display: flex; align-items: center; gap: 22px; color: var(--red); font-size: 52px; font-weight: bold; letter-spacing: .15em; margin-bottom: 30px; }
   .bio-label::before { content: ""; width: 14px; height: 56px; border-radius: 7px; background: var(--red); }
@@ -101,29 +123,52 @@
 
   #help {
     position: fixed; right: 20px; bottom: 20px; z-index: 100; display: none;
-    padding: 18px 24px; border-radius: 10px; background: rgba(0, 0, 0, .82); color: #fff;
+    padding: 18px 24px; border-radius: 10px; background: rgba(0, 0, 0, .85); color: #fff;
     font-size: 15px; line-height: 1.8;
   }
-  #help b { color: var(--gold); display: inline-block; min-width: 9em; }
+  #help b { color: var(--gold); display: inline-block; min-width: 10em; }
   body.help #help { display: block; }
   #error { position: fixed; inset: 0; display: none; place-items: center; color: #fff; font-size: 22px; background: #400; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <img id="poster" alt="">
+  <div id="bg"></div>
+  <div id="rays" class="deco"></div>
+  <svg id="waves" class="deco" viewBox="0 0 2800 1000" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="silk" x1="0" x2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".55" stop-color="#fff" stop-opacity=".22"/>
+        <stop offset="1" stop-color="#fff" stop-opacity=".05"/>
+      </linearGradient>
+      <linearGradient id="silk-gold" x1="0" x2="1">
+        <stop offset="0" stop-color="#ffd27a" stop-opacity=".05"/>
+        <stop offset=".4" stop-color="#ffd27a" stop-opacity=".3"/>
+        <stop offset="1" stop-color="#ffd27a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 880 C 520 760 980 990 1520 900 S 2420 760 2800 840 L 2800 1000 L 0 1000 Z" fill="url(#silk)"/>
+    <path d="M0 930 C 600 850 1100 1000 1700 940 S 2500 860 2800 900 L 2800 1000 L 0 1000 Z" fill="url(#silk-gold)"/>
+    <path d="M0 960 C 700 900 1300 1010 1900 975 S 2550 930 2800 950" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3"/>
+  </svg>
+  <div id="floor" class="deco"></div>
+  <img id="logo" alt="">
+  <img id="title" alt="">
+  <div id="ring"></div>
   <div id="dim"></div>
 </div>
 
 <div id="help">
-  <div><b>点击照片</b>放大该人员</div>
-  <div><b>点击任意处</b>返回总览</div>
+  <div><b>点击照片</b>放大该人员（鼠标移到圈上会暂停转动）</div>
+  <div><b>点击任意处</b>返回</div>
+  <div><b>C</b>打开后台控制面板（人员名单）</div>
+  <div><b>数字键</b>放大第 N 位（两位数连续输入，如 1 2）</div>
   <div><b>→ / PageDown / 空格</b>按顺序放大下一位</div>
   <div><b>← / PageUp</b>上一位</div>
-  <div><b>数字键 1–9</b>直接放大第 N 位</div>
-  <div><b>Esc / 0 / B / Home</b>返回总览</div>
+  <div><b>Esc / 0 / B / Home</b>返回</div>
+  <div><b>S</b>重新播放入场动画</div>
   <div><b>F / F5</b>全屏</div>
-  <div><b>D</b>显示 / 隐藏点击区域（校对用）</div>
   <div><b>H / ?</b>显示 / 隐藏本帮助</div>
 </div>
 <div id="error"></div>
@@ -134,23 +179,37 @@
   'use strict';
 
   var STAGE_W = 2800, STAGE_H = 1000;
-  // 放大后的版面（舞台像素）。与 tools/build.py 中的 LAYOUT 保持一致。
+  // 放大后的版面（舞台像素）
   var LAYOUT = { photoMaxH: 840, photoMaxW: 1000, gap: 90, margin: 120, panelTop: 120, panelH: 760 };
-  var DURATION = 900;
+  var FLY_MS = 900;
+  var INTRO_MS = 1600, INTRO_STAGGER_MS = 70;
+  var SILHOUETTE = '<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="20"/><path d="M12 96c2-22 18-34 38-34s36 12 38 34z"/></svg>';
 
   var cfg = window.SMARTVIEW_CONFIG;
   var stage = document.getElementById('stage');
-  var poster = document.getElementById('poster');
+  var ringEl = document.getElementById('ring');
   var body = document.body;
 
-  if (!cfg || !cfg.people) {
+  if (!cfg || !cfg.people || !cfg.people.length) {
     var err = document.getElementById('error');
     err.textContent = '未能读取 config.js，请确认它与本页面在同一文件夹。';
     err.style.display = 'grid';
     return;
   }
-  document.title = (cfg.title || document.title) + ' · 互动大屏';
-  poster.src = cfg.background;
+  var people = cfg.people;
+  var N = people.length;
+  var C = Object.assign({
+    secondsPerTurn: 60, slowWhenOpen: 0.2, introOnLoad: true,
+    centerY: 560, radiusX: 1180, radiusY: 150, frontScale: 1.05, backScale: 0.5
+  }, cfg.carousel || {});
+
+  document.title = (cfg.title || '互动大屏') + ' · 互动大屏';
+  if (cfg.background) {
+    body.classList.add('custom-bg');
+    document.getElementById('bg').style.background = '#8a0910 url("' + cfg.background + '") center / cover no-repeat';
+  }
+  document.getElementById('logo').src = cfg.logo || '';
+  document.getElementById('title').src = cfg.titleImage || '';
 
   // ---------- 舞台缩放 ----------
   function fitStage() {
@@ -163,18 +222,21 @@
   fitStage();
 
   // ---------- 工具 ----------
-  function pctRect(a) {
-    return { x: a.x / 100 * STAGE_W, y: a.y / 100 * STAGE_H, w: a.w / 100 * STAGE_W, h: a.h / 100 * STAGE_H };
-  }
-  function place(el, r) {
-    el.style.left = r.x + 'px'; el.style.top = r.y + 'px';
-    el.style.width = r.w + 'px'; el.style.height = r.h + 'px';
-  }
   function el(tag, cls, parent) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (parent) parent.appendChild(e);
     return e;
+  }
+  function place(node, r) {
+    node.style.left = r.x + 'px'; node.style.top = r.y + 'px';
+    node.style.width = r.w + 'px'; node.style.height = r.h + 'px';
+  }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function lerpRect(a, b, t) {
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t };
   }
   // 逐步缩小字号直到内容放得下
   function fitText(node, maxPx, minPx) {
@@ -184,6 +246,18 @@
       size -= 2;
       node.style.fontSize = size + 'px';
     }
+  }
+  function fillPhoto(ph, p) {
+    if (p.photo) {
+      var img = el('img', '', ph);
+      img.src = p.photo;
+      img.alt = '';
+      if (p.focus) img.style.objectPosition = p.focus;
+      return img;
+    }
+    ph.classList.add('empty');
+    ph.innerHTML = SILHOUETTE + '<span>照片待补充</span>';
+    return null;
   }
 
   function layout(aspect) {
@@ -198,130 +272,267 @@
     };
   }
 
-  // ---------- 构建热区与放大层 ----------
+  // ---------- 卡片尺寸（随人数自适应） ----------
+  var CW = Math.round(clamp(2 * Math.PI * C.radiusX / N * 0.8, 150, 320));
+  var PAD = 7;
+  var PH = Math.round((CW - PAD * 2) * 4 / 3);
+  var PLATE = Math.round(CW * 0.3);
+  var CH = PAD + PH + PLATE;
+  ringEl.style.setProperty('--cw', CW + 'px');
+  ringEl.style.setProperty('--ch', CH + 'px');
+  ringEl.style.setProperty('--ph', PH + 'px');
+  ringEl.style.setProperty('--plate', PLATE + 'px');
+  var floor = document.getElementById('floor');
+  floor.style.top = (C.centerY + C.radiusY + CH * C.frontScale / 2 - 170) + 'px';
+
+  // ---------- 构建卡片与放大层 ----------
   var zTop = 10;
-  var details = cfg.people.map(function (p, i) {
-    var hot = el('div', 'hotspot', stage);
-    place(hot, pctRect(p.hotspot || p.photoArea));
-    el('span', 'num', hot).textContent = i + 1;
-    hot.addEventListener('click', function (e) { e.stopPropagation(); open(i); });
+  var items = people.map(function (p, i) {
+    var it = { i: i, p: 0, dir: 0, open: false };
 
-    var dbg = el('div', 'photo-area', stage);
-    place(dbg, pctRect(p.photoArea));
+    it.card = el('div', 'card', ringEl);
+    var frame = el('div', 'frame', it.card);
+    fillPhoto(el('div', 'ph', frame), p);
+    var plate = el('div', 'plate', frame);
+    it.cname = el('div', 'cname', plate);
+    it.cname.textContent = p.name;
+    it.cunit = el('div', 'cunit', plate);
+    it.cunit.textContent = p.unit || '';
+    it.shade = el('div', 'shade', it.card);
+    it.card.addEventListener('click', function (e) { e.stopPropagation(); open(i); });
+    it.card.addEventListener('mouseenter', function () { hovering++; });
+    it.card.addEventListener('mouseleave', function () { hovering = Math.max(0, hovering - 1); });
 
-    var d = { i: i, token: 0, shown: false, card: pctRect(p.photoArea) };
-    d.el = el('div', 'detail', stage);
-    d.zoom = el('div', 'zoom snap', d.el);
-    var crop = el('div', 'crop', d.zoom);
-    var a = p.photoArea;
-    crop.style.backgroundImage = 'url("' + cfg.background + '")';
-    crop.style.backgroundSize = (10000 / a.w) + '% ' + (10000 / a.h) + '%';
-    crop.style.backgroundPosition = (a.x / (100 - a.w) * 100) + '% ' + (a.y / (100 - a.h) * 100) + '%';
-    place(d.zoom, d.card);
+    it.detail = el('div', 'detail', stage);
+    it.zoom = el('div', 'zoom', it.detail);
+    var img = fillPhoto(el('div', 'ph', it.zoom), p);
 
-    d.left = el('div', 'info-left', d.el);
-    el('div', 'tag', d.left).textContent = cfg.tagline || '';
-    d.name = el('div', 'name', d.left);
-    d.name.textContent = p.name;
-    el('div', 'bar', d.left);
-    d.unit = el('div', 'unit', d.left);
-    d.unit.textContent = p.unit || '';
+    it.left = el('div', 'info-left', it.detail);
+    el('div', 'tag', it.left).textContent = cfg.tagline || '';
+    it.name = el('div', 'name', it.left);
+    it.name.textContent = p.name;
+    el('div', 'bar', it.left);
+    it.unit = el('div', 'unit', it.left);
+    it.unit.textContent = p.unit || '';
 
-    d.right = el('div', 'info-right', d.el);
-    var card = el('div', 'bio-card', d.right);
+    it.right = el('div', 'info-right', it.detail);
+    var card = el('div', 'bio-card', it.right);
     el('div', 'bio-label', card).textContent = cfg.bioLabel || '个人简介';
-    d.bio = el('div', 'bio-text', card);
+    it.bio = el('div', 'bio-text', card);
     String(p.bio || '').split(/\n+/).forEach(function (para) {
-      if (para.trim()) el('p', '', d.bio).textContent = para.trim();
+      if (para.trim()) el('p', '', it.bio).textContent = para.trim();
     });
 
-    d.aspect = d.card.w / d.card.h;
-    d.ready = Promise.resolve();
-    if (p.photo) {
-      d.el.classList.add('has-orig');
-      var img = el('img', 'orig', d.zoom);
-      d.ready = new Promise(function (resolve) {
-        img.onload = function () { d.aspect = img.naturalWidth / img.naturalHeight; resolve(); };
-        img.onerror = function () { d.el.classList.remove('has-orig'); resolve(); };
-      });
-      img.src = p.photo;
-    }
-    return d;
+    it.aspect = 3 / 4;
+    it.ready = img ? new Promise(function (resolve) {
+      function done() {
+        if (img.naturalWidth) it.aspect = img.naturalWidth / img.naturalHeight;
+        resolve();
+      }
+      if (img.complete) done(); else { img.onload = done; img.onerror = done; }
+    }) : Promise.resolve();
+    return it;
   });
 
-  function applyLayout(d) {
-    var L = layout(d.aspect);
-    d.target = L.photo;
-    d.left.style.left = L.left.x + 'px';
-    d.left.style.width = L.left.w + 'px';
-    place(d.right, L.right);
-    fitText(d.name, 180, 70);
-    fitText(d.unit, 76, 36);
-    fitText(d.bio, 60, 28);
+  function applyLayout(it) {
+    var L = layout(it.aspect);
+    it.target = L.photo;
+    it.left.style.left = L.left.x + 'px';
+    it.left.style.width = L.left.w + 'px';
+    place(it.right, L.right);
+    fitText(it.name, 180, 70);
+    fitText(it.unit, 76, 36);
+    fitText(it.bio, 60, 28);
   }
   var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  details.forEach(function (d) {
-    Promise.all([d.ready, fontsReady]).then(function () { applyLayout(d); });
+  fontsReady.then(function () {
+    items.forEach(function (it) {
+      fitText(it.cname, CW * 0.15, CW * 0.08);
+      fitText(it.cunit, CW * 0.085, CW * 0.05);
+      it.ready.then(function () { applyLayout(it); });
+    });
   });
+
+  // ---------- 旋转圈 ----------
+  var angle = 0;
+  var speedFactor = 1, hovering = 0;
+  var introStart = C.introOnLoad ? performance.now() + 300 : Infinity;
+
+  // 第 i 张卡片当前的位置、缩放、远近
+  function pose(i, now) {
+    var theta = angle + i * 2 * Math.PI / N;
+    var a = clamp((now - introStart - i * INTRO_STAGGER_MS) / INTRO_MS, 0, 1);
+    var e = easeOut(a);
+    theta -= (1 - e) * Math.PI * 1.2;          // 入场时旋转着散开
+    var depth = (1 + Math.cos(theta)) / 2;     // 1 = 最前，0 = 最后
+    var s = (C.backScale + (C.frontScale - C.backScale) * depth) * (0.25 + 0.75 * e);
+    return {
+      x: STAGE_W / 2 + C.radiusX * Math.sin(theta) * e,
+      y: C.centerY + C.radiusY * Math.cos(theta) * e,
+      s: s, depth: depth, alpha: e
+    };
+  }
+  function photoRect(q) {
+    return {
+      x: q.x + (PAD - CW / 2) * q.s,
+      y: q.y + (PAD - CH / 2) * q.s,
+      w: (CW - PAD * 2) * q.s,
+      h: PH * q.s
+    };
+  }
+
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    var target = current >= 0 ? C.slowWhenOpen : (hovering && !idle ? 0 : 1);
+    speedFactor += (target - speedFactor) * Math.min(1, dt * 3);
+    angle += dt * speedFactor * 2 * Math.PI / C.secondsPerTurn;
+
+    items.forEach(function (it, i) {
+      var q = pose(i, now);
+      var c = it.card;
+      c.style.transform = 'translate3d(' + (q.x - CW / 2) + 'px,' + (q.y - CH / 2) + 'px,0) scale(' + q.s + ')';
+      c.style.zIndex = Math.round(q.depth * 1000);
+      c.style.opacity = it.p > 0 ? 0 : q.alpha;
+      c.style.pointerEvents = q.alpha > 0.5 ? '' : 'none';
+      it.shade.style.opacity = ((1 - q.depth) * 0.62).toFixed(3);
+
+      if (it.dir) {
+        it.p = clamp(it.p + it.dir * dt * 1000 / FLY_MS, 0, 1);
+        place(it.zoom, lerpRect(photoRect(q), it.target, easeInOut(it.p)));
+        if (it.p === 1 || it.p === 0) {
+          if (it.p === 0) it.detail.classList.remove('visible');
+          it.dir = 0;
+        }
+      }
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 
   // ---------- 打开 / 关闭 ----------
   var current = -1;
 
-  function show(d) {
-    var token = ++d.token;
-    d.el.style.zIndex = ++zTop;
-    if (!d.shown) {
-      // 从海报上的原位置起飞
-      d.zoom.classList.add('snap');
-      place(d.zoom, d.card);
-      d.el.classList.add('visible');
-      void d.zoom.offsetWidth;
-      d.zoom.classList.remove('snap');
-    }
-    d.shown = true;
-    requestAnimationFrame(function () {
-      if (token !== d.token) return;
-      d.el.classList.add('active');
-      place(d.zoom, d.target);
-    });
-  }
-
-  function hide(d) {
-    var token = ++d.token;
-    d.el.classList.remove('active');
-    place(d.zoom, d.card);
-    setTimeout(function () {
-      if (token !== d.token) return;
-      d.shown = false;
-      d.el.classList.remove('visible');
-    }, DURATION + 60);
-  }
-
   function open(i) {
-    if (i < 0 || i >= details.length || i === current) return;
-    if (current >= 0) hide(details[current]);
+    if (i < 0 || i >= N || i === current) return;
+    if (current >= 0) hide(items[current]);
     current = i;
+    var it = items[i];
+    if (!it.target) applyLayout(it);
+    it.detail.style.zIndex = ++zTop;
+    it.detail.classList.add('visible');
+    if (it.p === 0) place(it.zoom, photoRect(pose(i, performance.now())));
+    it.dir = 1;
+    requestAnimationFrame(function () { if (it.dir === 1 || it.p === 1) it.detail.classList.add('active'); });
     body.classList.add('open');
-    var d = details[i];
-    if (!d.target) applyLayout(d);
-    show(d);
+    syncControl();
+  }
+
+  function hide(it) {
+    it.detail.classList.remove('active');
+    it.dir = -1;
   }
 
   function closeAll() {
     if (current < 0) return;
-    hide(details[current]);
+    hide(items[current]);
     current = -1;
     body.classList.remove('open');
+    syncControl();
   }
 
   function step(dir) {
-    var n = details.length;
-    var next = current + dir;
-    if (current < 0) next = dir > 0 ? 0 : n - 1;
-    if (next < 0 || next >= n) closeAll(); else open(next);
+    var next = current < 0 ? (dir > 0 ? 0 : N - 1) : current + dir;
+    if (next < 0 || next >= N) closeAll(); else open(next);
+  }
+
+  function replayIntro() {
+    closeAll();
+    introStart = performance.now();
   }
 
   document.getElementById('dim').addEventListener('click', closeAll);
+
+  // ---------- 后台控制面板（独立小窗口，可拖到操作员的显示器上） ----------
+  var ctrl = null, ctrlButtons = [];
+
+  function openControl() {
+    if (ctrl && !ctrl.closed) { ctrl.focus(); return; }
+    var w = window.open('', 'smartview-control', 'width=1180,height=800');
+    if (!w) { alert('浏览器拦截了弹出窗口：请在地址栏右侧允许本页弹出窗口，然后再按 C。'); return; }
+    ctrl = w;
+    var d = w.document;
+    d.open();
+    d.write(
+      '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>后台控制面板 · ' + (cfg.title || '') + '</title><style>' +
+      'body{margin:0;font-family:"Microsoft YaHei","微软雅黑","PingFang SC","WenQuanYi Zen Hei",sans-serif;background:#1d0a0b;color:#fff}' +
+      'header{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:12px 16px;background:#8a0910;z-index:1}' +
+      'header h1{font-size:18px;margin:0 12px 0 0;white-space:nowrap}' +
+      'input{flex:1;min-width:120px;font-size:18px;padding:8px 12px;border-radius:8px;border:0}' +
+      'button.op{font-size:16px;padding:9px 16px;border-radius:8px;border:0;background:#ffd27a;color:#5a0a0d;font-weight:bold;cursor:pointer}' +
+      'button.op.back{background:#fff}' +
+      'main{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:16px}' +
+      '.p{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:#3a1416;border:3px solid transparent;color:#fff;text-align:left;cursor:pointer;font:inherit}' +
+      '.p:hover{background:#56201f}.p.on{border-color:#ffd27a;background:#7a1d1f}.p.hide{display:none}' +
+      '.p .t{width:54px;height:72px;flex:none;border-radius:6px;background:#ddd center/cover no-repeat}' +
+      '.p .n{font-size:20px;font-weight:bold}.p .u{font-size:13px;opacity:.8}.p .k{font-size:12px;color:#ffd27a}' +
+      'footer{padding:4px 16px 16px;font-size:13px;opacity:.7}' +
+      '</style></head><body><header><h1>后台控制面板</h1><input id="q" placeholder="输入姓名或单位搜索，回车放大第一个结果">' +
+      '<button class="op" id="prev">上一位</button><button class="op" id="next">下一位</button>' +
+      '<button class="op back" id="back">返回总览</button><button class="op back" id="intro">重新入场</button></header>' +
+      '<main id="list"></main><footer>点击人员 = 大屏放大该人员；再点一次或点“返回总览”= 收回。本窗口可拖到操作员显示器上，大屏窗口保持全屏。</footer></body></html>'
+    );
+    d.close();
+
+    var list = d.getElementById('list');
+    ctrlButtons = people.map(function (p, i) {
+      var b = d.createElement('button');
+      b.className = 'p';
+      var thumb = d.createElement('span');
+      thumb.className = 't';
+      if (p.photo) thumb.style.backgroundImage = 'url("' + new URL(p.photo, location.href).href + '")';
+      var txt = d.createElement('span');
+      txt.innerHTML = '<div class="k"></div><div class="n"></div><div class="u"></div>';
+      txt.children[0].textContent = '第 ' + (i + 1) + ' 位';
+      txt.children[1].textContent = p.name;
+      txt.children[2].textContent = p.unit || '';
+      b.appendChild(thumb);
+      b.appendChild(txt);
+      b.addEventListener('click', function () { if (current === i) closeAll(); else open(i); });
+      list.appendChild(b);
+      return b;
+    });
+    var q = d.getElementById('q');
+    q.addEventListener('input', function () {
+      var key = q.value.trim();
+      people.forEach(function (p, i) {
+        ctrlButtons[i].classList.toggle('hide', !!key && (p.name + (p.unit || '')).indexOf(key) < 0);
+      });
+    });
+    q.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        var hit = ctrlButtons.findIndex(function (b) { return !b.classList.contains('hide'); });
+        if (hit >= 0) open(hit);
+      } else if (e.key === 'Escape') {
+        q.value = '';
+        q.dispatchEvent(new w.Event('input'));
+      }
+    });
+    d.getElementById('prev').addEventListener('click', function () { step(-1); });
+    d.getElementById('next').addEventListener('click', function () { step(1); });
+    d.getElementById('back').addEventListener('click', closeAll);
+    d.getElementById('intro').addEventListener('click', replayIntro);
+    d.addEventListener('keydown', onKey);
+    syncControl();
+  }
+
+  function syncControl() {
+    if (!ctrl || ctrl.closed) return;
+    ctrlButtons.forEach(function (b, i) { b.classList.toggle('on', i === current); });
+  }
+  window.addEventListener('beforeunload', function () { if (ctrl && !ctrl.closed) ctrl.close(); });
 
   // ---------- 键盘 / 翻页笔 ----------
   var digitBuf = '', digitTimer = null;
@@ -341,7 +552,7 @@
     }
   }
 
-  document.addEventListener('keydown', function (e) {
+  function onKey(e) {
     if (e.ctrlKey || e.altKey || e.metaKey) return;
     var k = e.key;
     if (/^[0-9]$/.test(k)) {
@@ -349,7 +560,8 @@
       if (k === '0' && !digitBuf) { closeAll(); return; }
       digitBuf += k;
       clearTimeout(digitTimer);
-      if (details.length <= 9 || digitBuf.length >= String(details.length).length) commitDigits();
+      // 再输入一位就会超出人数时立即生效，否则稍等第二位
+      if (parseInt(digitBuf, 10) * 10 > N) commitDigits();
       else digitTimer = setTimeout(commitDigits, 700);
       return;
     }
@@ -364,25 +576,30 @@
         e.preventDefault(); closeAll(); break;
       case 'f': case 'F': case 'F5':
         e.preventDefault(); toggleFullscreen(); break;
-      case 'd': case 'D':
-        body.classList.toggle('debug'); break;
+      case 'c': case 'C':
+        openControl(); break;
+      case 's': case 'S':
+        replayIntro(); break;
       case 'h': case 'H': case '?':
         body.classList.toggle('help'); break;
     }
-  });
+  }
+  document.addEventListener('keydown', onKey);
 
   // 鼠标静止 3 秒后隐藏光标，避免在大屏上露出箭头
-  var idleTimer = null;
+  // （光标隐藏后，即使停在照片上，圈也继续转）
+  var idleTimer = null, idle = false;
   function wake() {
+    idle = false;
     body.classList.remove('idle');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(function () { body.classList.add('idle'); }, 3000);
+    idleTimer = setTimeout(function () { idle = true; body.classList.add('idle'); }, 3000);
   }
   document.addEventListener('mousemove', wake);
   wake();
 
   // 供调试 / 自动化使用
-  window.smartview = { open: open, close: closeAll, step: step };
+  window.smartview = { open: open, close: closeAll, step: step, intro: replayIntro, control: openControl };
 })();
 </script>
 </body>
