@@ -66,7 +66,7 @@
   .card .cname { color: var(--gold); font-weight: bold; font-size: calc(var(--cw) * .15); line-height: 1.15; letter-spacing: .08em; white-space: nowrap; max-width: 92%; overflow: hidden; }
   .card .cunit { color: #fff; font-size: calc(var(--cw) * .085); line-height: 1.3; white-space: nowrap; max-width: 92%; overflow: hidden; opacity: .95; }
   .card .shade { position: absolute; inset: 0; border-radius: 16px; background: #2b0004; pointer-events: none; }
-  .card:hover .frame { box-shadow: 0 0 0 6px var(--gold), 0 0 40px 10px rgba(255, 200, 90, .6); }
+  .card:hover .frame, .card.picked .frame { box-shadow: 0 0 0 6px var(--gold), 0 0 40px 10px rgba(255, 200, 90, .6); }
 
   /* 照片（卡片与放大层共用） */
   .ph { overflow: hidden; background: #ddd; }
@@ -160,7 +160,7 @@
 </div>
 
 <div id="help">
-  <div><b>点击照片</b>放大该人员（鼠标移到圈上会暂停转动）</div>
+  <div><b>点击照片</b>圈先转到中间，再放大该人员（鼠标移到圈上会暂停转动）</div>
   <div><b>点击任意处</b>返回</div>
   <div><b>C</b>打开后台控制面板（人员名单）</div>
   <div><b>数字键</b>放大第 N 位（两位数连续输入，如 1 2）</div>
@@ -199,7 +199,7 @@
   var people = cfg.people;
   var N = people.length;
   var C = Object.assign({
-    secondsPerTurn: 60, slowWhenOpen: 0.2, introOnLoad: true,
+    secondsPerTurn: 60, direction: 1, slowWhenOpen: 0, introOnLoad: true,
     centerY: 560, radiusX: 1180, radiusY: 150, frontScale: 1.05, backScale: 0.5
   }, cfg.carousel || {});
 
@@ -363,7 +363,7 @@
     var theta = angle + i * 2 * Math.PI / N;
     var a = clamp((now - introStart - i * INTRO_STAGGER_MS) / INTRO_MS, 0, 1);
     var e = easeOut(a);
-    theta -= (1 - e) * Math.PI * 1.2;          // 入场时旋转着散开
+    theta += C.direction * (1 - e) * Math.PI * 1.2;   // 入场时顺着转动方向旋转着散开
     var depth = (1 + Math.cos(theta)) / 2;     // 1 = 最前，0 = 最后
     var s = (C.backScale + (C.frontScale - C.backScale) * depth) * (0.25 + 0.75 * e);
     return {
@@ -382,12 +382,23 @@
   }
 
   var last = performance.now();
+  var spin = null;   // 选中某人后，把圈转到正前方：{ from, to, t0, dur }
   function frame(now) {
     var dt = Math.min(0.1, (now - last) / 1000);
     last = now;
-    var target = current >= 0 ? C.slowWhenOpen : (hovering && !idle ? 0 : 1);
-    speedFactor += (target - speedFactor) * Math.min(1, dt * 3);
-    angle += dt * speedFactor * 2 * Math.PI / C.secondsPerTurn;
+    if (spin) {
+      var t = clamp((now - spin.t0) / spin.dur, 0, 1);
+      angle = spin.from + (spin.to - spin.from) * easeInOut(t);
+      if (t === 1) {
+        spin = null;
+        if (pending >= 0) reveal(pending);
+      }
+    } else {
+      var target = current >= 0 ? C.slowWhenOpen : (hovering && !idle ? 0 : 1);
+      speedFactor += (target - speedFactor) * Math.min(1, dt * 3);
+      // direction = 1：前排从右往左走，按编号顺序经过正中间
+      angle -= C.direction * dt * speedFactor * 2 * Math.PI / C.secondsPerTurn;
+    }
 
     items.forEach(function (it, i) {
       var q = pose(i, now);
@@ -412,11 +423,37 @@
   requestAnimationFrame(frame);
 
   // ---------- 打开 / 关闭 ----------
-  var current = -1;
+  var current = -1;   // 正在放大的人
+  var pending = -1;   // 已选中、圈正在转过来的人
 
+  function setPicked(i, on) {
+    if (i >= 0) items[i].card.classList.toggle('picked', on);
+  }
+
+  // 选中第 i 位：先把圈转到让他位于正前方中间，再放大
   function open(i) {
-    if (i < 0 || i >= N || i === current) return;
-    if (current >= 0) hide(items[current]);
+    if (i < 0 || i >= N || i === current || i === pending) return;
+    if (current >= 0) {
+      setPicked(current, false);
+      hide(items[current]);
+      current = -1;
+      body.classList.remove('open');
+    }
+    setPicked(pending, false);
+    pending = i;
+    setPicked(i, true);
+    var delta = -(angle + i * 2 * Math.PI / N);                     // 让第 i 张转到角度 0（正前方）
+    delta -= 2 * Math.PI * Math.round(delta / (2 * Math.PI));        // 走最短的方向
+    spin = {
+      from: angle, to: angle + delta, t0: performance.now(),
+      dur: Math.abs(delta) < 1e-3 ? 1 : 450 + 900 * Math.abs(delta) / Math.PI
+    };
+    speedFactor = 0;
+    syncControl();
+  }
+
+  function reveal(i) {
+    pending = -1;
     current = i;
     var it = items[i];
     if (!it.target) applyLayout(it);
@@ -435,15 +472,23 @@
   }
 
   function closeAll() {
-    if (current < 0) return;
-    hide(items[current]);
-    current = -1;
-    body.classList.remove('open');
+    if (pending >= 0) {
+      setPicked(pending, false);
+      pending = -1;
+      spin = null;
+    }
+    if (current >= 0) {
+      setPicked(current, false);
+      hide(items[current]);
+      current = -1;
+      body.classList.remove('open');
+    }
     syncControl();
   }
 
   function step(dir) {
-    var next = current < 0 ? (dir > 0 ? 0 : N - 1) : current + dir;
+    var base = pending >= 0 ? pending : current;
+    var next = base < 0 ? (dir > 0 ? 0 : N - 1) : base + dir;
     if (next < 0 || next >= N) closeAll(); else open(next);
   }
 
@@ -530,7 +575,8 @@
 
   function syncControl() {
     if (!ctrl || ctrl.closed) return;
-    ctrlButtons.forEach(function (b, i) { b.classList.toggle('on', i === current); });
+    var on = pending >= 0 ? pending : current;
+    ctrlButtons.forEach(function (b, i) { b.classList.toggle('on', i === on); });
   }
   window.addEventListener('beforeunload', function () { if (ctrl && !ctrl.closed) ctrl.close(); });
 

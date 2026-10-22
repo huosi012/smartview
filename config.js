@@ -7,6 +7,7 @@
 //    · logo/titleImage ：左上角标志、顶部标题图片（透明 PNG）。底图自带时改为 ""。
 //    · carousel   ：旋转圈参数
 //        secondsPerTurn  转一圈的秒数（越大越慢）
+//        direction       1 = 前排从右往左走、按编号顺序经过中间；-1 = 反方向
 //        slowWhenOpen    放大某人时背景圈的转速比例（0 = 停住）
 //        introOnLoad     打开页面即播放入场动画；false 则等按 S 键再出场
 //        centerY/radiusX/radiusY/frontScale/backScale  圈的位置、大小、前后远近
@@ -24,7 +25,8 @@ window.SMARTVIEW_CONFIG = {
   "bioLabel": "个人简介",
   "carousel": {
     "secondsPerTurn": 60,
-    "slowWhenOpen": 0.2,
+    "direction": 1,
+    "slowWhenOpen": 0,
     "introOnLoad": true,
     "centerY": 560,
     "radiusX": 1180,
