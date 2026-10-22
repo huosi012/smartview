@@ -441,7 +441,7 @@
     '.svi-bgthumb.drag{outline:3px solid #c8161d}' +
     '.svi-layout{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 18px;border-bottom:1px solid #ecdcc4;background:#fff}' +
     '.svi-layout b{color:#8a0910}.svi-layout label{display:flex;align-items:center;gap:6px;white-space:nowrap}' +
-    '.svi-layout input[type=range]{width:110px}.svi-layout output{min-width:2.2em;color:#8a6a4a}' +
+    '.svi-layout .svi-fitnote{color:#c8161d}.svi-layout input[type=range]{width:110px}.svi-layout output{min-width:2.2em;color:#8a6a4a}' +
     '.svi-backdrop{transition:background .15s}.svi-panel{transition:opacity .15s}' +
     '.svi-backdrop.peek{background:transparent}.svi-backdrop.peek .svi-panel{opacity:.12}' +
     '.svi-bg label{display:flex;align-items:center;gap:6px;white-space:nowrap}.svi-bg input[type=checkbox]{width:18px;height:18px;margin:0}.svi-bg label,.svi-bg input,.svi-bgthumb{cursor:pointer}' +
@@ -522,6 +522,7 @@
           '<label>卡片大小<input type="range" data-c="cardScale" min="0.6" max="1.5" step="0.05"></label>' +
           '<label>转一圈<input type="range" data-c="secondsPerTurn" min="20" max="180" step="5"><output data-o="secondsPerTurn"></output>秒</label>' +
           '<button data-act="guide" title="按当前布局，标出照片圈经过的区域，给背景设计做参考">下载背景排版参考图</button>' +
+          '<span class="svi-fitnote"></span>' +
         '</div>' +
         '<div class="svi-msg"></div>' +
         '<div class="svi-wrap"><table><thead><tr><th>#</th><th>照片</th><th style="width:9%">姓名</th><th style="width:13%">单位</th>' +
@@ -582,7 +583,7 @@
         }
         renderBg();
         renderLayout();
-        api.preview && api.preview({ background: bg, showHeader: showHeader, carousel: car });
+        preview({ background: bg, showHeader: showHeader, carousel: car });
         say('<span class="ok">✓</span> 已换上背景图片“' + esc(file.name) + '”（大屏上已能看到效果）。' + note + '点“保存并应用到大屏”后保存。');
       }).catch(function () { say('<span class="err">这张图片无法读取：' + esc(file.name) + '</span>'); });
     }
@@ -776,12 +777,12 @@
         case 'bgreset':
           bg = ''; bgSize = null; showHeader = true; Object.assign(car, PRESETS.ring); dirty = true;
           renderBg(); renderLayout();
-          api.preview && api.preview({ background: '', showHeader: true, carousel: car });
+          preview({ background: '', showHeader: true, carousel: car });
           say('已换回内置红色背景、标志和标题，照片圈恢复整圈。');
           break;
         case 'preset-ring': case 'preset-arc':
           Object.assign(car, PRESETS[btn.getAttribute('data-act') === 'preset-arc' ? 'arc' : 'ring']);
-          dirty = true; renderLayout(); api.preview && api.preview({ carousel: car });
+          dirty = true; renderLayout(); preview({ carousel: car });
           break;
         case 'guide':
           if (api.guide) api.guide(car).then(function (blob) { download(doc, blob, (cfg.title || '大屏') + '-背景排版参考图.png'); });
@@ -863,8 +864,16 @@
     headerBox.addEventListener('change', function () {
       showHeader = headerBox.checked;
       dirty = true;
-      api.preview && api.preview({ showHeader: showHeader });
+      preview({ showHeader: showHeader });
     });
+
+    // 在大屏上预览；卡片因为会超出屏幕而被自动缩小时，给个提示
+    function preview(look) {
+      if (!api.preview) return;
+      var r = api.preview(look) || {};
+      root.querySelector('.svi-fitnote').textContent =
+        r.fit < 0.999 ? '卡片已自动缩小到 ' + Math.round(r.fit * 100) + '%，以免超出屏幕（可把圈往上移或调小纵深）' : '';
+    }
 
     // 照片圈布局：拖动滑块时大屏实时变化，资料窗口暂时变透明，方便看效果
     function renderLayout() {
@@ -882,7 +891,7 @@
       car[key] = e.target.type === 'checkbox' ? e.target.checked : +e.target.value;
       dirty = true;
       renderLayout();
-      api.preview && api.preview({ carousel: car });
+      preview({ carousel: car });
     });
     layoutRow.addEventListener('pointerdown', function (e) {
       if (e.target.type === 'range') root.classList.add('peek');

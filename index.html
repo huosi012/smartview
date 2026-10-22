@@ -434,13 +434,34 @@
       fitText(it.cname, PLATE * 0.44, PLATE * 0.24);
       fitText(it.cunit, PLATE * 0.26, PLATE * 0.16);
     });
+    var r = fitFor(C);
+    FIT = r.fit;
+    CY = r.cy;
     drawFloor();
+  }
+
+  // 保证卡片不出屏幕：最前排不超出底部、整圈时最后排不超出顶部。
+  // 先自动缩小卡片（圈的位置不动）；缩到 30% 还放不下，才把圈挪回屏幕内。
+  var FIT = 1, CY = C.centerY;
+  function fitFor(L) {
+    var M = 12, f = 1;
+    var front = CH * L.frontScale * L.cardScale, back = CH * L.backScale * L.cardScale;
+    var cy = Math.min(L.centerY, STAGE_H - M - L.radiusY - front * 0.15);
+    if (!L.arcOnly) cy = Math.max(cy, Math.min(L.radiusY + M + back * 0.15, STAGE_H / 2));
+    var roomBottom = 2 * (STAGE_H - M - (cy + L.radiusY));
+    if (roomBottom < front) f = Math.min(f, roomBottom / front);
+    if (!L.arcOnly) {
+      var roomTop = 2 * (cy - L.radiusY - M);
+      if (roomTop < back) f = Math.min(f, roomTop / back);
+    }
+    return { fit: clamp(f, 0.3, 1), cy: cy };
   }
 
   // 卡片底边的轨迹正好是一个椭圆：在这里画出金色光环
   function drawFloor() {
-    var ringCY = C.centerY + CH * C.cardScale * (C.frontScale + C.backScale) / 4;
-    var ringRY = C.radiusY + CH * C.cardScale * (C.frontScale - C.backScale) / 4;
+    var k = C.cardScale * FIT;
+    var ringCY = CY + CH * k * (C.frontScale + C.backScale) / 4;
+    var ringRY = C.radiusY + CH * k * (C.frontScale - C.backScale) / 4;
     var cx = STAGE_W / 2;
     function ellipse(dx, dy, attrs) {
       if (C.arcOnly) {   // 只画前半圈（下半个椭圆），两端渐隐
@@ -584,12 +605,12 @@
     var e = easeOut(a);
     theta += C.direction * (1 - e) * Math.PI * 1.2;   // 入场时顺着转动方向旋转着散开
     var depth = (1 + Math.cos(theta)) / 2;     // 1 = 最前，0 = 最后
-    var s = (C.backScale + (C.frontScale - C.backScale) * depth) * C.cardScale * (0.25 + 0.75 * e);
+    var s = (C.backScale + (C.frontScale - C.backScale) * depth) * C.cardScale * FIT * (0.25 + 0.75 * e);
     // “只显示前半圈”：转到后面的卡片淡出，露出背景中间的内容
     var vis = C.arcOnly ? easeOut(clamp((depth - 0.4) / 0.2, 0, 1)) : 1;
     return {
       x: STAGE_W / 2 + C.radiusX * Math.sin(theta) * e,
-      y: C.centerY + C.radiusY * Math.cos(theta) * e,
+      y: CY + C.radiusY * Math.cos(theta) * e,
       s: s, depth: depth, alpha: e * vis
     };
   }
@@ -949,6 +970,7 @@
   function currentLook() {
     return { carousel: Object.assign({}, C), showHeader: cfg.showHeader !== false, background: cfg.background || '' };
   }
+  // 返回 { fit }：fit < 1 表示卡片被自动缩小了（否则底部会被截断）
   function previewLook(look) {
     if (look.carousel) {
       Object.assign(C, look.carousel);
@@ -956,6 +978,7 @@
     }
     if ('showHeader' in look) setHeader(look.showHeader);
     if ('background' in look) setBackground(look.background);
+    return { fit: FIT };
   }
 
   // 背景排版参考图（5600×2000）：按某个布局，标出照片圈转一整圈会扫过的区域，
@@ -964,6 +987,8 @@
     var L = Object.assign({}, C, layout), W = STAGE_W, H = STAGE_H, PX_PER_M = STAGE_W / 14;
     var widths = items.map(function (it) { return it.cw; }).sort(function (a, b) { return a - b; });
     var cw = widths[Math.floor(widths.length / 2)];
+    var fitted = fitFor(L), fit = fitted.fit;
+    L.centerY = fitted.cy;
     var c = document.createElement('canvas');
     c.width = W * 2; c.height = H * 2;
     var g = c.getContext('2d');
@@ -1001,7 +1026,7 @@
       for (var k = 0; k < 720; k++) {
         var th = k / 720 * 2 * Math.PI, depth = (1 + Math.cos(th)) / 2;
         if (L.arcOnly && depth < 0.4) continue;
-        var sc = (L.backScale + (L.frontScale - L.backScale) * depth) * L.cardScale;
+        var sc = (L.backScale + (L.frontScale - L.backScale) * depth) * L.cardScale * fit;
         var x = W / 2 + L.radiusX * Math.sin(th), y = L.centerY + L.radiusY * Math.cos(th);
         var w = cw * sc + 16, h = CH * sc + 16;
         o.fillRect(x - w / 2, y - h / 2, w, h);
