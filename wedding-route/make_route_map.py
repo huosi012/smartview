@@ -59,18 +59,21 @@ J2 = (1155, 600)           # 德惠西北路口
 J3 = (1194, 925)           # 德农路路口
 J4 = (1252, 1100)          # 德环路 × 新华街 × 德农环路
 BRIDE = (1175, 1180)       # 新娘家：腰周家
-K = (1487, 857)            # 新华街在红旗大市场处转入城区
-K2 = (1505, 818)
-GOV = (1629, 906)          # 德惠市人民政府
-N1 = (1675, 860)
+S1 = (1440, 906)           # 新华街 × 松柏路（红旗大市场）
+S2 = (1492, 925)           # 松柏路右转后再左转向北
+S3 = (1515, 805)
+S4 = (1650, 862)
+GOV = (1690, 930)          # 德惠市人民政府：从北面进，出来再往北
+N1 = (1760, 800)
 
 G1 = [(1345, -10), (1252, 464), (1214, 590), (1160, 790), (1112, 940), (1052, 1120),
       (1012, 1290)]      # 京哈高速，只作参照
 S303 = [(60, 333), P0, (470, 371), TIANTAI, J1, (1270, 466), (1390, 472)]
 WEST_RING = [J2, (1178, 664), (1236, 732), (1262, 778), J3, (1220, 1068), J4]
-XINHUA = [(1090, 1267), BRIDE, J4, K]     # 去腰周家的乡道 + 新华街（一条斜线）
-G102 = [(1572, 1290), (1610, 1140), (1700, 1060), (1810, 1030)]   # 城区东南，只作参照
-CITY = [K, K2, GOV, N1, (1592, 795), (1378, 694), (1338, 640), (1290, 610), (1232, 602), J2]
+XINHUA = [(1090, 1267), BRIDE, J4, S1]    # 去腰周家的乡道 + 新华街（一条斜线）
+SONGBAI = [(1395, 889), S1, S2, (1566, 952)]
+G102 = [(1572, 1290), (1610, 1140), (1700, 1075), (1810, 1050)]   # 城区东南，只作参照
+CITY = [S2, S3, S4, GOV, N1, (1378, 694), (1338, 640), (1290, 610), (1232, 602), J2]
 
 MAJOR, MINOR = (RED_ROAD, 40), (BLUE_ROAD, 34)
 HIGHWAY = ("#7f93c4", 26)
@@ -78,7 +81,9 @@ ROADS = [
     (G1, HIGHWAY),                                     # 先画，路线道路从上方跨过
     (S303, MAJOR),
     ([J1, J2], MAJOR),
-    (XINHUA + CITY[1:], MAJOR),                       # 新华街进城后接城区道路
+    (XINHUA, MAJOR),
+    (SONGBAI, MAJOR),
+    (CITY, MAJOR),                                     # 松柏路往北进城，绕到市政府再出城
     (G102, MAJOR),
     (WEST_RING, MINOR),
     ([J3, (1000, 960), (960, 967)], MINOR),            # 德农路
@@ -87,7 +92,7 @@ ROADS = [
 ]
 
 LEG_TO_BRIDE = [HOME, P0, (470, 371), TIANTAI, J1, J2] + WEST_RING[1:] + [BRIDE]
-LEG_TO_GOV = [BRIDE, J4, K, K2, GOV]
+LEG_TO_GOV = [BRIDE, J4, S1, S2, S3, S4, GOV]
 LEG_HOME = CITY[CITY.index(GOV):] + [J1, TIANTAI, (470, 371), P0, HOME]
 LEGS = [(LEG_TO_BRIDE, PINK, 30), (LEG_TO_GOV, ORANGE, 40), (LEG_HOME, BLUE, 70)]
 
@@ -265,9 +270,10 @@ def _build_svg():
     o.append(road_label((1112, 940), (1052, 1120), "京哈高速", side=1, gap=34,
                         fill="#5d6f9c"))
     o.append(road_label(J3, (1000, 960), "德农路", side=1, gap=36, t=0.72))
-    o.append(road_label(J4, K, "新华街", side=1, gap=46, size=26, t=0.48))
-    o.append(road_label((1610, 1140), (1700, 1060), "G102国道", side=1, gap=46, size=24))
-    o.append(shield(1762, 1043, "G102", "#e8232f", "#fff", rotate=-15.3))
+    o.append(road_label(J4, S1, "新华街", side=1, gap=46, size=26, t=0.56))
+    o.append(road_label(S1, (1566, 952), "松柏路", side=1, gap=38, size=22, t=0.55))
+    o.append(road_label((1610, 1140), (1700, 1075), "G102国道", side=1, gap=46, size=24))
+    o.append(shield(1762, 1061, "G102", "#e8232f", "#fff", rotate=-12.8))
 
     # 地标
     o.append(text(TIANTAI[0], 456, "天台镇", 28, TEXT, SANS, 500))
@@ -277,8 +283,9 @@ def _build_svg():
     o.append(text(1326, 753, "德惠西站", 24, TEXT, SANS, 500, anchor="start"))
     o.append(text(1310, 905, "龙凤采摘园", 23, "#3a9b3f", SANS, 500))
     o.append(text(1395, 800, "德惠市区", 30, "#8a8aa8", SANS, 700, spacing=4))
-    o.append(poi(1356, 834, "红旗大市场", "#a03cc8", "市"))
-    o.append(poi(1556, 698, "王三姐绿色生态园", "#3a9b3f", "园"))
+    o.append(poi(1336, 852, "红旗大市场", "#a03cc8", "市"))
+    o.append(poi(1405, 662, "中林石油加油站", "#2f7bf6", "油"))
+    o.append(poi(1584, 716, "王三姐绿色生态园", "#3a9b3f", "园"))
 
     # 行车箭头
     for pts, color, phase in LEGS:
@@ -300,7 +307,7 @@ def _build_svg():
                   halo="#fff3f7"))
 
     o.append(pin(*GOV, ORANGE, "★"))
-    o.append(text(1664, 970, "德惠市人民政府", 34, "#d35400", SANS, 900, halo="#ffffff"))
+    o.append(text(1665, 1012, "德惠市人民政府", 34, "#d35400", SANS, 900, halo="#ffffff"))
 
     # 标题与路线摘要
     o.append(heart(612, 86, 38, PINK, -18, .85))
