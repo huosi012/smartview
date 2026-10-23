@@ -1,6 +1,7 @@
-// Builds 抖音封面模板.pptx: guide pages plus three ready-to-edit cover
-// templates. With --preview it instead writes build/preview.pptx, a deck of
-// sample covers that render.sh turns into the images the guide pages show.
+// Builds 抖音封面模板.pptx: guide pages plus three frame templates where
+// the watch photo sits in a window and all text stays outside the photo.
+// With --preview it instead writes build/preview.pptx, a deck of sample
+// covers that render.sh turns into the images the guide pages show.
 const fs = require('fs');
 const path = require('path');
 const pptxgen = require('pptxgenjs');
@@ -21,58 +22,50 @@ const SLIDE_H = 15;
 const px = (v) => v / 96;
 const fpx = (v) => v * 0.75;
 const asset = (name) => path.join(ASSETS, name);
-const pngAspect = (file) => { // height / width, read from the PNG header
+const jpegAspect = (file) => { // height / width, read from the JPEG SOF marker
   const b = fs.readFileSync(file);
-  return b.readUInt32BE(20) / b.readUInt32BE(16);
+  for (let i = 2; i < b.length;) {
+    const marker = b[i + 1];
+    if (marker >= 0xc0 && marker <= 0xc2) return b.readUInt16BE(i + 5) / b.readUInt16BE(i + 7);
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`no size in ${file}`);
 };
 
 const FONT = {
-  serif: 'Noto Serif SC Black',
-  sans: 'Noto Sans SC Black',
-  smiley: 'Smiley Sans Oblique',
-  cinzel: 'Cinzel',
+  title: 'Noto Serif SC SemiBold',
+  zh: 'Noto Serif SC',
+  en: 'Cormorant Garamond SemiBold',
+  num: 'Cormorant Garamond Medium', // used italic
   body: 'Microsoft YaHei',
 };
 const C = {
-  gold: 'D6B36E',
-  goldText: 'F1DDAE', // hero colour of style A; post-processed into a gold gradient
-  ribbon: 'E9C77B',
-  yellow: 'FFD60A',
-  ink: '0B0A09',
-  cream: 'F6F1E7',
+  champagne: 'C4A876',
+  ivoryText: 'F2EDE4',
+  mute: 'A39B8F',
+  bronze: '8A6A3B',
+  ink: '16140F',
+  inkSoft: '4A453D',
+  brass: 'B0925F',
   page: '121214',
   card: '1C1C20',
   grey: 'A7A39B',
   dim: '6E6A64',
 };
 
+// Photo window of each style, in cover pixels (make_assets.py has the same).
+const WINDOWS = {
+  noir: [96, 176, 888, 828],
+  ivory: [64, 64, 952, 952],
+  dossier: [72, 160, 936, 808],
+};
+
 const NAME = {
   photo: '手表照片（右键→更改图片）',
-  mask: '遮罩（勿删）',
   guide: '构图参考线（导出前隐藏）',
 };
 
-const shadow = (blur = 10, offset = 4, opacity = 0.65) => ({
-  type: 'outer', color: '000000', blur, offset, angle: 90, opacity,
-});
-
 // ---------------------------------------------------------------- covers
-
-function coverBase(pres, slide, photo, withGuide) {
-  slide.addImage({
-    placeholder: 'photo', path: asset(`photo-${photo}.jpg`),
-    x: 0, y: 0, w: SLIDE_W, h: SLIDE_H, objectName: NAME.photo, altText: '手表照片',
-  });
-  const pieces = { top: [0, 0, 1080, 340], left: [0, 340, 300, 420], right: [780, 340, 300, 420], bottom: [0, 760, 1080, 680] };
-  for (const [side, [x, y, w, h]] of Object.entries(pieces)) {
-    slide.addImage({
-      path: asset(`mask-${side}.png`), x: px(x), y: px(y), w: px(w), h: px(h), objectName: NAME.mask,
-    });
-  }
-  if (withGuide) {
-    slide.addImage({ path: asset('guide.png'), x: 0, y: 0, w: SLIDE_W, h: SLIDE_H, objectName: NAME.guide });
-  }
-}
 
 function text(slide, value, o) {
   slide.addText(value, {
@@ -82,83 +75,92 @@ function text(slide, value, o) {
   });
 }
 
-// A: black and gold, serif. Centred block, the quietest of the three.
-function coverA(pres, slide, d) {
-  text(slide, d.shop, { x: 290, y: 52, w: 500, h: 60, fontFace: FONT.serif, fontSize: 34, color: C.cream, align: 'center', charSpacing: 2, objectName: '店名', shadow: shadow(6, 2) });
-  text(slide, `NO.${d.episode}`, { x: 796, y: 50, w: 220, h: 64, fontFace: FONT.cinzel, bold: true, fontSize: 44, color: C.gold, align: 'right', objectName: '期数', shadow: shadow(6, 2) });
-  text(slide, `${d.brand} · ${d.brandCn}`, { x: 60, y: 876, w: 960, h: 72, fontFace: FONT.cinzel, bold: true, fontSize: 44, color: C.gold, align: 'center', charSpacing: 6, objectName: '品牌', fit: 'shrink', shadow: shadow(8, 3) });
-  text(slide, d.title, { x: 30, y: 948, w: 1020, h: 220, fontFace: FONT.serif, fontSize: d.titleSizeA || 164, color: C.goldText, align: 'center', objectName: '主标题（型号）', fit: 'shrink', shadow: shadow(14, 5, 0.75) });
-  slide.addText(d.service, {
-    shape: pres.shapes.RECTANGLE, x: px(170), y: px(1182), w: px(740), h: px(84),
-    fill: { color: '000000', transparency: 55 }, line: { color: C.gold, width: 1.5 },
-    fontFace: FONT.serif, fontSize: fpx(46), color: C.cream, align: 'center', valign: 'middle',
-    charSpacing: 3, margin: 0, fit: 'shrink', objectName: '服务项目',
-  });
+function coverBase(slide, style, photo, withGuide) {
+  const [x, y, w, h] = WINDOWS[style];
+  const win = { x: px(x), y: px(y), w: px(w), h: px(h) };
+  slide.addImage({ placeholder: 'photo', path: asset(`photo-${style}-${photo}.jpg`), ...win, objectName: NAME.photo, altText: '手表照片' });
+  if (withGuide) slide.addImage({ path: asset(`guide-${style}.png`), ...win, objectName: NAME.guide, altText: '构图参考线' });
 }
 
-// B: the shop's current yellow-on-black look, tidied. Left-aligned, loud.
-function coverB(pres, slide, d) {
-  slide.addText(`第${d.episode}期`, {
-    shape: pres.shapes.RECTANGLE, x: px(812), y: px(50), w: px(212), h: px(74),
-    fill: { color: C.yellow }, fontFace: FONT.sans, fontSize: fpx(40), color: C.ink,
-    align: 'right', valign: 'middle', margin: [0, 8, 0, 8], wrap: false, fit: 'resize', objectName: '期数',
-  });
-  text(slide, d.shop, { x: 290, y: 57, w: 500, h: 60, fontFace: FONT.sans, fontSize: 34, color: 'FFFFFF', align: 'center', objectName: '店名', shadow: shadow(6, 2) });
-  text(slide, `${d.brand} ${d.brandCn}`, { x: 64, y: 870, w: 950, h: 80, fontFace: FONT.sans, fontSize: 56, color: 'FFFFFF', objectName: '品牌', fit: 'shrink', shadow: shadow(8, 3) });
-  text(slide, d.title, { x: 56, y: 944, w: 980, h: 226, fontFace: FONT.sans, fontSize: d.titleSizeB || 168, color: C.yellow, objectName: '主标题（型号）', fit: 'shrink', outline: { size: 3, color: '000000' }, shadow: shadow(0, 8, 0.9) });
-  slide.addText(d.service.replace(/ · /g, ' + '), {
-    shape: pres.shapes.RECTANGLE, x: px(64), y: px(1184), w: px(640), h: px(84),
-    fill: { color: C.yellow }, fontFace: FONT.sans, fontSize: fpx(50), color: C.ink,
-    align: 'center', valign: 'middle', margin: [0, 10, 0, 10], wrap: false, fit: 'resize', objectName: '服务项目',
-  });
+// Noir gallery: black mat, champagne hairlines, centred caption.
+function coverNoir(slide, d) {
+  text(slide, d.shopEn, { x: 240, y: 76, w: 600, h: 36, fontFace: FONT.en, fontSize: 26, color: C.champagne, align: 'center', charSpacing: 7, objectName: '店名（英文）' });
+  text(slide, d.shop, { x: 240, y: 116, w: 600, h: 32, fontFace: FONT.zh, fontSize: 22, color: '8F877B', align: 'center', charSpacing: 6, objectName: '店名' });
+  text(slide, d.brand, { x: 140, y: 1042, w: 800, h: 50, fontFace: FONT.en, fontSize: 38, color: C.champagne, align: 'center', charSpacing: 10, objectName: '品牌', fit: 'shrink' });
+  text(slide, d.title, { x: 80, y: 1092, w: 920, h: 124, fontFace: FONT.title, fontSize: d.size || 96, color: C.ivoryText, align: 'center', objectName: '主标题（型号）', fit: 'shrink' });
+  text(slide, d.service, { x: 140, y: 1222, w: 800, h: 46, fontFace: FONT.zh, fontSize: 30, color: C.mute, align: 'center', charSpacing: 5, objectName: '服务项目', fit: 'shrink' });
+  text(slide, `N° ${d.episode}`, { x: 740, y: 1318, w: 252, h: 58, fontFace: FONT.num, italic: true, fontSize: 40, color: C.champagne, align: 'right', objectName: '期数' });
 }
 
-// C: the diagonal ribbon from the reference screenshots, in Smiley Sans.
-function coverC(pres, slide, d) {
-  text(slide, d.shop, { x: 290, y: 52, w: 500, h: 64, fontFace: FONT.smiley, fontSize: 42, color: 'FFFFFF', align: 'center', objectName: '店名', shadow: shadow(6, 2) });
-  text(slide, `NO.${d.episode}`, { x: 796, y: 44, w: 224, h: 80, fontFace: FONT.smiley, fontSize: 68, color: C.ribbon, align: 'right', objectName: '期数', shadow: shadow(6, 2) });
-  slide.addText(d.service, {
-    shape: pres.shapes.RECTANGLE, x: px(-210), y: px(760), w: px(1500), h: px(104), rotate: -9,
-    fill: { color: C.ribbon }, fontFace: FONT.smiley, fontSize: fpx(62), color: '1A1408',
-    align: 'center', valign: 'middle', margin: 0, charSpacing: 4, objectName: '斜带（服务项目）',
-    shadow: shadow(18, 6, 0.55),
-  });
-  text(slide, d.title, { x: 56, y: 958, w: 980, h: 214, fontFace: FONT.smiley, fontSize: d.titleSizeC || 184, color: 'FFFFFF', objectName: '主标题（型号）', fit: 'shrink', shadow: shadow(14, 5, 0.8) });
-  text(slide, `${d.brand} ${d.brandCn}`, { x: 64, y: 1172, w: 950, h: 80, fontFace: FONT.smiley, fontSize: 58, color: C.ribbon, objectName: '品牌', fit: 'shrink', shadow: shadow(8, 3) });
+// Ivory catalogue: printed photo on paper, editorial caption, big lot number.
+function coverIvory(slide, d) {
+  text(slide, d.brand, { x: 64, y: 1046, w: 640, h: 40, fontFace: FONT.en, fontSize: 32, color: C.bronze, charSpacing: 9, objectName: '品牌', fit: 'shrink' });
+  text(slide, d.title, { x: 64, y: 1088, w: 700, h: 112, fontFace: FONT.title, fontSize: d.size || 92, color: C.ink, objectName: '主标题（型号）', fit: 'shrink' });
+  text(slide, d.service, { x: 64, y: 1206, w: 700, h: 44, fontFace: FONT.zh, fontSize: 30, color: C.inkSoft, charSpacing: 3, objectName: '服务项目', fit: 'shrink' });
+  text(slide, 'N°', { x: 840, y: 1052, w: 176, h: 40, fontFace: FONT.num, italic: true, fontSize: 36, color: C.bronze, align: 'right', objectName: 'N°' });
+  text(slide, d.episode, { x: 760, y: 1080, w: 262, h: 150, fontFace: FONT.num, italic: true, fontSize: 138, color: C.bronze, align: 'right', objectName: '期数' });
+  slide.addText([
+    { text: d.shop, options: { fontFace: FONT.zh, fontSize: fpx(22), charSpacing: 4 } },
+    { text: `  ·  ${d.shopEn}`, options: { fontFace: FONT.en, fontSize: fpx(21), charSpacing: 4 } },
+  ], { isTextBox: true, x: px(400), y: px(1306), w: px(616), h: px(40), margin: 0, align: 'right', valign: 'middle', color: C.inkSoft, objectName: '店名' });
+}
+
+// Service dossier: viewfinder marks, title, record table.
+function coverDossier(slide, d) {
+  text(slide, `N° ${d.episode}`, { x: 760, y: 66, w: 248, h: 60, fontFace: FONT.num, italic: true, fontSize: 42, color: C.brass, align: 'right', objectName: '期数' });
+  text(slide, d.title, { x: 72, y: 1008, w: 936, h: 120, fontFace: FONT.title, fontSize: d.size || 88, color: 'EDE8E0', objectName: '主标题（型号）', fit: 'shrink' });
+  text(slide, d.brand, { x: 330, y: 1148, w: 678, h: 58, fontFace: FONT.zh, fontSize: 30, color: 'D9D3C8', objectName: '品牌', fit: 'shrink' });
+  text(slide, d.service, { x: 330, y: 1210, w: 678, h: 58, fontFace: FONT.zh, fontSize: 30, color: 'D9D3C8', objectName: '服务项目', fit: 'shrink' });
+  slide.addText([
+    { text: d.shop, options: { fontFace: FONT.zh, fontSize: fpx(22), charSpacing: 4 } },
+    { text: `  ·  ${d.shopEn}`, options: { fontFace: FONT.en, fontSize: fpx(21), charSpacing: 4 } },
+  ], { isTextBox: true, x: px(400), y: px(1318), w: px(608), h: px(40), margin: 0, align: 'right', valign: 'middle', color: '8A857C', objectName: '店名' });
 }
 
 const STYLES = {
-  A: { fn: coverA, name: '黑金典藏' },
-  B: { fn: coverB, name: '工坊硬核' },
-  C: { fn: coverC, name: '斜带寄修' },
+  noir: { fn: coverNoir, key: 'A', name: '暗夜画廊', bg: '0D0C0B' },
+  ivory: { fn: coverIvory, key: 'B', name: '象牙画册', bg: 'E9E3D7' },
+  dossier: { fn: coverDossier, key: 'C', name: '维修档案', bg: '131313' },
+};
+const RECOMMENDED = 'noir';
+
+// Fixed words that never change per cover live on the layout.
+const LAYOUT_TEXT = {
+  noir: [],
+  ivory: [],
+  dossier: [
+    ['SERVICE  RECORD', { x: 240, y: 74, w: 600, h: 44, fontFace: FONT.en, fontSize: 28, color: 'ECE6DA', align: 'center', charSpacing: 12 }],
+    ['BRAND  品牌', { x: 72, y: 1148, w: 250, h: 58, fontFace: FONT.en, fontSize: 24, color: C.brass, charSpacing: 4 }],
+    ['SERVICE  项目', { x: 72, y: 1210, w: 250, h: 58, fontFace: FONT.en, fontSize: 24, color: C.brass, charSpacing: 4 }],
+  ],
 };
 
 const SAMPLE = {
-  photo: 'omega-seamaster', shop: 'XX名表维修', episode: '023',
-  brand: 'OMEGA', brandCn: '欧米茄', title: '海马150 GMT', service: '洗油大保养 · 外观修复',
+  photo: 'omega-gmt', shop: '名表维修工作室', shopEn: 'WATCH SERVICE ATELIER', episode: '023',
+  brand: 'OMEGA', title: '海马150 GMT', service: '洗油大保养 · 外观修复',
 };
 
-// Newest first, as Douyin lays out a profile.
+// Newest first, as Douyin lays out a profile. The first three are the
+// shop's own current posts.
 const GRID = [
   SAMPLE,
-  { photo: 'rolex-dj-black', episode: '022', brand: 'ROLEX', brandCn: '劳力士', title: '日志', service: '十年没保养 · 拆开看看' },
-  { photo: 'gp-1945', episode: '021', brand: 'GP', brandCn: '芝柏', title: '1945方表', service: '洗油大保养 · 修复' },
-  { photo: 'breguet-a', episode: '020', brand: 'BREGUET', brandCn: '宝玑', title: '宝玑经典', service: '表壳补金 · 修复' },
-  { photo: 'montblanc', episode: '019', brand: 'MONTBLANC', brandCn: '万宝龙', title: '明星计时', service: '磕碰修复 · 洗油' },
-  { photo: 'iwc-portugieser', episode: '018', brand: 'IWC', brandCn: '万国', title: '葡萄牙', service: '寄修 · 洗油大保养' },
-  { photo: 'chopard-luc', episode: '017', brand: 'CHOPARD', brandCn: '萧邦', title: 'L.U.C', service: '寄修 · 洗油大保养' },
-  { photo: 'breguet-b', episode: '016', brand: 'BREGUET', brandCn: '宝玑', title: '补金修复', service: '原色补金 · 抛光' },
-  { photo: 'rolex-dj-white', episode: '015', brand: 'ROLEX', brandCn: '劳力士', title: '钻刻日志', service: '寄修 · 洗油大保养' },
+  { photo: 'longines-hydroconquest', episode: '022', brand: 'LONGINES', title: '康卡斯', service: '大保养 · 更换刻度圈' },
+  { photo: 'tissot-lelocle', episode: '021', brand: 'TISSOT', title: '力洛克', service: '机芯大保养 · 外观修复' },
+  { photo: 'rolex-dj-black', episode: '020', brand: 'ROLEX', title: '日志', service: '洗油大保养 · 抛光' },
+  { photo: 'gp-1945', episode: '019', brand: 'GIRARD-PERREGAUX', title: '1945 方表', service: '洗油修复大保养' },
+  { photo: 'montblanc', episode: '018', brand: 'MONTBLANC', title: '明星计时', service: '磕碰修复 · 洗油' },
+  { photo: 'breguet-a', episode: '017', brand: 'BREGUET', title: '经典系列', service: '表壳补金修复' },
+  { photo: 'iwc-portugieser', episode: '016', brand: 'IWC', title: '葡萄牙', service: '寄修 · 洗油大保养' },
+  { photo: 'chopard-luc', episode: '015', brand: 'CHOPARD', title: 'L.U.C', service: '寄修 · 洗油大保养' },
 ].map((d) => ({ ...SAMPLE, ...d }));
 
 const COVER_NOTES = (style) => [
-  `模板 ${style}「${STYLES[style].name}」使用方法：`,
+  `模板 ${STYLES[style].key}「${STYLES[style].name}」使用方法：`,
   '1. 左侧缩略图右键这一页 →「复制幻灯片」，在副本上改，原模板留着下次用。',
-  '2. 点表盘位置选中照片 → 右键「更改图片」→ 选新照片。位置不准就用「裁剪」拖动对齐。',
-  '   点不中照片时：开始 → 选择 → 选择窗格，点「手表照片」。',
-  '   对位时可在选择窗格里显示「构图参考线」，导出前一定要再隐藏。',
-  '3. 直接点文字修改：店名、期数、品牌、型号、服务项目。字多了会自动缩小。',
-  '4. 导出：文件 → 导出 → 更改文件类型 → PNG → 仅当前幻灯片（1080×1440）。',
+  '2. 换照片：右键照片 →「更改图片」→ 选新照片；或者选中照片按 Delete，再点画框中间的图标插入，会自动裁成画框大小。',
+  '3. 调位置：双击照片 →「裁剪」，拖动照片让表盘居中。可在「开始 → 选择 → 选择窗格」显示「构图参考线」对位，导出前再隐藏。',
+  '4. 直接点文字修改：店名、期数、品牌、型号、服务项目。字多了会自动缩小。',
+  '5. 导出：文件 → 导出 → 更改文件类型 → PNG → 仅当前幻灯片（1080×1440）。',
   '   WPS：文件 → 输出为图片 → 当前页；或 另存为 → PNG。',
 ].join('\n');
 
@@ -173,65 +175,68 @@ function pageTitle(slide, title, sub) {
 
 function numberDot(pres, slide, n, x, y, d = 0.62) {
   slide.addText(String(n), {
-    shape: pres.shapes.OVAL, x, y, w: d, h: d, fill: { color: C.gold },
-    fontFace: FONT.sans, fontSize: 22, color: C.ink, align: 'center', valign: 'middle', margin: 0,
+    shape: pres.shapes.OVAL, x, y, w: d, h: d, fill: { color: C.champagne },
+    fontFace: FONT.title, fontSize: 20, color: '111111', align: 'center', valign: 'middle', margin: 0,
   });
 }
 
 function overviewPage(pres) {
   const s = pres.addSlide({ masterName: 'GUIDE', sectionTitle: '使用说明' });
-  pageTitle(s, '三种封面风格，选一种用到底', '整个主页统一一种风格、统一拍摄角度，九宫格才整齐。每次只需换照片、改文字，导出就是 1080×1440 的抖音封面。');
+  pageTitle(s, '三种画框风格，选一种用到底', '照片放进画框，文字都在照片外面，不压表。你们用柔光灯把表拍好，套进画框、改几个字就是一张封面。');
   const cards = [
-    ['A', '黑金典藏', '推荐', '高级感最强，适合劳力士、百达翡丽这类高端表'],
-    ['B', '工坊硬核', '', '延续你们现在的黄字风格，最醒目'],
-    ['C', '斜带寄修', '', '参考图里的斜带元素，动感、有辨识度'],
+    ['noir', '推荐', '黑卡纸配香槟金细线，像画廊里的展品，最稳重'],
+    ['ivory', '', '米白纸张质感，像拍卖图录，在深色主页里最显眼'],
+    ['dossier', '', '取景框加维修档案表格，突出专业维修'],
   ];
-  cards.forEach(([k, name, tag, desc], i) => {
+  cards.forEach(([style, tag, desc], i) => {
     const x = 0.75 + i * 3.325;
-    s.addImage({ path: asset(`preview-${k}.png`), x, y: 2.75, w: 3.1, h: 4.133, objectName: `风格${k}预览`, altText: `封面风格 ${k}「${name}」示例` });
+    const { key, name } = STYLES[style];
+    s.addImage({ path: asset(`preview-${style}.jpg`), x, y: 2.75, w: 3.1, h: 4.133, objectName: `风格${key}预览`, altText: `封面风格 ${key}「${name}」示例` });
     s.addText([
-      { text: `${k}  ${name}`, options: { fontFace: FONT.sans, fontSize: 22, color: 'FFFFFF' } },
-      ...(tag ? [{ text: `  ${tag}`, options: { fontFace: FONT.sans, fontSize: 16, color: C.gold } }] : []),
+      { text: `${key}  ${name}`, options: { fontFace: FONT.title, fontSize: 21, color: 'FFFFFF' } },
+      ...(tag ? [{ text: `  ${tag}`, options: { fontFace: FONT.title, fontSize: 15, color: C.champagne } }] : []),
     ], { isTextBox: true, x, y: 7.03, w: 3.1, h: 0.5, margin: 0, valign: 'middle' });
     s.addText(desc, { isTextBox: true, x, y: 7.55, w: 3.1, h: 0.85, margin: 0, fontFace: FONT.body, fontSize: 14, color: C.grey, valign: 'top' });
   });
 
-  s.addText('字体都可免费商用', { isTextBox: true, x: 0.75, y: 8.85, w: 9.75, h: 0.55, margin: 0, fontFace: FONT.sans, fontSize: 24, color: 'FFFFFF' });
+  s.addText('字体都可免费商用', { isTextBox: true, x: 0.75, y: 8.85, w: 9.75, h: 0.55, margin: 0, fontFace: FONT.title, fontSize: 24, color: 'FFFFFF' });
   const fonts = [
-    ['思源宋体 Black', FONT.serif, '海马150 GMT', '模板 A 标题', 'Noto Serif SC · Google / Adobe'],
-    ['思源黑体 Black', FONT.sans, '海马150 GMT', '模板 B 标题', 'Noto Sans SC · Google / Adobe'],
-    ['得意黑', FONT.smiley, '海马150 GMT', '模板 C 标题', 'Smiley Sans · 锚坞'],
-    ['Cinzel', FONT.cinzel, 'OMEGA · ROLEX', '模板 A 英文品牌', 'Cinzel · NDISCOVER'],
+    ['思源宋体 SemiBold', FONT.title, false, '海马150 GMT', '型号大标题', 'Noto Serif SC'],
+    ['思源宋体 Regular', FONT.zh, false, '洗油大保养 · 外观修复', '服务项目、店名', 'Noto Serif SC'],
+    ['Cormorant Garamond', FONT.en, false, 'OMEGA · LONGINES', '英文品牌名', 'Cormorant'],
+    ['Cormorant Garamond Italic', FONT.num, true, 'N° 023', '期数编号', 'Cormorant'],
   ];
-  fonts.forEach(([name, face, specimen, use, src], i) => {
+  fonts.forEach(([name, face, italic, specimen, use, src], i) => {
     const y = 9.6 + i * 1.02;
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.75, y, w: 9.75, h: 0.88, fill: { color: C.card }, line: { type: 'none' }, rectRadius: 0.08 });
-    s.addText(specimen, { isTextBox: true, x: 1.0, y, w: 4.1, h: 0.88, margin: 0, fontFace: face, bold: face === FONT.cinzel, fontSize: 30, color: C.goldText, valign: 'middle' });
+    s.addText(specimen, { isTextBox: true, x: 1.0, y, w: 4.1, h: 0.88, margin: 0, fontFace: face, italic, fontSize: 26, color: 'E8D9B8', valign: 'middle' });
     s.addText([
-      { text: name, options: { fontFace: FONT.sans, fontSize: 17, color: 'FFFFFF', breakLine: true } },
+      { text: name, options: { fontFace: FONT.title, fontSize: 16, color: 'FFFFFF', breakLine: true } },
       { text: `${use} · ${src}`, options: { fontFace: FONT.body, fontSize: 12, color: C.grey } },
     ], { isTextBox: true, x: 5.2, y, w: 3.6, h: 0.88, margin: 0, valign: 'middle' });
-    s.addText('SIL OFL 1.1', { isTextBox: true, x: 8.75, y, w: 1.55, h: 0.88, margin: 0, fontFace: FONT.body, fontSize: 12, color: C.gold, align: 'right', valign: 'middle' });
+    s.addText('SIL OFL 1.1', { isTextBox: true, x: 8.75, y, w: 1.55, h: 0.88, margin: 0, fontFace: FONT.body, fontSize: 12, color: C.champagne, align: 'right', valign: 'middle' });
   });
-  s.addText('字体在 fonts 文件夹，第一次用前先安装。也可换成抖音官方的「抖音美好体」（免费商用）。', {
-    isTextBox: true, x: 0.75, y: 13.75, w: 9.75, h: 0.6, margin: 0, fontFace: FONT.body, fontSize: 13, color: C.dim, valign: 'top',
+  s.addText('字体在 fonts 文件夹，第一次用前先安装。', {
+    isTextBox: true, x: 0.75, y: 13.75, w: 9.75, h: 0.4, margin: 0, fontFace: FONT.body, fontSize: 13, color: C.dim, valign: 'top',
   });
 }
 
 function gridPage(pres) {
   const s = pres.addSlide({ masterName: 'GUIDE', sectionTitle: '使用说明' });
-  pageTitle(s, '主页效果：统一后的九宫格', '下图用模板 A 套了 9 块表（照片取自你们发来的截图，仅作示意）。');
-  s.addImage({ path: asset('grid-mockup.png'), x: 0.75, y: 2.75, w: 6.8, h: 6.8 * pngAspect(asset('grid-mockup.png')), objectName: '主页效果图', altText: '套用模板 A 后的抖音主页九宫格示意' });
+  const { key, name } = STYLES[RECOMMENDED];
+  pageTitle(s, '主页效果：统一后的九宫格', `下图用模板 ${key}「${name}」套了你们的表（照片取自发来的截图，仅作示意）。`);
+  const mock = asset(`grid-mockup-${RECOMMENDED}.jpg`);
+  s.addImage({ path: mock, x: 0.55, y: 2.55, w: 7.2, h: 7.2 * jpegAspect(mock), objectName: '主页效果图', altText: `套用模板 ${key} 后的抖音主页九宫格示意` });
   const tips = [
-    ['大标题要够大', '型号或昵称用 2–6 个字，缩略图里也能一眼看清。'],
-    ['避开点赞数', '主页左下角会被点赞数挡住，模板的文字都在它上面。'],
-    ['角度统一', '每块表同一角度、同一位置拍，主页才整齐。'],
-    ['加期数编号', 'NO.023 这类编号让主页像一个系列，粉丝愿意往下翻。'],
+    ['标题克制', '型号 2–6 个字，用宋体，不描边、不用亮黄，高级感来自留白。'],
+    ['文字不压照片', '照片完整干净，品牌、型号、服务都放在画框里。'],
+    ['避开点赞数', '主页左下角会被点赞数挡住，模板在那里留了空。'],
+    ['光线角度统一', '每块表同样的柔光、同样的角度，主页才整齐。'],
   ];
   tips.forEach(([t, d], i) => {
     const y = 2.85 + i * 2.65;
     numberDot(pres, s, i + 1, 7.85, y);
-    s.addText(t, { isTextBox: true, x: 7.85, y: y + 0.78, w: 2.65, h: 0.5, margin: 0, fontFace: FONT.sans, fontSize: 20, color: 'FFFFFF', valign: 'top' });
+    s.addText(t, { isTextBox: true, x: 7.85, y: y + 0.78, w: 2.65, h: 0.5, margin: 0, fontFace: FONT.title, fontSize: 20, color: 'FFFFFF', valign: 'top' });
     s.addText(d, { isTextBox: true, x: 7.85, y: y + 1.3, w: 2.65, h: 1.2, margin: 0, fontFace: FONT.body, fontSize: 14, color: C.grey, valign: 'top' });
   });
 }
@@ -242,47 +247,46 @@ function stepsPage(pres) {
   const steps = [
     ['安装字体（只做一次）', '打开 fonts 文件夹，双击 4 个字体文件 → 点「安装」（Mac 用「字体册」）。装好后重开 PPT / WPS，否则字体会被替换成默认字体。'],
     ['复制一页模板', '左侧缩略图右键选好的模板页 →「复制幻灯片」，在副本上改，原模板留着下次用。'],
-    ['换手表照片', '点表盘位置选中照片 → 右键「更改图片」→ 选新照片。位置不准用「图片格式 → 裁剪」拖动对齐。点不中照片时：开始 → 选择 → 选择窗格，点「手表照片」。'],
-    ['对位置（可选）', '在选择窗格里点亮「构图参考线」，把表盘对进圆圈；对好后一定再把它隐藏，否则会被导出。'],
-    ['改文字', '点文字直接改店名、期数、品牌、型号、服务项目；型号 2–8 个字最好。'],
+    ['换手表照片', '右键照片 →「更改图片」→ 选新照片。或者选中照片按 Delete，再点画框中间的图标插入，会自动裁成画框大小。'],
+    ['调位置', '双击照片 →「裁剪」，拖动照片让表盘居中。可在选择窗格里显示「构图参考线」对位，对好后一定再隐藏，否则会被导出。'],
+    ['改文字', '点文字直接改店名、期数、品牌、型号、服务项目；型号 2–6 个字最好看。'],
     ['导出图片', 'PowerPoint：文件 → 导出 → 更改文件类型 → PNG → 仅当前幻灯片，得到 1080×1440。\nWPS：文件 → 输出为图片 → 当前页（或 另存为 → PNG）。'],
     ['发抖音时设为封面', '发布页点「选封面」→ 从相册上传这张图，主页九宫格显示的就是它。'],
   ];
   steps.forEach(([t, d], i) => {
     const y = 2.75 + i * 1.6;
     numberDot(pres, s, i + 1, 0.75, y + 0.02);
-    s.addText(t, { isTextBox: true, x: 1.65, y, w: 8.85, h: 0.55, margin: 0, fontFace: FONT.sans, fontSize: 22, color: 'FFFFFF', valign: 'middle' });
+    s.addText(t, { isTextBox: true, x: 1.65, y, w: 8.85, h: 0.55, margin: 0, fontFace: FONT.title, fontSize: 22, color: 'FFFFFF', valign: 'middle' });
     s.addText(d, { isTextBox: true, x: 1.65, y: y + 0.6, w: 8.85, h: 0.9, margin: 0, fontFace: FONT.body, fontSize: 15, color: C.grey, valign: 'top', lineSpacingMultiple: 1.1 });
   });
 }
 
 function shootingPage(pres) {
   const s = pres.addSlide({ masterName: 'GUIDE', sectionTitle: '使用说明' });
-  pageTitle(s, '拍摄规范：以后都按这个角度拍', '在你们现在的拍法（黑背景、表立起来、侧转露出表冠）基础上定成标准，每块表都一样。');
-  s.addImage({ path: asset('guide-sample.png'), x: 0.75, y: 2.75, w: 4.6, h: 4.6 * 4 / 3, objectName: '构图示意', altText: '标准构图：表盘在青色圆圈内，虚线以下为文字区' });
-  s.addText('青色圆圈 = 表盘位置；虚线以下 = 文字区；红色 = 会被抖音界面挡住', { isTextBox: true, x: 0.75, y: 8.95, w: 4.6, h: 0.6, margin: 0, fontFace: FONT.body, fontSize: 12, color: C.grey, valign: 'top' });
+  pageTitle(s, '拍摄建议：柔光 + 统一角度', '画框接近正方形，手机竖拍的照片上下会被裁掉一些。表放正中、四周留空，套进去就刚好。');
+  s.addImage({ path: asset('crop-guide.png'), x: 0.75, y: 2.75, w: 4.6, h: 4.6 * 4 / 3, objectName: '裁切示意', altText: '手机竖拍照片套进画框时，上下会被裁掉' });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 5.65, y: 2.75, w: 4.85, h: 3.0, fill: { color: C.card }, line: { type: 'none' }, rectRadius: 0.1 });
   s.addImage({ path: asset('diagram-top.png'), x: 5.75, y: 2.8, w: 3.9 * 1000 / 760, h: 2.9, objectName: '俯视图', altText: '俯视图：表盘向左转约 25 度，手机正对表头' });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 5.65, y: 5.95, w: 4.85, h: 3.0, fill: { color: C.card }, line: { type: 'none' }, rectRadius: 0.1 });
-  s.addImage({ path: asset('diagram-side.png'), x: 5.75, y: 6.0, w: 3.9 * 1000 / 760, h: 2.9, objectName: '侧视图', altText: '侧视图：镜头略高于表盘中心 5 到 10 度，距离 20 到 30 厘米' });
+  s.addImage({ path: asset('diagram-side.png'), x: 5.75, y: 6.0, w: 3.9 * 1000 / 760, h: 2.9, objectName: '侧视图', altText: '侧视图：柔光灯在左上方，镜头略高于表盘中心' });
 
   const rules = [
-    ['背景', '黑色植绒布（吸光布），表离背景 30 cm 以上，背景才够黑。'],
-    ['摆放', '表立在表枕或支架上，表盘正面朝镜头。'],
-    ['角度', '表盘向左转约 25°，露出右侧表冠和表壳侧面。'],
+    ['光线', '一盏柔光灯（带柔光箱）从左上 45° 打，右侧放白卡给表壳补一道高光，关掉顶灯防反光。'],
+    ['背景', '黑色或深灰植绒布，表离背景 30 cm 以上，背景才干净。'],
+    ['角度', '表立在表枕上，表盘向左转约 25°，露出右侧表冠。'],
     ['高度', '镜头与表盘中心同高或略高 5–10°，不要从正上方俯拍。'],
-    ['构图', '手机竖拍 3:4，表盘在画面上半部、约占宽度一半，下半部留给文字。'],
+    ['构图', '手机竖拍 3:4，表盘放正中，约占画面宽度六成，上下多留空。'],
     ['镜头', '用 2× 长焦，距离 20–30 cm，表盘不变形。'],
-    ['光线', '一盏柔光灯从左上 45° 打光，右侧放白卡或灯条给表壳边缘补高光，关掉顶灯防反光。'],
-    ['细节', '表镜擦干净、指针调到 10:10、点表盘对焦，曝光略降让背景纯黑。'],
+    ['细节', '表镜擦干净、指针调到 10:10、点表盘对焦，曝光略降让背景更黑。'],
+    ['统一', '每块表同一套灯位和角度，九宫格才整齐。'],
   ];
   rules.forEach(([k, d], i) => {
     const col = i % 2;
     const row = Math.floor(i / 2);
     const x = 0.75 + col * 5.0;
     const y = 9.7 + row * 1.1;
-    s.addText(k, { isTextBox: true, x, y, w: 0.9, h: 0.95, margin: 0, fontFace: FONT.sans, fontSize: 18, color: C.gold, valign: 'top' });
-    s.addText(d, { isTextBox: true, x: x + 0.85, y, w: 3.85, h: 0.95, margin: 0, fontFace: FONT.body, fontSize: 13.5, color: C.cream, valign: 'top' });
+    s.addText(k, { isTextBox: true, x, y, w: 0.9, h: 0.95, margin: 0, fontFace: FONT.title, fontSize: 18, color: C.champagne, valign: 'top' });
+    s.addText(d, { isTextBox: true, x: x + 0.85, y, w: 3.85, h: 0.95, margin: 0, fontFace: FONT.body, fontSize: 13.5, color: 'F2EEE6', valign: 'top' });
   });
 }
 
@@ -293,18 +297,26 @@ function definePres() {
   pres.defineLayout({ name: 'COVER_3x4', width: SLIDE_W, height: SLIDE_H });
   pres.layout = 'COVER_3x4';
   pres.title = '抖音封面模板 · 名表维修';
-  pres.theme = { headFontFace: FONT.sans, bodyFontFace: FONT.body };
+  pres.theme = { headFontFace: FONT.title, bodyFontFace: FONT.body };
 
-  pres.defineSlideMaster({
-    title: 'COVER',
-    background: { color: '000000' },
-    objects: [{ placeholder: { options: { name: 'photo', type: 'pic', x: 0, y: 0, w: SLIDE_W, h: SLIDE_H }, text: '点图标插入手表照片' } }],
-  });
+  for (const [style, { bg }] of Object.entries(STYLES)) {
+    const [x, y, w, h] = WINDOWS[style];
+    pres.defineSlideMaster({
+      title: `COVER_${style.toUpperCase()}`,
+      background: { path: asset(`bg-${style}.jpg`), color: bg },
+      objects: [
+        { placeholder: { options: { name: 'photo', type: 'pic', x: px(x), y: px(y), w: px(w), h: px(h) }, text: '点图标插入手表照片' } },
+        ...LAYOUT_TEXT[style].map(([t, o]) => ({
+          text: { text: t, options: { ...o, margin: 0, valign: 'middle', x: px(o.x), y: px(o.y), w: px(o.w), h: px(o.h), fontSize: fpx(o.fontSize) } },
+        })),
+      ],
+    });
+  }
   pres.defineSlideMaster({
     title: 'GUIDE',
     background: { color: C.page },
     objects: [
-      { placeholder: { options: { name: 'title', type: 'title', x: 0.75, y: 0.75, w: 9.75, h: 0.9, fontFace: FONT.sans, fontSize: 40, color: 'FFFFFF', align: 'left', valign: 'middle', margin: 0 }, text: '' } },
+      { placeholder: { options: { name: 'title', type: 'title', x: 0.75, y: 0.75, w: 9.75, h: 0.9, fontFace: FONT.title, fontSize: 40, color: 'FFFFFF', align: 'left', valign: 'middle', margin: 0 }, text: '' } },
       { text: { text: '名表维修 · 抖音封面模板', options: { x: 0.75, y: 14.35, w: 6, h: 0.35, fontFace: FONT.body, fontSize: 11, color: C.dim, margin: 0 } } },
     ],
     slideNumber: { x: 9.5, y: 14.35, w: 1, h: 0.35, fontFace: FONT.body, fontSize: 11, color: C.dim, align: 'right' },
@@ -313,30 +325,21 @@ function definePres() {
 }
 
 function addCover(pres, style, d, { guide = true, section = '封面模板', notes = true } = {}) {
-  const slide = pres.addSlide({ masterName: 'COVER', sectionTitle: section });
-  coverBase(pres, slide, d.photo, guide);
-  STYLES[style].fn(pres, slide, d);
+  const slide = pres.addSlide({ masterName: `COVER_${style.toUpperCase()}`, sectionTitle: section });
+  coverBase(slide, style, d.photo, guide);
+  STYLES[style].fn(slide, d);
   if (notes) slide.addNotes(COVER_NOTES(style));
   return slide;
 }
 
 // pptxgenjs cannot write these, so they are patched into the XML afterwards.
-const GOLD_GRADIENT = '<a:gradFill flip="none" rotWithShape="1"><a:gsLst>'
-  + '<a:gs pos="0"><a:srgbClr val="FFF3D6"/></a:gs>'
-  + '<a:gs pos="50000"><a:srgbClr val="E6C47E"/></a:gs>'
-  + '<a:gs pos="100000"><a:srgbClr val="B38842"/></a:gs>'
-  + '</a:gsLst><a:lin ang="5400000" scaled="1"/></a:gradFill>';
-
-function patchSlide(xml) {
+function patchXml(xml) {
   return xml
     .replaceAll('lang="en-US"', 'lang="zh-CN"')
     // pptxgenjs puts the source file path in the alt text; don't ship it.
     .replace(/ descr="[^"]*\/assets\/[^"]*"/g, '')
-    // Cinzel has no Chinese: give its runs a Chinese fallback of the same mood.
-    .replace(/<a:ea typeface="Cinzel"([^>]*)\/>/g, `<a:ea typeface="${FONT.serif}"$1/>`)
-    // Gold text (style A's title, the font specimens): a gradient instead of
-    // the flat stand-in colour. Only text runs use C.goldText.
-    .replaceAll(`<a:solidFill><a:srgbClr val="${C.goldText}"/></a:solidFill>`, GOLD_GRADIENT)
+    // Cormorant has no Chinese: its runs fall back to Noto Serif SC.
+    .replace(/<a:(ea|cs) typeface="Cormorant Garamond[^"]*"/g, `<a:$1 typeface="${FONT.zh}"`)
     // The composition guide ships hidden; it is shown from the selection pane.
     .replace(new RegExp(`(<p:cNvPr id="\\d+" name="${NAME.guide}")`, 'g'), '$1 hidden="1"');
 }
@@ -344,10 +347,10 @@ function patchSlide(xml) {
 async function main() {
   const pres = definePres();
   if (PREVIEW) {
-    pres.addSection({ title: '风格' });
-    for (const k of Object.keys(STYLES)) addCover(pres, k, SAMPLE, { guide: false, notes: false, section: '风格' });
-    pres.addSection({ title: '九宫格' });
-    for (const d of GRID) addCover(pres, 'A', d, { guide: false, notes: false, section: '九宫格' });
+    for (const style of Object.keys(STYLES)) {
+      pres.addSection({ title: style });
+      for (const d of GRID) addCover(pres, style, d, { guide: false, notes: false, section: style });
+    }
   } else {
     pres.addSection({ title: '使用说明' });
     overviewPage(pres);
@@ -355,12 +358,12 @@ async function main() {
     stepsPage(pres);
     shootingPage(pres);
     pres.addSection({ title: '封面模板' });
-    for (const k of Object.keys(STYLES)) addCover(pres, k, SAMPLE);
+    for (const style of Object.keys(STYLES)) addCover(pres, style, SAMPLE);
   }
 
   const zip = await JSZip.loadAsync(await pres.write({ outputType: 'nodebuffer' }));
-  for (const f of Object.keys(zip.files).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n))) {
-    zip.file(f, patchSlide(await zip.file(f).async('string')));
+  for (const f of Object.keys(zip.files).filter((n) => /^ppt\/(slides|slideLayouts)\/[^/]+\.xml$/.test(n))) {
+    zip.file(f, patchXml(await zip.file(f).async('string')));
   }
   fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
   fs.writeFileSync(OUT_FILE, await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));

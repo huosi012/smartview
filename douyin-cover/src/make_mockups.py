@@ -1,10 +1,9 @@
 """Turn the rendered sample covers (build/cover-NN.png) into the images the
-guide pages use: style previews, the annotated composition sample and a
-mock Douyin profile grid.
+guide pages use: one preview per style and a mock Douyin profile grid per
+style.
 
 Run after build.js --preview has been rendered; see render.sh.
 """
-import math
 import os
 
 from PIL import Image, ImageDraw, ImageFont
@@ -12,12 +11,13 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(HERE, "build")
 ASSETS = os.path.join(HERE, "assets")
-FONT = os.path.join(HERE, "..", "fonts", "NotoSansSC-Black.ttf")
+FONT = os.path.join(HERE, "..", "fonts", "NotoSerifSC-SemiBold.ttf")
 
-STYLES = "ABC"           # covers 1-3 of the preview deck
-GRID_FIRST = 4           # covers 4-12 are the grid, newest first
-LIKES = ["1.3万", "548", "241", "80", "84", "301", "109", "50", "376"]
+STYLES = ["noir", "ivory", "dossier"]   # preview deck: 9 covers per style, in this order
+PER_STYLE = 9
+LIKES = ["1.3万", "548", "241", "306", "376", "84", "80", "301", "109"]
 PINNED = 2
+PAGE = (18, 18, 20)    # guide page background, C.page in build.js
 
 
 def cover(n):
@@ -31,35 +31,36 @@ def heart(d, x, y, s, fill):
     d.polygon([(x + 0.02 * s, y + r * 1.3), (x + s - 0.02 * s, y + r * 1.3), (x + s / 2, y + s * 0.92)], fill=fill)
 
 
-def grid_mockup():
-    W, H = 1000, 1600
+def grid_mockup(first, out_name):
+    """A profile screen: tab bar, then three rows of covers, the last one cut
+    off by the bottom of the screen as if mid-scroll."""
+    W = 1000
+    gap = 3
+    cw = (W - 2 * gap) // 3
+    ch = round(cw * 4 / 3)
+    top = 146
+    H = top + 2 * (ch + gap) + round(ch * 0.55)
     img = Image.new("RGB", (W, H), (22, 24, 35))
     d = ImageDraw.Draw(img)
     f_tab = ImageFont.truetype(FONT, 38)
     f_like = ImageFont.truetype(FONT, 30)
     f_pin = ImageFont.truetype(FONT, 24)
 
-    tabs = [("作品 23", True), ("喜欢", False), ("收藏", False)]
-    for i, (t, on) in enumerate(tabs):
+    for i, (t, on) in enumerate([("作品 23", True), ("喜欢", False), ("收藏", False)]):
         cx = W * (i + 0.5) / 3
         d.text((cx, 70), t, font=f_tab, anchor="mm", fill=(255, 255, 255) if on else (140, 140, 150))
         if on:
             d.rounded_rectangle((cx - 40, 108, cx + 40, 114), 3, fill=(254, 44, 85))
     d.line((0, 140, W, 140), fill=(40, 42, 55), width=2)
 
-    gap = 3
-    cw = (W - 2 * gap) // 3
-    ch = round(cw * 4 / 3)
-    top = 146
-    for i in range(9):
+    for i in range(PER_STYLE):
         r, c = divmod(i, 3)
         x, y = c * (cw + gap), top + r * (ch + gap)
-        thumb = cover(GRID_FIRST + i).resize((cw, ch), Image.LANCZOS)
-        img.paste(thumb, (x, y))
+        img.paste(cover(first + i).resize((cw, ch), Image.LANCZOS), (x, y))
         shade = Image.new("L", (cw, 70), 0)
         sd = ImageDraw.Draw(shade)
         for k in range(70):
-            sd.line((0, k, cw, k), fill=int(120 * k / 70))
+            sd.line((0, k, cw, k), fill=int(110 * k / 70))
         img.paste((0, 0, 0), (x, y + ch - 70, x + cw, y + ch), shade)
         heart(d, x + 14, y + ch - 46, 30, (255, 255, 255))
         d.text((x + 54, y + ch - 31), LIKES[i], font=f_like, anchor="lm", fill=(255, 255, 255))
@@ -67,22 +68,19 @@ def grid_mockup():
             d.rounded_rectangle((x + 10, y + 10, x + 76, y + 46), 6, fill=(254, 196, 0))
             d.text((x + 43, y + 28), "置顶", font=f_pin, anchor="mm", fill=(30, 30, 30))
 
-    H = top + 3 * ch + 2 * gap + 44
-    img = img.crop((0, 0, W, H))
-    # rounded phone-screen corners on a transparent background
+    # rounded phone screen on the guide pages' background colour
+    pad = 40
     mask = Image.new("L", (W, H), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), 56, fill=255)
-    out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    out.paste(img, (0, 0), mask)
-    ImageDraw.Draw(out).rounded_rectangle((0, 0, W - 1, H - 1), 56, outline=(60, 62, 75), width=6)
-    out.save(os.path.join(ASSETS, "grid-mockup.png"), optimize=True)
+    out = Image.new("RGB", (W + 2 * pad, H + 2 * pad), PAGE)
+    out.paste(img, (pad, pad), mask)
+    ImageDraw.Draw(out).rounded_rectangle((pad, pad, pad + W - 1, pad + H - 1), 56, outline=(60, 62, 75), width=6)
+    out.save(os.path.join(ASSETS, out_name), quality=90)
 
 
 if __name__ == "__main__":
-    for i, k in enumerate(STYLES, start=1):
-        cover(i).resize((720, 960), Image.LANCZOS).save(os.path.join(ASSETS, f"preview-{k}.png"), optimize=True)
-    sample = cover(1).convert("RGBA")
-    sample = Image.alpha_composite(sample, Image.open(os.path.join(ASSETS, "guide.png")))
-    sample.convert("RGB").resize((720, 960), Image.LANCZOS).save(os.path.join(ASSETS, "guide-sample.png"), optimize=True)
-    grid_mockup()
+    for k, style in enumerate(STYLES):
+        first = 1 + k * PER_STYLE
+        cover(first).resize((720, 960), Image.LANCZOS).save(os.path.join(ASSETS, f"preview-{style}.jpg"), quality=90)
+        grid_mockup(first, f"grid-mockup-{style}.jpg")
     print("mockups written to", ASSETS)
