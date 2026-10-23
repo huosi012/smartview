@@ -7,6 +7,12 @@
       <stop offset=".6" stop-color="#B98F3E"/>
       <stop offset="1" stop-color="#EDD595"/>
     </linearGradient>
+    <linearGradient id="gGoldLt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFBEA"/>
+      <stop offset=".45" stop-color="#FFE9A8"/>
+      <stop offset=".62" stop-color="#F7CB6A"/>
+      <stop offset="1" stop-color="#FFF2C8"/>
+    </linearGradient>
     <linearGradient id="gGoldH" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#B08736"/>
       <stop offset=".5" stop-color="#F3DFA2"/>
