@@ -111,32 +111,72 @@
 ### 5.0 通用规则
 
 1. **AI 只出图片，不出字**：品名、LOGO、卖点、法规文字全部用字库排版
-2. **“爆蛋”会被 AI 画成鸡蛋**：提示词写“油炸肉馅丸子”，负面词加“鸡蛋、蛋黄、蛋壳”（IP 除外）
-3. **光源统一**：都用“左上方柔光 + 暖金高光”
+2. **爆蛋要画成实物的样子**：AI 默认会画成鸡蛋或深金黄的炸丸子。按 5.1 的外观要点写提示词，并用实物图垫图
+3. **光源统一**：都用“左上方柔光 + 暖调”
 4. **背景便于抠图**：石盘、IP 用纯白底，热气用纯黑底
 5. **分辨率**：300dpi。石盘直径约 120mm，至少需要 1420 px；IP 约 70×100mm，至少需要 830×1180 px。建议都生成 2048px 以上
 6. 中文提示词适合即梦、可灵、通义万相、LiblibAI；英文适合 Midjourney、Flux、SD（`--v 7` 可换成当前最新版本）
 
+### 5.1 爆蛋外观要点（按客户给的实物图）
+
+| 部位 | 实物样子 | 参考色 |
+|---|---|---|
+| 外皮 | 乳白到浅奶黄色，光滑、微微鼓起；表面有不规则的浅金色斑驳纹（像炸鱼丸），烤过的地方有零星浅金焦斑，微油亮。**不是**深金黄，不是面包糠，不是芝麻球 | 底色 `#EBDDB0`，斑纹 `#D9A85A` |
+| 切面 | 一圈**较厚**的洁白 Q 弹外皮（约占半径的 1/3），最外缘一条细细的浅金色 | `#F2EAD2` |
+| 肉馅 | 粉褐到金褐色，颗粒感明显的肉糜，湿润带汁 | `#B86E3E` |
+| 爆开 | 烤到顶部鼓起、爆开一个不规则的口子，**像火山口**，露出油亮的肉馅和琥珀色汤汁 | 汤汁 `#C98A3A` |
+
+“爆开像火山口”正好对上“火山石爆蛋”这个名字。所以主图里除了对半切开的那颗，再放一两颗顶部爆开的。
+
+**参考图怎么用**
+- **即梦 / 可灵 / 通义万相**：把客户的实物图（顶部爆开那张）上传为参考图（垫图），参考强度 50–65%。太高会把绿色背景也带进来
+- **Midjourney**：参考图链接放在提示词最前面，加 `--iw 1.5`；只想借色调就用 `--sref`
+- **安井那张**是别家的效果图，只参考外皮和切面的样子，不要拿来垫图照搬构图
+
 ### AI-① 俯拍火山石盘（主图）· 1:1 · 纯白底
 
 ```
-商业美食摄影，正上方90度垂直俯拍。一块正圆形的深灰色天然火山石圆盘，表面布满细密气孔，质感粗粝；盘中7颗金黄色圆球形小吃（直径约4厘米的油炸肉馅丸子）均匀围成一圈，正中央一颗对半切开、切面朝上，露出洁白细腻的外皮层和褐色颗粒感的肉糜内馅，琥珀色酱汁油亮；缝隙里撒着少量翠绿葱花和白芝麻，一缕白色热气从中间升起。纯白色背景，圆盘完整居中、四周留白，左上方柔光，暖金色高光，盘子下方有柔和投影，超高清细节，8K
+商业美食摄影，正上方90度垂直俯拍。一块正圆形的深灰色天然火山石圆盘，表面布满细密气孔，质感粗粝；盘中7颗圆球形爆蛋（直径约4厘米的肉馅丸子）均匀围成一圈，外皮乳白到浅奶黄色，光滑微鼓，带不规则的浅金色斑驳纹理，局部有零星烤出的浅金色焦斑，微微油亮；其中两颗顶部受热爆开一个不规则的小口，像小火山口，露出里面油亮的金褐色肉馅；正中央一颗对半切开、切面朝上，一圈较厚的洁白Q弹外皮包着粉褐色、颗粒感明显的肉糜馅，馅料湿润带汁；缝隙里撒少量翠绿葱花，一缕白色热气从中间升起。纯白色背景，圆盘完整居中、四周留白，左上方柔光，色调温暖清淡，盘子下方有柔和投影，超高清细节，8K
 ```
-负面词：`文字，水印，logo，手，筷子，餐具，鸡蛋，蛋黄，蛋壳，侧面视角，透视变形，椭圆盘，卡通，塑料感，过度饱和，烧焦，杂乱背景，模糊`
+负面词：`深金黄色，炸得焦黄，焦黑，面包糠，芝麻球，汤圆，包子，奶黄包，鸡蛋，蛋黄，蛋壳，溏心，文字，水印，logo，手，筷子，侧面视角，透视变形，椭圆盘，卡通，塑料感，过度饱和，杂乱背景，模糊`
 
 ```
-Commercial food photography, perfect 90-degree top-down flat lay. A perfectly round dark-grey natural volcanic lava stone plate with fine porous rough texture; seven golden-brown round fried meat-stuffed balls (Chinese street snack, 4 cm) arranged evenly in a ring, one ball in the exact center cut in half with the cut face up, showing a smooth creamy-white outer layer and a juicy brown minced-meat filling with glossy amber sauce; a sprinkle of fresh green scallion rings and white sesame seeds in the gaps, a thin wisp of steam rising from the center. Pure white background, plate fully visible and centered with margin, soft light from upper left, warm golden highlights, soft shadow beneath, ultra detailed --ar 1:1 --style raw --s 150 --v 7 --no text, logo, hands, chopsticks, egg, egg yolk, side view, perspective, oval plate, cartoon
+Commercial food photography, perfect 90-degree top-down flat lay. A perfectly round dark-grey natural volcanic lava stone plate with fine porous rough texture. Seven round Chinese "bao dan" meat-stuffed balls (4 cm) arranged evenly in a ring: pale ivory to light cream-yellow skin, smooth and slightly puffed, with irregular light-golden mottled marbling like fried fish balls and a few faint golden grill spots, light oily sheen. Two balls have burst open at the top from the heat, an irregular small opening like a tiny volcano crater revealing glossy golden-brown meat filling. The center ball is cut in half with the cut face up: a thick bright-white springy outer layer wrapping a pinkish-tan coarse minced-meat filling, moist and juicy. A few fresh green scallion rings in the gaps, a thin wisp of steam. Pure white background, plate fully visible and centered with margin, soft light from upper left, warm and light color tone, soft shadow beneath, ultra detailed --ar 1:1 --style raw --s 120 --v 7 --no dark golden crust, breadcrumbs, sesame balls, tangyuan, bun, egg, egg yolk, text, logo, hands, chopsticks, side view, perspective, oval plate, cartoon, oversaturated
 ```
 后期：抠成正圆，外面加金色盘沿和点阵圈（矢量）。
 
-### AI-② 切面特写（备用）· 1:1 · 纯白底
-
-如果俯拍图正中那颗的切面不够好看，可以单独生成一颗，再合成到盘心。
+### AI-①B 侧视火山石板（备选主图 / 宣传图）· 3:2 · 纯白底
 
 ```
-正上方俯拍，单颗金黄色油炸圆球小吃对半切开、切面朝上：最外圈是薄而酥的金黄脆壳，中间是洁白细腻的外层，中心是饱满的褐色颗粒感肉糜馅，琥珀色酱汁油亮湿润，冒细微热气；纯白背景，左上方柔光，超高清微距，8K
+商业美食摄影，45度侧俯拍。一块深灰色多孔火山石板上放着5颗圆球形爆蛋，外皮乳白到浅奶黄色，光滑微鼓，带浅金色斑驳纹；最前面一颗顶部烤得爆开一个不规则的口子，像火山口，金褐色肉馅和琥珀色汤汁微微溢出；旁边一颗对半切开，露出厚厚的洁白外皮和粉褐色颗粒肉馅；几缕热气升起，旁边点缀两片翠绿葱叶。纯白背景，左上方柔光，色调温暖清淡，浅景深，超高清，8K
 ```
-负面词：`鸡蛋，蛋黄，溏心蛋，文字，水印，刀，盘子，生肉，模糊`
+负面词同 AI-①（把“侧面视角，透视变形”去掉）。
+
+### AI-② 切面特写 · 1:1 · 纯白底
+
+俯拍图正中那颗的切面不够好看时，单独生成一颗，再合成到盘心。
+
+```
+微距美食摄影，单颗爆蛋对半切开，切面朝向镜头、略微倾斜：外皮乳白到浅奶黄色，表面带浅金色斑驳纹；切面是一圈较厚的洁白Q弹外皮（约占半径三分之一），最外缘一条细细的浅金色，中心是粉褐色、颗粒感明显的肉糜馅，湿润带汁，微微冒热气；纯白背景，左上方柔光，超高清，8K
+```
+负面词：`鸡蛋，蛋黄，溏心蛋，深金黄色，焦黑，面包糠，生肉，血水，文字，水印，刀，盘子，模糊`
+
+```
+Macro food photography, a single Chinese "bao dan" meat ball sliced in half, cut face toward the camera slightly tilted: pale ivory to light cream-yellow skin with light-golden mottled marbling; the cut face shows a thick bright-white springy outer layer (about one third of the radius) with a thin light-golden rim, and a pinkish-tan coarse minced-meat filling in the center, moist and juicy, faint steam. Pure white background, soft light from upper left, ultra detailed --ar 1:1 --style raw --v 7 --no egg, egg yolk, dark golden crust, breadcrumbs, raw meat, text, knife, plate
+```
+
+### AI-②B 顶部爆开特写 · 1:1 · 纯白底
+
+对应客户实物图里顶部爆开的那颗，可以用在盘心，也可以单独做宣传图。
+
+```
+美食微距摄影，45度俯拍，单颗爆蛋在火山石上烤到顶部爆开：乳白色外皮微微鼓起，边缘带浅金色烤斑；顶部裂开一个不规则的圆口，像小火山口，口内是油亮的金褐色颗粒肉馅，琥珀色汤汁在口里打转、微微溢到边缘，冒着细细的热气；纯白背景，左上方柔光，超高清，8K
+```
+负面词：`鸡蛋，蛋黄，溏心蛋，蛋挞，深金黄色，焦黑，面包糠，文字，水印，手，筷子，模糊`
+
+```
+Macro food photography, 45-degree high angle, a single Chinese "bao dan" meat ball grilled on volcanic stone until its top bursts open: pale ivory skin slightly puffed with light-golden grill spots; an irregular round opening at the top like a tiny volcano crater, filled with glossy golden-brown coarse meat filling and swirling amber juice slightly overflowing the rim, thin wisps of steam. Pure white background, soft light from upper left, ultra detailed --ar 1:1 --style raw --v 7 --no egg, egg yolk, egg tart, dark golden crust, breadcrumbs, text, hands, chopsticks
+```
 
 ### AI-③ 新疆纹样底纹（竖带用）· 1:1 · 无缝
 
