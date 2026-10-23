@@ -7,8 +7,8 @@ cd "$(dirname "$0")"
 FONTS=src/fonts
 mkdir -p "$FONTS"
 fetch() { [ -s "$FONTS/$1" ] || curl -sSfL -o "$FONTS/$1" "$2"; }
-# 站酷庆科黄油体、思源黑体（Noto Sans SC），均为 SIL OFL 开源字体，可免费商用
-fetch QingKe.ttf         https://fonts.gstatic.com/s/zcoolqingkehuangyou/v16/2Eb5L_R5IXJEWhD3AOhSvFC554MOOahI4mRIiw.ttf
+# 站酷快乐体、思源黑体（Noto Sans SC），均为 SIL OFL 开源字体，可免费商用
+fetch KuaiLe.ttf         https://fonts.gstatic.com/s/zcoolkuaile/v22/tssqApdaRQokwFjFJjvM6h2Wpg.ttf
 fetch NotoSansSC-500.ttf https://fonts.gstatic.com/s/notosanssc/v41/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG-3FnYw.ttf
 fetch NotoSansSC-700.ttf https://fonts.gstatic.com/s/notosanssc/v41/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaGzjCnYw.ttf
 fetch NotoSansSC-900.ttf https://fonts.gstatic.com/s/notosanssc/v41/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG3bCnYw.ttf
