@@ -1,219 +1,200 @@
-# 辛合甲 · 火山石爆蛋（1kg）白金绿包装方案
+# 辛合甲 · 火山石爆蛋（1kg）白金绿包装方案 · 竖带版
 
-**本版按客户 10/21 的要求修改：**
+上一版的结构还是参考图的套路（上绿下白、左上 LOGO、右上标识、居中大字、左下 -18℃、右下净含量），**本版从版式结构开始重新设计**。
 
-| 要求 | 本稿做法 |
-|---|---|
-| 第一张的内容 | 文字暂用《金亨火山石爆蛋.pdf》第 1 页（火山石爆蛋）的内容，后期再调整 |
-| 第二张的 logo | 换成**辛合甲** LOGO，右上角保留“新疆优品”标识 |
-| 第三张的尺寸 | 成品尺寸 **245 × 320 mm**（与金亨稿一致） |
-| 委托方 | 改为 **辛合甲(陕西)供应链管理有限公司**，地址改为陕西省西安市灞桥区电厂西路9号城东汽配城企铭兴北三排二层2202室 |
-| 冒火的胖娃娃 | 加入 IP 形象「火山爆爆」：正面站在火山石板右侧，背面在标题栏右上角 |
-
-> 稿中的爆蛋、火山石和「火山爆爆」都是**矢量示意**，正式稿换成第 5 节生成的 AI 图。
+内容沿用客户 10/21 的要求：
+- 文字暂按《金亨火山石爆蛋.pdf》第 1 页，委托方改为辛合甲(陕西)供应链管理有限公司
+- 换成辛合甲 LOGO
+- 成品尺寸 245 × 320 mm
+- 加入冒火胖娃娃 IP
 
 | 正面 · 标准版 | 正面 · 标注版 | 正面 · 开窗版 | 背面 | 背面 · 标注版 |
 |---|---|---|---|---|
 | ![](preview/front.png) | ![](preview/front-annotated.png) | ![](preview/front-window.png) | ![](preview/back.png) | ![](preview/back-annotated.png) |
 
-标注版里：红框 = AI 生成；蓝框 = 矢量 / 需要原文件；背面**黄底** = 待确认或待提供，**绿底** = 已按要求修改。
+> 稿中的火山石盘、爆蛋和「火山爆爆」都是**矢量示意**，正式稿换成第 5 节生成的 AI 图。
+> 标注版：红框 = AI 生成；蓝框 = 矢量 / 需原文件；背面黄底 = 待确认，绿底 = 已按要求修改。
 
 ---
 
-## 1. 定稿前必须确认的事项
+## 1. 设计思路：「绿洲竖幅 · 金石圆盘」
+
+| 元素 | 参考图（金亨 / 辛合甲旧稿 / 安井） | 本方案 |
+|---|---|---|
+| 版式结构 | 横向分割：上绿下白 / 上绿下灰 / 满版黄 | **左侧通高祖母绿竖带 + 右侧象牙白版面**，像一幅竖排的中式条幅 |
+| 品名 | 横排大字，或两行右对齐 | **竖排书法感宋体**：“火山石”白色 35mm，“爆蛋”金色 46mm，贯穿整条竖带；旁边配一列竖排拼音 |
+| 产品图 | 侧面看的堆叠、满碗或单颗切面 | **90° 俯拍的圆形火山石盘**：7 颗爆蛋围成一圈，正中一颗切开朝上，撒葱花芝麻；外圈是金色盘沿、点阵和热浪圈 |
+| 卖点“臻品爆蛋品质引领” | 横条胶囊 | **竖排对联**：“臻品爆蛋 / 品质引领”两列错位排列 |
+| 卖点“烤肠新一派 更多人喜爱” | 斜体大字 | **IP 的对话气泡**：由「火山爆爆」说出来 |
+| IP | 金亨：维吾尔族小男孩 | **「火山爆爆」**：一颗金色爆蛋，头顶裂开、冒出火山和火焰 |
+| 开窗 | 大面积灰色开窗 | **圆形透明窗**，和石盘同一个位置 |
+| 背面 | 常规上下排列 | **竖带移到右侧**，和正面竖带在袋子侧边相接，整袋像被一条绿带包住 |
+
+**为什么用竖带**
+- 冷柜里一排排包装大多是横向分割，竖幅更容易被认出来
+- 竖排宋体自带中式、新疆“条幅”的庄重感，和辛合甲 LOGO 的书法气质一致
+- 品名占满整条竖带，字可以做到 46mm，远看也清楚
+
+## 2. 定稿前必须确认的事项
 
 | # | 问题 | 说明 |
 |---|---|---|
-| 1 | **品名里还是“金亨火山石爆蛋”** | 按“文字先按金亨的做”保留了原文，但“金亨”是原品牌名，换成辛合甲 LOGO 后必须改（例如“辛合甲火山石爆蛋”） |
-| 2 | **委托方电话** | 只给了新的名称和地址。原电话 0994-2597308 属于新疆亚盛格，稿中先写“（待提供）” |
-| 3 | **条码 6947577800814** | 沿用金亨稿。商品条码属于注册它的企业，委托方换成辛合甲后，一般要用辛合甲名下注册的条码 |
-| 4 | **保质期** | 提供的文字里没有保质期，稿中在喷码区预留了“生产日期 / 保质期 / 批号”，需确认是喷码还是印刷 |
+| 1 | **品名还是“金亨火山石爆蛋”** | 按“文字先按金亨的做”保留了原文。换成辛合甲 LOGO 后必须改，例如“辛合甲火山石爆蛋” |
+| 2 | **委托方电话** | 只给了新的名称和地址，原电话属于新疆亚盛格，稿中写“（待提供）” |
+| 3 | **条码 6947577800814** | 沿用金亨稿。委托方换成辛合甲后，一般要用辛合甲名下注册的条码 |
+| 4 | **保质期** | 文字稿里没有保质期，喷码区已预留 |
 | 5 | **二维码** | “企业溯源 · 食用说明”的二维码待提供 |
-| 6 | **LOGO 原文件** | 辛合甲和新疆优品标志是从效果图里抠的，分辨率不够印刷，需要提供 AI / PDF / EPS 矢量文件 |
-| 7 | **新疆优品授权** | 区域公用品牌标识需确认辛合甲有使用授权 |
-| 8 | **“爆蛋”与配料** | 配料表中没有蛋类。GB 7718 规定新创名称易使人误解食品属性时，须在邻近位置用**同一字号**标示真实属性名称。建议先找当地市场监管部门或法规顾问确认。IP 头顶的“蛋壳裂口”也会加深“蛋”的印象，如有顾虑可改成参考图 2 的“白色云朵圈” |
+| 6 | **LOGO 原文件** | 辛合甲和新疆优品标志是从效果图里抠的，需要客户提供矢量文件；新疆优品需确认有使用授权 |
+| 7 | **“爆蛋”与配料** | 配料中没有蛋类。GB 7718 规定新创名称易使人误解食品属性时，须在邻近位置用同一字号标示真实属性名称，建议先找当地市场监管部门确认。IP 头顶的“蛋壳裂口”如有顾虑，可改成白色云朵圈 |
 
-## 2. 设计概念：「天山雪 · 金石 · 绿洲」
+## 3. 版面（245 × 320 mm，四周出血 3mm）
 
-| 颜色 | 含义 | 在包装上 |
+坐标以左上角为原点，单位 mm。
+
+**正面**
+
+| 区域 | 位置 | 内容 |
 |---|---|---|
-| **白** | 天山雪 / 洁净冷链 | 下半部乳白底，衬托金黄色产品和 IP |
-| **金** | 金黄酥脆 / 臻品品质 | 品名“爆蛋”、火山金线、徽章、细线 |
-| **绿** | 新疆绿洲 / 新鲜 | 上半部祖母绿底 + 新疆八角星纹样，与辛合甲 LOGO 的绿色呼应 |
+| 热封区 | 上 y 0–9.6，下 y 310–320 | 金细线标示，不放关键信息；两侧 y≈15 易撕口 |
+| 竖带 | x 0–86（通高） | 祖母绿 + 新疆八角星纹样，右边缘是双金线 |
+| 品牌 | x 25–57，y 16–60 | 辛合甲 LOGO |
+| 竖排品名 | x 18–64，y 74–279 | 火山石（白）+ 爆蛋（金渐变），右侧竖排拼音 |
+| 属性名称 | x 19–63，y 286–296 | 肉糜类制品 |
+| 区域标识 | x 189–235，y 16–28 | 新疆优品（深金色版本） |
+| 竖排卖点 | x 222–236，y 37–79 | 臻品爆蛋 / 品质引领 |
+| 火山石盘 | 圆心 (154, 138)，盘径 118，含金圈约 135 | 俯拍主图 |
+| 对话气泡 | x 95–170，y 222–250 | 烤肠新一派 / 更多人喜爱 |
+| IP | x 166–236，y 172–271 | 「火山爆爆」，火焰压在石盘金圈上 |
+| 底部 | y 273–300 | 左：-18℃ 冷冻储存；右：净含量：1kg（字高 6.6mm，法规要求 ≥4mm） |
 
-**记忆点**
-1. **火山金线**：绿白分界线画成火山轮廓（中间有火山口凹槽），双层金线
-2. **火山石板主图**：爆蛋堆在多孔的火山石板上，顶上一颗切开、露出爆汁肉馅
-3. **IP「火山爆爆」**：圆滚滚的金色爆蛋，头顶裂开、冒出小火山和火焰，和品名“火山石 + 爆蛋”一一对应，承接金亨稿里卡通人物的亲和感
+**背面**：右侧竖带（x 159–245）放 LOGO、竖排品名、IP 和条码；左侧白区从上到下依次是：
+- 产品信息（金亨稿全文，委托方已改）
+- 营养成分表
+- 食用方法（烧烤 / 油炸）
+- 二维码和喷码区
+- -18℃ 标识和“肉质可追溯 · 品质有保障”
 
-## 3. 版面（正面，245 × 320 mm，四周出血 3mm）
-
-坐标以左上角为原点，单位 mm，均为约数。
-
-| 区域 | 位置 | 内容（文字来源） |
-|---|---|---|
-| 顶部热封区 | y 0–9.4 | 深绿封口带 + 金细线；两侧 y≈15 易撕口；不放关键信息 |
-| 品牌 | x 14–45，y 12–55 | 辛合甲 LOGO |
-| 区域标识 | x 184–231，y 16–29 | 新疆优品 |
-| 卖点 | y ≈ 72 | 臻品爆蛋 · 品质引领（金亨稿） |
-| 品名 | 基线 y ≈ 125 | “火山石”白色 31mm + “爆蛋”金色 47mm，下方配拼音 |
-| 属性名称 | y 141–151 | 肉糜类制品（金亨稿） |
-| 火山金线 | y 161–201 | 火山口在 x≈122 |
-| 徽章 | 圆心 (38, 211)，直径 37 | 烤肠新一派 / 更多人喜爱（金亨稿） |
-| 主图 | x 20–196，y 176–279 | 火山石板 + 爆蛋堆 + 切面 + 热气 |
-| IP 形象 | x 166–237，y 177–274 | 「火山爆爆」，火焰略压过金线，增加层次 |
-| 底部信息 | y 279–302 | 左：-18℃ 冷冻储存；右：净含量：1kg（字高 6.6mm，法规要求 ≥4mm） |
-| 底部热封区 | y 309–320 | 深绿封口带 |
-
-**开窗版**：主图区改为“火山石轮廓”异形透明窗，窗内不印白墨；切面球压在窗左上角，「火山爆爆」站在窗口右上沿。
-
-**背面**：标题栏（LOGO + 品名 + 臻品爆蛋品质引领 + IP）→ 产品信息（金亨稿全文，委托方已改）→ 营养成分表（金亨稿数值，含“儿童青少年应避免过量摄入盐油糖。”）→ 二维码 + 喷码区 → 食用方法（烧烤 / 油炸）→ 条码、-18℃、肉质可追溯 · 品质有保障。
+**开窗版**：石盘位置改为直径 120mm 的圆形透明窗，保留金色盘沿和点阵圈，窗内不印白墨。
 
 ## 4. 配色
 
 | 色名 | HEX | CMYK 参考 | 用途 |
 |---|---|---|---|
-| 祖母绿（主绿） | `#0B5D3B` | C88 M42 Y92 K35 | 上半部底色、文字、图标 |
-| 深墨绿 | `#063A25` | C90 M55 Y90 K60 | 封口带 |
-| 香槟金 | `#C9A24D` | 专色金：沿用金亨稿的 **PANTONE 876 C**，或用 871 C | 品名“爆蛋”、金线、徽章 |
-| 浅金 | `#EAD49A` | C10 M16 Y45 K0 | 拼音、细线、小字 |
-| 象牙白 | `#FAF7EF` | C2 M3 Y7 K0 | 胶囊、卡片 |
-| 乳白（底色） | `#FDFBF6` | 白墨 | 下半部底色 |
-| IP 火焰橙（点缀） | `#FF8A2A` → `#FFC64A` | — | 只用在「火山爆爆」的火焰、岩浆上，面积 <3% |
+| 祖母绿 | `#0B5D3B` | C88 M42 Y92 K35 | 竖带、气泡、标识、文字 |
+| 深墨绿 | `#07432A` | C90 M50 Y90 K55 | 竖带渐变 |
+| 香槟金 | `#C9A24D` | 专色金：沿用金亨稿的 PANTONE 876 C，或用 871 C | “爆蛋”二字、金线、盘沿、点阵 |
+| 深金 | `#A8843A` | C30 M45 Y85 K10 | 白底上的金色小字、新疆优品 |
+| 浅金 | `#EAD49A` | C10 M16 Y45 K0 | 竖带上的拼音、细字 |
+| 象牙白 | `#FBF8F0` | 白墨 + 极淡暖色 | 右侧版面底色 |
+| 火焰橙（点缀） | `#FF8A2A` → `#FFC64A` | — | 只用在 IP 的火焰和岩浆上，面积 <3% |
 
 ## 5. AI 绘画部分与提示词
 
 ### 5.0 通用规则
 
 1. **AI 只出图片，不出字**：品名、LOGO、卖点、法规文字全部用字库排版
-2. **“爆蛋”会被 AI 画成鸡蛋**：提示词写“油炸肉馅丸子”，负面词加“鸡蛋、蛋黄、蛋壳”（IP 形象除外）
-3. **光源统一**：都用“左上方 45° 柔光 + 暖金高光”
-4. **背景便于抠图**：食物、叶子、IP 用纯白底；热气用纯黑底（图层模式选“滤色”）
-5. **分辨率**：300dpi。主图区约 175×105mm，至少需要 2070×1240 px；IP 约 70×100mm，至少需要 830×1180 px。建议都生成 2048px 以上再放大 2 倍
-6. **和实物一致**：外皮颜色、个头、馅料要对得上实物，可用实物切面照垫图
-7. 中文提示词适合即梦、可灵、通义万相、LiblibAI；英文适合 Midjourney、Flux、SD（`--v 7` 可换成当前最新版本）
+2. **“爆蛋”会被 AI 画成鸡蛋**：提示词写“油炸肉馅丸子”，负面词加“鸡蛋、蛋黄、蛋壳”（IP 除外）
+3. **光源统一**：都用“左上方柔光 + 暖金高光”
+4. **背景便于抠图**：石盘、IP 用纯白底，热气用纯黑底
+5. **分辨率**：300dpi。石盘直径约 120mm，至少需要 1420 px；IP 约 70×100mm，至少需要 830×1180 px。建议都生成 2048px 以上
+6. 中文提示词适合即梦、可灵、通义万相、LiblibAI；英文适合 Midjourney、Flux、SD（`--v 7` 可换成当前最新版本）
 
-### AI-① 产品主图（火山石板）· 3:2 · 纯白底
-
-```
-商业美食摄影，冷冻食品包装主图。一块椭圆形深灰色天然火山石板，表面布满细密气孔，质感粗粝；石板上整齐堆叠6颗金黄色圆球形小吃（直径约4厘米的油炸肉馅丸子），前排3颗、后排2颗、顶部1颗，表皮金黄微焦，带细小油炸气泡纹理，油润有光泽；顶部一颗对半切开、切面朝向镜头，露出洁白细腻的外皮层和褐色颗粒感的肉糜内馅，琥珀色酱汁油亮，正从切面缓缓流下；几缕白色热气袅袅升起。纯白色背景，左上方45度柔光主光，暖金色高光，石板下方有自然柔和的投影，15度俯拍，主体居中偏左，右侧留白，浅景深，干净高级，超高清细节，8K
-```
-负面词：`文字，水印，logo，手，筷子，餐具，鸡蛋，蛋黄，蛋壳，卡通，塑料感，过度饱和，发黑烧焦，畸形，多余食物，杂乱背景，模糊`
+### AI-① 俯拍火山石盘（主图）· 1:1 · 纯白底
 
 ```
-Commercial food photography for frozen food packaging. An oval dark-grey natural volcanic lava stone slab with fine porous rough texture; on it a neat pyramid of six golden-brown round fried meat-stuffed balls (Chinese street snack, 4 cm), three in front, two behind, one on top; crispy blistered golden surface with a light oily sheen. The top ball is cut in half facing the camera, revealing a smooth creamy-white outer layer and a juicy brown minced-meat filling, glossy amber sauce slowly oozing down. Thin wisps of white steam. Pure white background, soft key light from upper left, warm golden highlights, soft shadow under the slab, 15-degree high angle, subject slightly left with empty space on the right, shallow depth of field, ultra detailed --ar 3:2 --style raw --s 150 --v 7 --no text, logo, hands, chopsticks, plate, egg, egg yolk, cartoon
+商业美食摄影，正上方90度垂直俯拍。一块正圆形的深灰色天然火山石圆盘，表面布满细密气孔，质感粗粝；盘中7颗金黄色圆球形小吃（直径约4厘米的油炸肉馅丸子）均匀围成一圈，正中央一颗对半切开、切面朝上，露出洁白细腻的外皮层和褐色颗粒感的肉糜内馅，琥珀色酱汁油亮；缝隙里撒着少量翠绿葱花和白芝麻，一缕白色热气从中间升起。纯白色背景，圆盘完整居中、四周留白，左上方柔光，暖金色高光，盘子下方有柔和投影，超高清细节，8K
 ```
-
-> 右侧要留给「火山爆爆」，所以提示词里写了“主体居中偏左，右侧留白”。
-
-### AI-② 切面爆汁特写 · 1:1 · 纯白底
+负面词：`文字，水印，logo，手，筷子，餐具，鸡蛋，蛋黄，蛋壳，侧面视角，透视变形，椭圆盘，卡通，塑料感，过度饱和，烧焦，杂乱背景，模糊`
 
 ```
-微距美食摄影，单颗金黄色油炸圆球小吃被利刀对半切开，切面正对镜头、略微倾斜：最外圈是一层薄而酥的金黄脆壳，中间是洁白细腻、略带弹性的外层，中心是饱满的褐色颗粒感肉糜馅，琥珀色酱汁油亮湿润，正从馅料中溢出并沿切面向下滴落，冒出细微热气；纯白背景，左上方柔光加侧逆光勾勒轮廓，超高清细节，8K
+Commercial food photography, perfect 90-degree top-down flat lay. A perfectly round dark-grey natural volcanic lava stone plate with fine porous rough texture; seven golden-brown round fried meat-stuffed balls (Chinese street snack, 4 cm) arranged evenly in a ring, one ball in the exact center cut in half with the cut face up, showing a smooth creamy-white outer layer and a juicy brown minced-meat filling with glossy amber sauce; a sprinkle of fresh green scallion rings and white sesame seeds in the gaps, a thin wisp of steam rising from the center. Pure white background, plate fully visible and centered with margin, soft light from upper left, warm golden highlights, soft shadow beneath, ultra detailed --ar 1:1 --style raw --s 150 --v 7 --no text, logo, hands, chopsticks, egg, egg yolk, side view, perspective, oval plate, cartoon
 ```
-负面词：`鸡蛋，蛋黄，溏心蛋，蛋壳，文字，水印，手，刀，盘子，卡通，生肉，血水，模糊`
+后期：抠成正圆，外面加金色盘沿和点阵圈（矢量）。
+
+### AI-② 切面特写（备用）· 1:1 · 纯白底
+
+如果俯拍图正中那颗的切面不够好看，可以单独生成一颗，再合成到盘心。
 
 ```
-Macro food photography, a single golden-brown fried round snack ball sliced in half, cut face toward camera slightly tilted: thin crispy golden crust, smooth springy creamy-white inner layer, plump juicy brown minced-meat filling in the center, glossy amber sauce oozing and dripping down the cut face, faint steam, pure white background, soft key light from upper left with rim light, ultra detailed --ar 1:1 --style raw --v 7 --no egg, egg yolk, text, knife, plate, hands
+正上方俯拍，单颗金黄色油炸圆球小吃对半切开、切面朝上：最外圈是薄而酥的金黄脆壳，中间是洁白细腻的外层，中心是饱满的褐色颗粒感肉糜馅，琥珀色酱汁油亮湿润，冒细微热气；纯白背景，左上方柔光，超高清微距，8K
 ```
+负面词：`鸡蛋，蛋黄，溏心蛋，文字，水印，刀，盘子，生肉，模糊`
 
-### AI-③ 新疆纹样底纹 · 1:1 · 无缝
+### AI-③ 新疆纹样底纹（竖带用）· 1:1 · 无缝
 
 ```
-新疆传统纹样无缝四方连续图案，以八角星花为中心，结合卷草纹与巴旦木纹（杏仁纹）的几何构成，金色细线描（#C9A24D）画在深祖母绿底（#0B5D3B）上，平面矢量线稿风格，左右对称，线条粗细均匀，图案疏朗，低对比度，高级典雅，适合作包装底纹
+新疆传统纹样无缝四方连续图案，以八角星花为中心，结合卷草纹与巴旦木纹的几何构成，金色细线描（#C9A24D）画在深祖母绿底（#0B5D3B）上，平面矢量线稿风格，左右对称，线条粗细均匀，图案疏朗，低对比度，高级典雅
 ```
 ```
-Seamless repeating pattern, traditional Xinjiang Central Asian ornament, eight-pointed star rosettes linked by arabesque scrolls and badam almond paisley motifs, fine thin gold line art (#C9A24D) on deep emerald green (#0B5D3B), flat vector line drawing, symmetrical, uniform line weight, airy spacing, subtle and elegant --tile --ar 1:1 --style raw --v 7 --no shading, gradient, 3d, text
+Seamless repeating pattern, traditional Xinjiang Central Asian ornament, eight-pointed star rosettes linked by arabesque scrolls and badam paisley motifs, fine thin gold line art (#C9A24D) on deep emerald green (#0B5D3B), flat vector line drawing, symmetrical, uniform line weight, airy spacing, subtle and elegant --tile --ar 1:1 --style raw --v 7 --no shading, gradient, 3d, text
 ```
-后期：在 Illustrator 里用“图像描摹”转成矢量，透明度 12–18%，品名后面做径向渐隐。
+后期：在 Illustrator 里用“图像描摹”转成矢量，透明度 12–18%。
 
 ### AI-④ 热气 · 2:3 · 纯黑底
 
 ```
-几缕白色热气蒸汽缓缓上升，柔和半透明，形态自然弯曲，底部浓顶部淡，纯黑色背景，高清摄影素材，画面中没有其他物体
+几缕白色热气蒸汽缓缓上升，柔和半透明，形态自然弯曲，纯黑色背景，高清摄影素材，画面中没有其他物体
 ```
-```
-Wisps of soft translucent white steam rising, natural curling shape, denser at the bottom fading at the top, isolated on pure black background, nothing else in frame --ar 2:3 --style raw --v 7
-```
-后期：PS 图层模式选“滤色”，透明度 40–60%。
-
-### AI-⑤ 点缀（绿叶 / 火山石碎块）· 纯白底
-
-```
-两三片新鲜翠绿的葱叶与香菜叶，叶面带细小水珠，自然弯曲，纯白背景，俯拍微距产品摄影，边缘清晰便于抠图
-```
-```
-数块大小不一的深灰色天然火山石碎块，表面布满气孔，纯白背景，柔和顶光，产品摄影，便于抠图
-```
+后期：PS 图层模式选“滤色”，叠在盘心上方，透明度 40–60%。
 
 ### AI-⑥ 整袋效果图（提案用）
 
 ```
-一个空白无图案的光面塑料食品包装袋样机，竖版三边封软包装，袋面饱满，带自然褶皱与高光反射，顶部有锯齿封口，立放在白色大理石台面上，背景为明亮的现代白色厨房虚化，左侧窗户自然光，旁边点缀一枝绿植叶片，清新高级，商业产品摄影，8K
+一个空白无图案的光面塑料食品包装袋样机，竖版三边封软包装，袋面饱满，带自然褶皱与高光反射，顶部有锯齿封口，立放在白色大理石台面上，背景为明亮的现代白色厨房虚化，左侧窗户自然光，清新高级，商业产品摄影，8K
 ```
 然后在 PS 里用“智能对象”把 `preview/front.png` 贴上去。
 
-### AI-⑦ IP 形象「火山爆爆」（新增）
+### AI-⑦ IP 形象「火山爆爆」
 
-**用途**：正面右下（约 70×100mm）+ 背面标题栏 · 1:1 · 纯白底
-**做法**：以客户给的两张参考图（冒火胖娃娃）为“角色参考 / 垫图”，按包装配色重新生成：
-- **身体**改成金黄奶油色，像一颗炸好的爆蛋，不要参考图那样偏白
-- **火山**用深褐火山石色，不要参考图 1 的紫色
-- **火焰**用金黄到橙色
+以客户给的两张冒火胖娃娃为“角色参考 / 垫图”，按包装配色重新生成：
+- **身体**：金黄奶油色，像一颗炸好的爆蛋
+- **火山**：深褐火山石色，不要紫色
+- **火焰**：金黄到橙色
 
-参考图带“AI生成”水印、分辨率也不够，不要直接用原图，要重新生成无水印的高清图。
-
-```
-3D卡通IP形象设计，一个圆滚滚胖乎乎的小团子角色，身体是金黄奶油色，像刚炸好的金色爆蛋，表面光滑软萌，略带哑光质感；头顶像蛋壳一样裂开锯齿状边缘，从裂口里冒出一座深褐色小火山，火山表面有火山石气孔质感，火山口流淌着橙金色岩浆，顶部喷出金黄到橙色的火焰，周围飞溅几颗小火山石碎块和金色火星；黑亮的大圆眼睛带高光，粉色腮红，张嘴开心地笑，短短的小手，两只小脚；全身正面站立，泡泡玛特盲盒手办风格，C4D渲染，柔和棚拍灯光，左上方主光，纯白背景，高清，8K
-```
-负面词：`文字，水印，AI生成字样，紫色，恐怖，尖牙，多余手指，畸形，肢体错乱，背景杂物，低质量，模糊`
+参考图带“AI生成”水印，分辨率也不够，不要直接用原图。
 
 ```
-3D cartoon mascot character design, a chubby round little dumpling creature whose body is golden cream colored like a freshly fried golden snack ball, smooth soft vinyl-toy texture with a slight matte finish; the top of its head is cracked open like an eggshell with a zigzag edge, and a small dark-brown volcano with porous lava-stone texture rises out of the crack, glowing orange-gold lava dripping from the crater, golden-to-orange flames bursting out, a few tiny volcanic rock bits and golden sparks flying; big glossy black eyes with highlights, pink blush cheeks, happy open-mouth smile, tiny arms, two little feet; full body front view standing, Pop Mart blind box figure style, C4D octane render, soft studio lighting from upper left, pure white background --ar 1:1 --style raw --v 7 --no text, watermark, purple, scary, teeth, extra fingers, extra limbs
+3D卡通IP形象设计，一个圆滚滚胖乎乎的小团子角色，身体是金黄奶油色，像刚炸好的金色爆蛋，表面光滑软萌，略带哑光质感；头顶像蛋壳一样裂开锯齿状边缘，从裂口里冒出一座深褐色小火山，火山表面有火山石气孔质感，火山口流淌着橙金色岩浆，顶部喷出金黄到橙色的火焰，周围飞溅几颗小火山石碎块和金色火星；黑亮的大圆眼睛带高光，粉色腮红，张嘴开心地笑，短短的小手，两只小脚；全身站立，泡泡玛特盲盒手办风格，C4D渲染，柔和棚拍灯光，左上方主光，纯白背景，高清，8K
+```
+负面词：`文字，水印，AI生成字样，紫色，恐怖，尖牙，多余手指，畸形，肢体错乱，背景杂物，模糊`
+
+```
+3D cartoon mascot character design, a chubby round little dumpling creature whose body is golden cream colored like a freshly fried golden snack ball, smooth soft vinyl-toy texture with slight matte finish; the top of its head is cracked open like an eggshell with a zigzag edge, and a small dark-brown volcano with porous lava-stone texture rises out of the crack, glowing orange-gold lava dripping from the crater, golden-to-orange flames bursting out, tiny volcanic rock bits and golden sparks flying; big glossy black eyes with highlights, pink blush cheeks, happy open-mouth smile, tiny arms, two little feet; full body standing, Pop Mart blind box figure style, C4D octane render, soft studio lighting from upper left, pure white background --ar 1:1 --style raw --v 7 --no text, watermark, purple, scary, teeth, extra fingers, extra limbs
 ```
 
-**动作变体**（在上面提示词末尾替换动作描述）：
-- 正面主图：`身体微微侧向左边，一只小手指向左侧，像在介绍旁边的美食`
-- 背面标题栏：`一只小手举起打招呼，眨一只眼`
-- 呼应“烤肠新一派”：`双手举着一串烤得金黄的爆蛋烤串，开心流口水`
+**动作变体**（加在提示词末尾）：
+- 正面（配对话气泡）：`身体四分之三侧向左边，一只小手抬起像在说话，嘴巴张开，开心地介绍`
+- 背面竖带：`正面站立，一只小手举起打招呼，眨一只眼`
 
-先定一张满意的正面图，再用它做角色参考（Midjourney `--cref`、即梦“角色参考”）生成其他动作，形象才能保持一致。
-如果要注册 IP 或商标，AI 生成的形象版权保护有限，建议由设计师在 AI 图基础上重绘定稿。
+先定一张满意的图，再用它做角色参考（Midjourney `--cref`、即梦“角色参考”）生成其他动作，形象才能保持一致。
+如果要注册 IP 或商标，建议由设计师在 AI 图基础上重绘定稿。
 
 ## 6. 印刷与材质
 
 - **材质**：NY/PE 或 PET/PE 复合（耐 -18℃ 以下低温、抗穿刺），1kg 装总厚一般 100–120μm，和彩印厂确认
-- **印刷**：凹版印刷。金色用专色金（金亨稿用的是 PANTONE 876 C），或用镀铝膜 + 透明黄墨
-- **表面**：整体哑光油，品名、主图、IP 局部亮光
+- **印刷**：凹版印刷，金色用专色金（PANTONE 876 C / 871 C）
+- **表面**：整体哑光油；竖排品名、石盘、IP 局部亮光
+- **竖带接缝**：正面左侧竖带和背面右侧竖带在侧封边相接，制版时两边的绿色、纹样要对齐，侧封处不要放文字
 - **白墨**：透明膜先铺白墨，开窗区不铺
-- **文件**：CMYK + 专色单独通道；文字转曲；图片按实际尺寸 ≥300dpi；出血 3mm；热封区、撕口、喷码区按彩印厂刀版
-- **偏色**：AI 图是 RGB，金黄色转 CMYK 容易发灰，先软打样调整再出数码样
+- **文件**：CMYK + 专色单独通道；文字转曲；图片 ≥300dpi；出血 3mm；热封区、撕口、喷码区按彩印厂刀版
 
 ## 7. 法规自查（以现行国标和当地市场监管要求为准）
 
-- [ ] 品名与真实属性名称在同一版面：正面“火山石爆蛋”+“肉糜类制品”（“爆蛋”问题见第 1 节第 8 条）
-- [ ] 净含量在主展示版面，1kg 档字高 ≥4mm（本稿 6.6mm）
+- [ ] 正面品名“火山石爆蛋”和真实属性名称“肉糜类制品”在同一版面（“爆蛋”问题见第 2 节第 7 条）
+- [ ] 净含量在主展示版面，字高 ≥4mm（本稿 6.6mm）
 - [ ] 委托方、受托方的名称、地址、联系方式齐全（委托方电话待补）
 - [ ] 生产日期、保质期（待补）
-- [ ] 致敏物质提示、营养成分表：已按金亨稿，含饱和脂肪、糖和“儿童青少年应避免过量摄入盐油糖。”
+- [ ] 致敏物质提示、营养成分表：按金亨稿，含饱和脂肪、糖和“儿童青少年应避免过量摄入盐油糖。”
 - [ ] 产品类型写明“速冻生制品、非即食”，食用方法“烧烤、油炸后食用”
-- [ ] 广告用语不用极限词；“臻品爆蛋品质引领”“烤肠新一派 更多人喜爱”属于描述性用语
-- [ ] 条码归属辛合甲（见第 1 节第 3 条），不放在热封区和褶皱处
+- [ ] 条码归属辛合甲，不放在热封区和褶皱处
 
 ## 8. 文件说明
 
 ```
 packaging/huoshanshi-baodan/
 ├── README.md                 本文档
-├── layout.html               交互排版稿（标准 / 标注 / 开窗，可切换）
+├── layout.html               交互排版稿（标准 / 标注 / 开窗）
 ├── svg/front.svg             正面矢量底稿 245×320mm（可导入 Illustrator）
 ├── svg/back.svg              背面矢量底稿 245×320mm
-└── preview/
-    ├── front.png             正面 · 标准版
-    ├── front-annotated.png   正面 · 标注版
-    ├── front-window.png      正面 · 开窗版
-    ├── back.png              背面
-    └── back-annotated.png    背面 · 标注版（待确认项高亮）
+└── preview/                  5 张预览图
 ```
-
-**推荐流程**：确认第 1 节的问题 → 按第 5 节生成 AI-①②③④⑦ → PS 抠图、调色、合成 → 在 Illustrator 打开 `svg/front.svg` 和 `svg/back.svg`，替换示意图、放入 LOGO 矢量文件 → 交彩印厂出刀版、打样。
