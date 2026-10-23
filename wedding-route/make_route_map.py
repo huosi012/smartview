@@ -50,51 +50,90 @@ SANS = "'Noto Sans SC','WenQuanYi Zen Hei',sans-serif"
 DISPLAY = "'ZCOOL QingKe HuangYou','Noto Sans SC','WenQuanYi Zen Hei',sans-serif"
 BRUSH = "'Ma Shan Zheng','Noto Sans SC','WenQuanYi Zen Hei',serif"
 
-# ---------------------------------------------------------------- 路网（示意坐标）
-HOME = (205, 262)          # 新郎家：中国石油万金塔派出所北加油站
-P0 = (225, 350)            # 加油站出口接 303 省道
-TIANTAI = (760, 400)       # 天台镇
-J1 = (1060, 445)           # 303 省道转向德惠
-J2 = (1155, 600)           # 德惠西北路口
-J3 = (1194, 925)           # 德农路路口
-J4 = (1252, 1100)          # 德环路 × 新华街 × 德农环路
-BRIDE = (1175, 1180)       # 新娘家：腰周家
-S1 = (1440, 906)           # 新华街 × 松柏路（红旗大市场）
-S2 = (1492, 925)           # 松柏路右转后再左转向北
-S3 = (1515, 805)
-S4 = (1650, 862)
-GOV = (1690, 930)          # 德惠市人民政府：从北面进，出来再往北
-N1 = (1760, 800)
+# ---------------------------------------------------------------- 路网
+# 城区直接按高德截图复刻：下面 amap() 里的坐标是城区整体截图（1414×1503）上的像素位置，
+# 用同一个比例换算到画布；政府附近的拐弯取自更近的一张截图（2000×1116），
+# 用 amap_near() 先对齐到整体截图。303 省道西段是一条长直路，按示意画、适当压缩。
+CITY_SCALE = 0.62
 
-G1 = [(1345, -10), (1252, 464), (1214, 590), (1160, 790), (1112, 940), (1052, 1120),
-      (1012, 1290)]      # 京哈高速，只作参照
-S303 = [(60, 333), P0, (470, 371), TIANTAI, J1, (1270, 466), (1390, 472)]
-WEST_RING = [J2, (1178, 664), (1236, 732), (1262, 778), J3, (1220, 1068), J4]
-XINHUA = [(1090, 1267), BRIDE, J4, S1]    # 去腰周家的乡道 + 新华街（一条斜线）
-SONGBAI = [(1395, 889), S1, S2, (1566, 952)]
-G102 = [(1572, 1290), (1610, 1140), (1700, 1075), (1810, 1050)]   # 城区东南，只作参照
-CITY = [S2, S3, S4, GOV, N1, (1378, 694), (1338, 640), (1290, 610), (1232, 602), J2]
 
-MAJOR, MINOR = (RED_ROAD, 40), (BLUE_ROAD, 34)
-HIGHWAY = ("#7f93c4", 26)
+def amap(x, y):
+    """城区整体截图像素 → 画布。截图上 303 省道转向德惠的路口 (180, 42) 对应画布 (1060, 415)。"""
+    return (round(1060 + CITY_SCALE * (x - 180), 1), round(415 + CITY_SCALE * (y - 42), 1))
+
+
+def amap_near(x, y):
+    """政府附近截图像素 → 画布（两张截图用德惠西站、王三姐绿色生态园两点对齐）。"""
+    return amap(610 + 0.527 * (x - 452), 615 + 0.527 * (y - 312))
+
+
+def path(*pts):
+    return [amap(x, y) for x, y in pts]
+
+
+HOME = (205, 252)          # 新郎家：中国石油万金塔派出所北加油站
+P0 = (225, 342)            # 加油站出口接 303 省道
+TIANTAI = (760, 386)       # 天台镇
+J1 = amap(180, 42)         # 303 省道转入 Y037 去德惠
+J2 = amap(412, 395)        # 德惠西北路口：去程、回程在这里分开
+J3 = amap(460, 925)        # 德农路路口
+J4 = amap(552, 1211)       # 德环路 × 新华街 × 德农环路
+BRIDE = amap(430, 1340)    # 新娘家：腰周家
+S1 = amap_near(933, 858)   # 新华街 × 松柏路（红旗大市场）
+S2 = amap_near(988, 886)   # 松柏路上右转一小段后左转向北
+S3 = amap_near(1071, 700)
+S4 = amap_near(1437, 861)
+GOV = amap_near(1460, 952)  # 德惠市人民政府：从北面进，出来再往北
+NE = amap_near(1583, 723)
+
+S303 = [(60, 322), P0, (470, 355), TIANTAI, J1]
+S303_EAST = path((180, 42), (330, 62), (500, 70), (842, 77), (881, 88), (942, 154),
+                 (996, 208), (1112, 323), (1158, 377), (1188, 385), (1412, 431))  # 接北环城路
+WEST_RING = path((412, 395), (430, 445), (478, 490), (552, 610), (560, 655), (595, 673),
+                 (460, 925), (498, 1140), (510, 1170), (530, 1190), (552, 1211))  # 经德惠西站、德环路
+BRIDE_ROAD = path((470, 1292)) + [BRIDE]                 # 交叉口往西南去腰周家的乡道
+XINHUA = path((390, 1470), (395, 1430), (405, 1390)) + BRIDE_ROAD[::-1] + [J4, S1]
+SONGBAI = path((468, 731), (722, 842)) + [S1, S2] + path((1105, 1000), (1185, 1048))
+CITY = [S2, S3, S4, GOV, NE, amap_near(1500, 640)] + path(
+    (1081, 700), (742, 560), (696, 462), (620, 424), (600, 432), (558, 430), (528, 407),
+    (412, 395))                                           # 回程：政府往北，再往西北出城
+DENONG = path((0, 1000), (270, 970), (360, 948), (460, 925))
+DENONG_RING = path((552, 1211), (600, 1213), (700, 1262), (800, 1290), (900, 1286),
+                   (960, 1272), (1000, 1280))             # 德农环路东段，到 G102 为止
+G102 = path((980, 1503), (1000, 1280), (1050, 1200), (1100, 1130), (1185, 1048),
+            (1300, 990), (1414, 905))
+G1 = path((719, 0), (696, 31), (650, 100), (600, 160), (570, 220), (550, 290), (530, 370),
+          (520, 420), (510, 480), (500, 540), (487, 600), (468, 677), (433, 754), (360, 892),
+          (300, 1000), (250, 1150), (180, 1380), (140, 1503))   # 京哈高速
+RAIL_HS = path((873, 0), (750, 269), (650, 477), (568, 646), (525, 800), (398, 1138),
+               (300, 1450), (285, 1503))                  # 高铁（经德惠西站）
+RAIL = path((1388, 0), (1288, 223), (885, 1050), (700, 1450), (680, 1503))   # 京哈铁路
+
+MAJOR = (RED_ROAD, 34)         # 303 省道、Y037
+STREET = (RED_ROAD, 26)        # 城区主路、新华街、G102
+MINOR = (BLUE_ROAD, 26)        # 德环路一线
+SIDE = (BLUE_ROAD, 22)         # 不走的次要道路
+HIGHWAY = ("#7f93c4", 22)
+# (道路, 样式, 渐隐遮罩)：先画的在下面
 ROADS = [
-    (G1, HIGHWAY),                                     # 先画，路线道路从上方跨过
-    (S303, MAJOR),
-    ([J1, J2], MAJOR),
-    (XINHUA, MAJOR),
-    (SONGBAI, MAJOR),
-    (CITY, MAJOR),                                     # 松柏路往北进城，绕到市政府再出城
-    (G102, MAJOR),
-    (WEST_RING, MINOR),
-    ([J3, (1000, 960), (960, 967)], MINOR),            # 德农路
-    ([J4, (1460, 1150), (1610, 1140)], MINOR),          # 德农环路东段
-    ([HOME, P0], MINOR),                                # 加油站出口
+    (G1, HIGHWAY, "fadeTop"),
+    (S303_EAST, STREET, None),
+    (G102, STREET, None),
+    (DENONG, SIDE, "fadeLeft"),
+    (DENONG_RING, SIDE, None),
+    (SONGBAI, STREET, None),
+    (S303, MAJOR, None),
+    ([J1, J2], MAJOR, None),
+    (XINHUA, STREET, None),
+    (CITY, STREET, None),
+    (WEST_RING, MINOR, None),
+    ([HOME, P0], MINOR, None),                           # 加油站出口
 ]
 
-LEG_TO_BRIDE = [HOME, P0, (470, 371), TIANTAI, J1, J2] + WEST_RING[1:] + [BRIDE]
-LEG_TO_GOV = [BRIDE, J4, S1, S2, S3, S4, GOV]
-LEG_HOME = CITY[CITY.index(GOV):] + [J1, TIANTAI, (470, 371), P0, HOME]
-LEGS = [(LEG_TO_BRIDE, PINK, 30), (LEG_TO_GOV, ORANGE, 40), (LEG_HOME, BLUE, 70)]
+LEG_TO_BRIDE = [HOME, P0, (470, 355), TIANTAI, J1] + WEST_RING + BRIDE_ROAD
+LEG_TO_GOV = BRIDE_ROAD[::-1] + [J4, S1, S2, S3, S4, GOV]
+LEG_HOME = CITY[CITY.index(GOV):] + [J1, TIANTAI, (470, 355), P0, HOME]
+LEGS = [(LEG_TO_BRIDE, PINK, 30), (LEG_TO_GOV, ORANGE, 30), (LEG_HOME, BLUE, 60)]
 
 
 # ---------------------------------------------------------------- 几何工具
@@ -141,7 +180,7 @@ def text(x, y, s, size, fill=TEXT, family=SANS, weight=400, anchor="middle",
             f'{tr}{st}{extra}>{html.escape(s)}</text>')
 
 
-def arrow(x, y, dx, dy, color, length=46, shaft=7, head=20, half=9):
+def arrow(x, y, dx, dy, color, length=38, shaft=6, head=16, half=7):
     tx, ty = x - dx * length / 2, y - dy * length / 2
     hx, hy = x + dx * length / 2, y + dy * length / 2
     bx, by = hx - dx * head, hy - dy * head
@@ -153,7 +192,7 @@ def arrow(x, y, dx, dy, color, length=46, shaft=7, head=20, half=9):
             f'stroke-width="2" stroke-linejoin="round"/>')
 
 
-def leg_arrows(pts, color, phase, spacing=128, offset=9, margin=48, corner=30):
+def leg_arrows(pts, color, phase, spacing=112, offset=7, margin=40, corner=22):
     out = []
     total = sum(seg_lengths(pts))
     s = margin + phase
@@ -168,17 +207,22 @@ def leg_arrows(pts, color, phase, spacing=128, offset=9, margin=48, corner=30):
     return out
 
 
-def road_label(a, b, s, side=1, gap=40, size=24, t=0.5, fill="#5b5b5b"):
+def along(a, b, t=0.5, gap=0, side=1):
+    """线段 a→b 上比例 t 处、向右（side=1）或向左（side=-1）偏 gap 的点，及便于阅读的角度。"""
     (x0, y0), (x1, y1) = a, b
     ln = math.dist(a, b)
     dx, dy = (x1 - x0) / ln, (y1 - y0) / ln
-    x, y = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
-    x, y = x - dy * gap * side, y + dx * gap * side
+    x, y = x0 + (x1 - x0) * t - dy * gap * side, y0 + (y1 - y0) * t + dx * gap * side
     ang = math.degrees(math.atan2(dy, dx))
     if ang > 90:
         ang -= 180
     elif ang <= -90:
         ang += 180
+    return x, y, ang
+
+
+def road_label(a, b, s, side=1, gap=40, size=24, t=0.5, fill="#5b5b5b"):
+    x, y, ang = along(a, b, t, gap, side)
     return text(x, y + size * 0.35, s, size, fill, SANS, 500, rotate=ang,
                 halo="#fff3f7")
 
@@ -240,52 +284,69 @@ def _build_svg():
     <stop offset="0" stop-color="#f2373f"/><stop offset="1" stop-color="#c8101c"/></linearGradient>
   <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
     <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#c2185b" flood-opacity=".25"/></filter>
+  <linearGradient id="fadeTopG" gradientUnits="userSpaceOnUse" x1="0" y1="398" x2="0" y2="446">
+    <stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient>
+  <mask id="fadeTop" maskUnits="userSpaceOnUse" x="0" y="0" width="1800" height="1280">
+    <rect width="1800" height="1280" fill="url(#fadeTopG)"/></mask>
+  <linearGradient id="fadeLeftG" gradientUnits="userSpaceOnUse" x1="948" y1="0" x2="1010" y2="0">
+    <stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient>
+  <mask id="fadeLeft" maskUnits="userSpaceOnUse" x="0" y="0" width="1800" height="1280">
+    <rect width="1800" height="1280" fill="url(#fadeLeftG)"/></mask>
 </defs>''')
     o.append(f'<rect width="{W}" height="{H}" fill="url(#bg)"/>')
     o.append('<circle cx="1730" cy="-40" r="330" fill="url(#blob)"/>')
     o.append('<circle cx="-40" cy="1320" r="380" fill="url(#blob)"/>')
     o.append('<circle cx="1820" cy="1260" r="240" fill="url(#blob)"/>')
 
+    # 铁路（最底层）
+    for pts, color in ((RAIL_HS, "#e4b4c6"), (RAIL, "#b7b9cc")):
+        o.append(f'<g mask="url(#fadeTop)"><polyline points="{pts_attr(pts)}" fill="none" '
+                 f'stroke="{color}" stroke-width="7" stroke-linejoin="round"/>'
+                 f'<polyline points="{pts_attr(pts)}" fill="none" stroke="#ffffff" '
+                 f'stroke-width="3" stroke-dasharray="14 12"/></g>')
+
     # 道路：先画所有描边，再画所有填充，交叉口自然连通
-    for pts, (color, width) in ROADS:
+    for pts, (color, width), fade in ROADS:
+        mask = f' mask="url(#{fade})"' if fade else ""
         o.append(f'<polyline points="{pts_attr(pts)}" fill="none" stroke="{color}" '
-                 f'stroke-width="{width + 10}" stroke-linejoin="round" stroke-linecap="butt"/>')
-    for pts, (color, width) in ROADS:
+                 f'stroke-width="{width + 8}" stroke-linejoin="round" stroke-linecap="butt"{mask}/>')
+    for pts, (color, width), fade in ROADS:
+        mask = f' mask="url(#{fade})"' if fade else ""
         fill = "#eef1fa" if pts is G1 else ROAD_FILL
         o.append(f'<polyline points="{pts_attr(pts)}" fill="none" stroke="{fill}" '
-                 f'stroke-width="{width}" stroke-linejoin="round" stroke-linecap="butt"/>')
+                 f'stroke-width="{width}" stroke-linejoin="round" stroke-linecap="butt"{mask}/>')
 
-    # 路名
-    o.append(road_label((470, 371), TIANTAI, "303省道", side=-1, gap=44, size=26))
-    o.append(shield(452, 318, "S303", "#ffd23f", "#333", rotate=4.9))
-    o.append(road_label(J1, (1270, 466), "303省道", side=-1, gap=44, size=26))
-    o.append(road_label((1178, 664), (1236, 732), "西环城路", side=1, gap=42))
-    o.append(road_label(J3, (1220, 1068), "德环路", side=1, gap=44, t=0.45))
-    o.append(road_label(J4, (1460, 1150), "德农环路", side=-1, gap=38, t=0.66))
-    o.append(shield(1530, 1147, "S001", "#ffd23f", "#333", rotate=-3.8))
-    o.append(shield(1141, 492, "Y037", "#ffffff", "#333", rotate=58.5, border="#333"))
-    o.append(shield(1294, 250, "G1", "#1f8f4e", "#fff"))
-    o.append(road_label((1345, -10), (1252, 464), "京哈高速", side=-1, gap=34, t=0.7,
+    # 路名、路牌
+    o.append(road_label((470, 355), TIANTAI, "303省道", side=-1, gap=38, size=26))
+    o.append(shield(452, 314, "S303", "#ffd23f", "#333", rotate=3))
+    o.append(road_label(S303_EAST[1], S303_EAST[2], "303省道", side=-1, gap=28, size=24))
+    o.append(road_label(S303_EAST[9], S303_EAST[10], "北环城路", side=-1, gap=26, size=22,
+                        t=0.45))
+    x, y, ang = along(J1, J2, 0.5, 40, -1)
+    o.append(shield(x, y, "Y037", "#ffffff", "#333", rotate=ang, border="#333"))
+    o.append(shield(*G1[3], "G1", "#1f8f4e", "#fff"))
+    o.append(road_label(G1[5], G1[6], "京哈高速", side=-1, gap=26, size=22, fill="#5d6f9c"))
+    o.append(road_label(G1[14], G1[15], "京哈高速", side=1, gap=26, size=22, t=0.6,
                         fill="#5d6f9c"))
-    o.append(road_label((1112, 940), (1052, 1120), "京哈高速", side=1, gap=34,
-                        fill="#5d6f9c"))
-    o.append(road_label(J3, (1000, 960), "德农路", side=1, gap=36, t=0.72))
-    o.append(road_label(J4, S1, "新华街", side=1, gap=46, size=26, t=0.56))
-    o.append(road_label(S1, (1566, 952), "松柏路", side=1, gap=38, size=22, t=0.55))
-    o.append(road_label((1610, 1140), (1700, 1075), "G102国道", side=1, gap=46, size=24))
-    o.append(shield(1762, 1061, "G102", "#e8232f", "#fff", rotate=-12.8))
+    o.append(road_label(DENONG[0], DENONG[1], "德农路", side=-1, gap=24, size=22, t=0.62))
+    o.append(road_label(J3, WEST_RING[7], "德环路", side=-1, gap=26, size=22, t=0.55))
+    o.append(road_label(DENONG_RING[4], DENONG_RING[5], "德农环路", side=-1, gap=24, size=22))
+    x, y, ang = along(DENONG_RING[2], DENONG_RING[3], 0.45)
+    o.append(shield(x, y, "S001", "#ffd23f", "#333", rotate=ang))
+    o.append(road_label(J4, S1, "新华街", side=1, gap=26, size=24))
+    o.append(road_label(SONGBAI[0], SONGBAI[1], "松柏路", side=1, gap=24, size=22, t=0.66))
+    o.append(road_label(G102[3], G102[4], "G102国道", side=1, gap=26, size=22))
+    x, y, ang = along(G102[4], G102[5], 0.55)
+    o.append(shield(x, y, "G102", "#e8232f", "#fff", rotate=ang))
 
     # 地标
-    o.append(text(TIANTAI[0], 456, "天台镇", 28, TEXT, SANS, 500))
-    o.append(text(70, 300, "万金塔乡", 24, "#777", SANS, 400, anchor="start"))
-    o.append('<circle cx="1306" cy="744" r="13" fill="#2f7bf6"/>'
-             + text(1306, 751, "站", 15, "#fff", SANS, 700, editable=False))
-    o.append(text(1326, 753, "德惠西站", 24, TEXT, SANS, 500, anchor="start"))
-    o.append(text(1310, 905, "龙凤采摘园", 23, "#3a9b3f", SANS, 500))
-    o.append(text(1395, 800, "德惠市区", 30, "#8a8aa8", SANS, 700, spacing=4))
-    o.append(poi(1336, 852, "红旗大市场", "#a03cc8", "市"))
-    o.append(poi(1405, 662, "中林石油加油站", "#2f7bf6", "油"))
-    o.append(poi(1584, 716, "王三姐绿色生态园", "#3a9b3f", "园"))
+    o.append(text(TIANTAI[0], 440, "天台镇", 28, TEXT, SANS, 500))
+    o.append(text(70, 292, "万金塔乡", 24, "#777", SANS, 400, anchor="start"))
+    o.append(poi(1347, 778, "德惠西站", "#2f6fd6", "站"))
+    o.append(poi(1395, 884, "红旗大市场", "#a03cc8", "市"))
+    o.append(poi(1300, 968, "龙凤采摘园", "#3a9b3f", "园"))
+    o.append(poi(1405, 690, "中林石油加油站", "#2f6fd6", "油"))
+    o.append(poi(1580, 748, "王三姐绿色生态园", "#3a9b3f", "园"))
 
     # 行车箭头
     for pts, color, phase in LEGS:
@@ -293,21 +354,22 @@ def _build_svg():
 
     # 地点标记
     o.append(pin(*HOME, BLUE))
-    o.append(text(250, 246, "新郎家", 56, BLUE, DISPLAY, 400, anchor="start",
+    o.append(text(250, 236, "新郎家", 56, BLUE, DISPLAY, 400, anchor="start",
                   halo="#ffffff"))
-    o.append(text(252, 288, "中国石油万金塔派出所北加油站", 24, "#2b3f9e", SANS, 500,
+    o.append(text(252, 278, "中国石油万金塔派出所北加油站", 24, "#2b3f9e", SANS, 500,
                   anchor="start", halo="#fff7fa"))
-    o.append(f'<rect x="108" y="206" width="70" height="32" rx="16" fill="{PINK}"/>'
-             + text(143, 229, "起·终", 19, "#fff", SANS, 700, editable=False))
+    o.append(f'<rect x="108" y="196" width="70" height="32" rx="16" fill="{PINK}"/>'
+             + text(143, 219, "起·终", 19, "#fff", SANS, 700, editable=False))
 
     o.append(pin(*BRIDE, PINK))
-    o.append(text(1212, 1240, "新娘家", 58, "#e8202c", DISPLAY, 400, anchor="start",
+    o.append(text(1250, 1268, "新娘家", 50, "#e8202c", DISPLAY, 400, anchor="start",
                   halo="#ffffff"))
-    o.append(text(1372, 1238, "腰周家", 32, "#c2185b", SANS, 700, anchor="start",
+    o.append(text(1388, 1266, "腰周家", 28, "#c2185b", SANS, 700, anchor="start",
                   halo="#fff3f7"))
 
     o.append(pin(*GOV, ORANGE, "★"))
-    o.append(text(1665, 1012, "德惠市人民政府", 34, "#d35400", SANS, 900, halo="#ffffff"))
+    o.append(text(1598, 862, "德惠市", 24, "#d35400", SANS, 900, halo="#ffffff"))
+    o.append(text(1598, 892, "人民政府", 24, "#d35400", SANS, 900, halo="#ffffff"))
 
     # 标题与路线摘要
     o.append(heart(612, 86, 38, PINK, -18, .85))
@@ -318,25 +380,25 @@ def _build_svg():
                   "#c2185b", SANS, 500))
 
     # 指北针
-    cx, cy = 1615, 150
-    o.append(text(cx, 78, "北", 36, "#333", SANS, 900))
-    o.append(f'<g stroke="{PINK}" stroke-width="12" stroke-linecap="round">'
-             f'<line x1="{cx}" y1="{cy - 50}" x2="{cx}" y2="{cy + 50}"/>'
-             f'<line x1="{cx - 42}" y1="{cy}" x2="{cx + 42}" y2="{cy}"/></g>')
+    cx, cy = 1615, 118
+    o.append(text(cx, 50, "北", 32, "#333", SANS, 900))
+    o.append(f'<g stroke="{PINK}" stroke-width="11" stroke-linecap="round">'
+             f'<line x1="{cx}" y1="{cy - 40}" x2="{cx}" y2="{cy + 40}"/>'
+             f'<line x1="{cx - 34}" y1="{cy}" x2="{cx + 34}" y2="{cy}"/></g>')
     for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
-        r = 50 if dx == 0 else 42
+        r = 40 if dx == 0 else 34
         tipx, tipy = cx + dx * (r + 14), cy + dy * (r + 14)
         bx, by = cx + dx * (r - 8), cy + dy * (r - 8)
         tri = [(tipx, tipy), (bx - dy * 17, by + dx * 17), (bx + dy * 17, by - dx * 17)]
         o.append(f'<polygon points="{pts_attr(tri)}" fill="{PINK}"/>')
 
     # 图例
-    o.append(text(1604, 262, "图 例", 34, "#333", SANS, 900))
-    o.append('<rect x="1436" y="280" width="336" height="182" rx="14" fill="#ffffff" '
+    o.append(text(1604, 212, "图 例", 32, "#333", SANS, 900))
+    o.append('<rect x="1436" y="228" width="336" height="180" rx="14" fill="#ffffff" '
              f'fill-opacity=".7" stroke="{PINK}" stroke-width="2.5"/>')
     for i, (label, color) in enumerate((("去新娘家", PINK), ("去德惠市人民政府", ORANGE),
                                         ("回新郎家", BLUE))):
-        y = 326 + i * 56
+        y = 274 + i * 56
         o.append(arrow(1490, y, 1, 0, color, length=78, shaft=14, head=30, half=17))
         o.append(text(1542, y + 9, label, 25, "#333", SANS, 700, anchor="start"))
 
