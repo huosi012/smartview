@@ -245,12 +245,16 @@ def icon_check(cx, cy, r, c):
     ])
 
 
-def icon_eye(cx, cy, r, c):
-    return "\n".join([
-        circle(cx, cy, r, c),
-        f'<path d="M{cx-r*0.66} {cy} Q{cx} {cy-r*0.62} {cx+r*0.66} {cy} Q{cx} {cy+r*0.62} {cx-r*0.66} {cy}Z" fill="none" stroke="{WHITE}" stroke-width="{r*0.1}" stroke-linejoin="round"/>',
-        circle(cx, cy, r * 0.2, WHITE),
-    ])
+def icon_database(cx, cy, r, c):
+    """错题库：三层圆柱。"""
+    rx, ry, sw = r * 0.46, r * 0.16, r * 0.1
+    out = [circle(cx, cy, r, c)]
+    top, step = cy - r * 0.38, r * 0.3
+    out.append(f'<path d="M{cx-rx} {top} V{top+3*step} A{rx} {ry} 0 0 0 {cx+rx} {top+3*step} V{top}" fill="none" stroke="{WHITE}" stroke-width="{sw}" stroke-linejoin="round"/>')
+    out.append(f'<ellipse cx="{cx}" cy="{top}" rx="{rx}" ry="{ry}" fill="none" stroke="{WHITE}" stroke-width="{sw}"/>')
+    for k in (1, 2):
+        out.append(f'<path d="M{cx-rx} {top+k*step} A{rx} {ry} 0 0 0 {cx+rx} {top+k*step}" fill="none" stroke="{WHITE}" stroke-width="{sw}"/>')
+    return "\n".join(out)
 
 
 # ---------------------------------------------------------------- 画面
@@ -319,15 +323,15 @@ def headline(top):
     return l1 + "\n" + l2, b2 + 0.07 * s2
 
 
-def schedule_line(cy):
-    size = 40
-    items = [("周二至周五每天约半小时 · 周末2小时", N7, WHITE)]
+def subline(cy):
+    size = 44
+    items = [("放学来学半小时 · 学完写作业", N7, WHITE), ("不另收费", N9, YELLOW)]
     return runs(items, size, W / 2, baseline(cy, size), "middle")[0]
 
 
 def ticket(top):
     """免费体验券：左黄色主券，右白色二维码存根。"""
-    x, w, h = X0, X1 - X0, 410
+    x, w, h = X0, X1 - X0, 380
     y = top
     stub = 330
     sx = x + w - stub
@@ -348,46 +352,54 @@ def ticket(top):
         rrect(x + 22, y + 22, sx - x - 44, h - 44, 18, "none", "#E0A800", 4, 'stroke-dasharray="14 10"'),
     ]
     tx = x + 60
-    out.append(runs([("免费体验一周", KL, RED)], 116, tx, y + 148, stroke=WHITE, sw=14)[0])
-    out.append(runs([("合适再报名 · ", N9, INK), ("联系欧老师预约", N9, INK)], 42, tx + 4, y + 228)[0])
-    py = y + 340
+    out.append(runs([("免费体验一周", KL, RED)], 116, tx, y + 140, stroke=WHITE, sw=14)[0])
+    out.append(runs([("带上最近的试卷，", N9, INK), ("现场找卡点", N9, RED)], 42, tx + 4, y + 214)[0])
+    py = y + 316
     out.append(phone_icon(tx + 36, py - 28, 36, RED, WHITE))
     out.append(text("191 6627 8890", N9, 80, tx + 88, py, INK, track=0.01))
     assert tx + 88 + N9.width("191 6627 8890", 80, 0.01) < sx - 24, "电话号码压到打孔线"
     # 二维码存根
-    qs = 240
-    qx, qy = sx + (stub - qs) / 2, y + 34
+    qs = 230
+    qx, qy = sx + (stub - qs) / 2, y + 30
     out += [
         rrect(qx, qy, qs, qs, 16, "#F3F5FA"),
         rrect(qx + 14, qy + 14, qs - 28, qs - 28, 10, "none", "#9AA5BE", 4, 'stroke-dasharray="12 9"'),
         text("微信二维码", N7, 32, qx + qs / 2, qy + qs / 2 - 2, "#7A859E", "middle"),
         text("（待替换）", N5, 26, qx + qs / 2, qy + qs / 2 + 38, "#9AA5BE", "middle"),
-        text("扫码预约体验", N9, 38, sx + stub / 2, y + h - 52, INK, "middle"),
+        text("扫码预约体验", N9, 38, sx + stub / 2, y + h - 44, INK, "middle"),
     ]
     return "\n".join(out), y + h
 
 
 POINTS = [
-    (icon_target, PINK, [("哪里不会，", INK), ("就从哪里补", RED)], "先找准薄弱点，再制定个人学习计划"),
-    (icon_teacher, PURPLE, [("固定老师跟进，", INK), ("卡点单独讲", RED)], "老师全程在场，走神有人提醒，不会有人补讲"),
-    (icon_check, ORANGE, [("学没学会", INK), ("持续查", RED)], "当天检查 · 周末复测 · 每月回查"),
-    (icon_eye, GREEN, [("学得咋样", INK), ("看得见", RED)], "每次课后反馈，阶段复盘"),
+    (icon_target, PINK, [("先找卡点，", INK), ("再对症补", RED)],
+     [("逐个知识点排查，从基础缺口补起，一人一份计划", GREY)]),
+    (icon_teacher, PURPLE, [("固定老师，", INK), ("全程盯学", RED)],
+     [("同一位老师跟到底：走神有人提醒，卡壳当场单独讲", GREY)]),
+    (icon_check, ORANGE, [("错题不过关，", INK), ("不算学完", RED)],
+     [("原题正确率", GREY), ("90%", RED), ("以上、同类题", GREY), ("80%", RED), ("以上，才算真学会", GREY)]),
+    (icon_database, GREEN, [("专属错题库，", INK), ("数据实时可查", RED)],
+     [("每道错题都入库：当天抽讲 · 周末复测 · 每月回查", GREY)]),
 ]
 
 
 def points(top):
     x, w = X0, X1 - X0
-    pitch, pad = 146, 26
+    pitch, pad = 128, 24
+    head_cy = top + 44
+    out = [runs([("学完不算，", KL, WHITE), ("学会才算！", KL, YELLOW)], 76, W / 2, baseline(head_cy, 76), "middle",
+                stroke=DEEP, sw=14, shadow=(0, 8, DEEP))[0]]
+    top += 108
     h = pad * 2 + pitch * len(POINTS)
-    out = [
+    out += [
         rrect(x + 10, top + 16, w, h, 40, DEEP),
         rrect(x, top, w, h, 40, WHITE),
     ]
     for i, (icon, c, title, desc) in enumerate(POINTS):
         y = top + pad + i * pitch
         out.append(icon(x + 92, y + pitch / 2, 54, c))
-        out.append(runs([(t, N9, col) for t, col in title], 60, x + 176, y + 74)[0])
-        out.append(text(desc, N5, 34, x + 178, y + 122, GREY))
+        out.append(runs([(t, N9, col) for t, col in title], 58, x + 176, y + 66)[0])
+        out.append(runs([(t, N9 if col == RED else N5, col) for t, col in desc], 33, x + 178, y + 112)[0])
         if i < len(POINTS) - 1:
             out.append(line(f"M{x+176} {y+pitch} H{x+w-50}", "#E3E8F3", 3, 'stroke-dasharray="10 10"'))
     return "\n".join(out), top + h
@@ -397,8 +409,8 @@ def footer(top):
     b = BLEED
     return "\n".join([
         f'<path d="M{-b} {top+30} Q{W/2} {top-40} {W+b} {top+30} V{H+b} H{-b}Z" fill="{DEEP}"/>',
-        text("深圳南山 · 缤纷年华三楼叶子书房（麒麟中学斜对面）", N7, 42, W / 2, top + 116, WHITE, "middle"),
-        runs([("预约电话  ", N7, "#B9C8FF"), ("191 6627 8890", N9, YELLOW)], 38, W / 2, top + 178, "middle")[0],
+        text("深圳南山 · 缤纷年华三楼叶子书房（麒麟中学斜对面）", N7, 42, W / 2, top + 104, WHITE, "middle"),
+        runs([("联系欧老师  ", N7, "#B9C8FF"), ("191 6627 8890", N9, YELLOW)], 38, W / 2, top + 164, "middle")[0],
     ])
 
 
@@ -407,13 +419,13 @@ def build():
     parts = [background(clock_c), confetti(), brand(150), alarm_clock(*clock_c, 200), side_badges(clock_c[1] + 10)]
     head, y = headline(790)
     parts.append(head)
-    parts.append(schedule_line(y + 50))
-    tk, y = ticket(y + 104)
+    parts.append(subline(y + 52))
+    tk, y = ticket(y + 108)
     parts.append(tk)
-    pt, y = points(y + 50)
+    pt, y = points(y + 34)
     parts.append(pt)
-    parts.append(footer(y + 50))
-    print(f"卖点框底部 y={y:.0f}mm，页脚文字基线 y={y + 50 + 176:.0f}mm")
+    parts.append(footer(y + 46))
+    print(f"卖点框底部 y={y:.0f}mm，页脚末行基线 y={y + 46 + 164:.0f}mm")
     body = "\n".join(parts)
     b = BLEED
     svg = (
