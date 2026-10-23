@@ -36,17 +36,17 @@ CHAMPAGNE = (196, 168, 118)
 BRASS = (176, 146, 96)
 CYAN = (61, 245, 255)
 
-# source photo: (dial centre x, y, dial diameter) in source pixels, feather px
+# source photo: (dial centre x, y) and dial diameter, in source pixels
 SOURCES = {
-    "omega-gmt": ((182, 325), 300, 70),
-    "longines-hydroconquest": ((207, 352), 295, 40),
-    "tissot-lelocle": ((168, 333), 345, 60),
-    "rolex-dj-black": ((185, 215), 270, 90),
-    "gp-1945": ((150, 232), 205, 90),
-    "breguet-a": ((150, 212), 280, 90),
-    "montblanc": ((160, 222), 225, 90),
-    "iwc-portugieser": ((166, 152), 300, 90),
-    "chopard-luc": ((160, 142), 270, 90),
+    "omega-gmt": ((182, 325), 300),
+    "longines-hydroconquest": ((207, 352), 295),
+    "tissot-lelocle": ((168, 333), 345),
+    "rolex-dj-black": ((185, 215), 270),
+    "gp-1945": ((150, 232), 205),
+    "montblanc": ((160, 222), 225),
+    "breguet-a": ((150, 212), 280),
+    "breguet-b": ((152, 218), 280),
+    "omega-seamaster": ((148, 222), 205),
 }
 
 
@@ -157,63 +157,42 @@ def make_guide(style):
 
 
 def place(name, out_w, out_h):
-    """Crop/scale a source photo so its dial lands on the standard spot of
-    an out_w x out_h window, feathering into a dark backdrop where the
-    source runs out."""
-    (dx, dy), dial_d, feather = SOURCES[name]
+    """Scale and crop a source photo to fill an out_w x out_h window edge to
+    edge, dial as close to the standard spot as the photo allows. The photo
+    is never smaller than the window, so there are no faded or padded edges."""
+    (dx, dy), dial_d = SOURCES[name]
     src = Image.open(os.path.join(PHOTOS, name + ".jpg")).convert("RGB")
-    s = out_w * DIAL_SIZE / dial_d
-    sw, sh = round(src.width * s), round(src.height * s)
+    s = max(out_w * DIAL_SIZE / dial_d, out_w / src.width, out_h / src.height)
+    sw, sh = math.ceil(src.width * s), math.ceil(src.height * s)
     big = src.resize((sw, sh), Image.LANCZOS).filter(
         ImageFilter.UnsharpMask(radius=2.0, percent=60, threshold=2))
-    ox = round(out_w * DIAL_AT[0] - dx * s)
-    oy = round(out_h * DIAL_AT[1] - dy * s)
-
-    arr = np.asarray(src).astype(float)
-    edge = np.concatenate([arr[:6].reshape(-1, 3), arr[:, :6].reshape(-1, 3), arr[:, -6:].reshape(-1, 3)])
-    tone = edge.mean(0) * 0.8
-    yy, xx = np.mgrid[0:out_h, 0:out_w].astype(float)
-    glow = 1 - smoothstep(np.hypot((xx - out_w / 2) / out_w, (yy - out_h / 2) / out_h) * 1.2)
-    canvas = tone[None, None, :] * (0.75 + 0.35 * glow[..., None])
-
-    f = max(1, round(feather * s / 1.6))
-    a = np.ones((sh, sw))
-    ramp = smoothstep(np.arange(f) / f)
-    if ox > 0:
-        a[:, :f] *= ramp[None, :]
-    if ox + sw < out_w:
-        a[:, -f:] *= ramp[::-1][None, :]
-    if oy > 0:
-        a[:f, :] *= ramp[:, None]
-    if oy + sh < out_h:
-        a[-f:, :] *= ramp[::-1][:, None]
-
-    x0, y0 = max(ox, 0), max(oy, 0)
-    x1, y1 = min(ox + sw, out_w), min(oy + sh, out_h)
-    patch = np.asarray(big).astype(float)[y0 - oy:y1 - oy, x0 - ox:x1 - ox]
-    pa = a[y0 - oy:y1 - oy, x0 - ox:x1 - ox][..., None]
-    canvas[y0:y1, x0:x1] = patch * pa + canvas[y0:y1, x0:x1] * (1 - pa)
-    return Image.fromarray(canvas.clip(0, 255).astype(np.uint8))
+    ox = min(0, max(out_w - sw, round(out_w * DIAL_AT[0] - dx * s)))
+    oy = min(0, max(out_h - sh, round(out_h * DIAL_AT[1] - dy * s)))
+    return big.crop((-ox, -oy, -ox + out_w, -oy + out_h))
 
 
 def make_crop_guide():
-    """A 3:4 phone photo with the part the frame keeps marked out."""
-    photo = place("omega-gmt", W, H).convert("RGBA")
-    x, y, w, h = WINDOWS["noir"]
+    """A 3:4 phone photo with the part the frame keeps marked out. The kept
+    band is the real window crop; the bands above and below stand in for
+    the rest of the phone photo (mirrored, blurred and dimmed)."""
+    _, _, w, h = WINDOWS["noir"]
     win_h = round(W * h / w)
     top = (H - win_h) // 2
-    dim = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(dim)
-    d.rectangle((0, 0, W, top), fill=(0, 0, 0, 165))
-    d.rectangle((0, top + win_h, W, H), fill=(0, 0, 0, 165))
-    img = Image.alpha_composite(photo, dim)
+    band = place("omega-gmt", W, win_h)
+    img = Image.new("RGB", (W, H))
+    img.paste(band, (0, top))
+    above = band.crop((0, 0, W, top)).transpose(Image.FLIP_TOP_BOTTOM)
+    below = band.crop((0, win_h - (H - top - win_h), W, win_h)).transpose(Image.FLIP_TOP_BOTTOM)
+    for part, y in ((above, 0), (below, top + win_h)):
+        part = part.filter(ImageFilter.GaussianBlur(14)).point(lambda v: v * 0.45)
+        img.paste(part, (0, y))
+    img = img.convert("RGBA")
     d = ImageDraw.Draw(img)
     for yy in (top, top + win_h):
         for xx in range(0, W, 44):
             d.line((xx, yy, xx + 22, yy), fill=CYAN + (255,), width=4)
-    dashed_circle(d, (W // 2, H // 2), round(W * DIAL_SIZE / 2), CYAN + (255,), 4)
-    label(d, (W // 2, top - 26), "上下这部分会被画框裁掉", 46, (255, 255, 255), "ms")
-    label(d, (W // 2, top + win_h + 64), "表放正中，四周留出空间", 46, (255, 255, 255), "ms")
+    label(d, (W // 2, top // 2 + 16), "上下这部分会被画框裁掉", 46, (255, 255, 255), "ms")
+    label(d, (W // 2, top + win_h + (H - top - win_h) // 2 + 16), "表放正中，四周留出空间", 46, (255, 255, 255), "ms")
     img.convert("RGB").resize((720, 960), Image.LANCZOS).save(os.path.join(OUT, "crop-guide.png"), optimize=True)
 
 

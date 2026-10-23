@@ -150,8 +150,8 @@ const GRID = [
   { photo: 'gp-1945', episode: '019', brand: 'GIRARD-PERREGAUX', title: '1945 方表', service: '洗油修复大保养' },
   { photo: 'montblanc', episode: '018', brand: 'MONTBLANC', title: '明星计时', service: '磕碰修复 · 洗油' },
   { photo: 'breguet-a', episode: '017', brand: 'BREGUET', title: '经典系列', service: '表壳补金修复' },
-  { photo: 'iwc-portugieser', episode: '016', brand: 'IWC', title: '葡萄牙', service: '寄修 · 洗油大保养' },
-  { photo: 'chopard-luc', episode: '015', brand: 'CHOPARD', title: 'L.U.C', service: '寄修 · 洗油大保养' },
+  { photo: 'breguet-b', episode: '016', brand: 'BREGUET', title: '补金修复', service: '原色补金 · 抛光' },
+  { photo: 'omega-seamaster', episode: '015', brand: 'OMEGA', title: '海马150', service: '表镜抛光 · 防水测试' },
 ].map((d) => ({ ...SAMPLE, ...d }));
 
 const COVER_NOTES = (style) => [

@@ -57,11 +57,14 @@ def grid_mockup(first, out_name):
         r, c = divmod(i, 3)
         x, y = c * (cw + gap), top + r * (ch + gap)
         img.paste(cover(first + i).resize((cw, ch), Image.LANCZOS), (x, y))
-        shade = Image.new("L", (cw, 70), 0)
+        # Douyin only lightly shades the like counter; keep the cover itself clean
+        shade = Image.new("L", (cw, 56), 0)
         sd = ImageDraw.Draw(shade)
-        for k in range(70):
-            sd.line((0, k, cw, k), fill=int(110 * k / 70))
-        img.paste((0, 0, 0), (x, y + ch - 70, x + cw, y + ch), shade)
+        for k in range(56):
+            sd.line((0, k, cw, k), fill=int(55 * k / 56))
+        img.paste((0, 0, 0), (x, y + ch - 56, x + cw, y + ch), shade)
+        heart(d, x + 15, y + ch - 45, 30, (0, 0, 0))
+        d.text((x + 56, y + ch - 29), LIKES[i], font=f_like, anchor="lm", fill=(0, 0, 0))
         heart(d, x + 14, y + ch - 46, 30, (255, 255, 255))
         d.text((x + 54, y + ch - 31), LIKES[i], font=f_like, anchor="lm", fill=(255, 255, 255))
         if i < PINNED:
