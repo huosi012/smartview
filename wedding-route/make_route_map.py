@@ -10,7 +10,7 @@
 
 --fonts 指向 `npm i @fontsource/noto-sans-sc @fontsource/zcool-qingke-huangyou
 @fontsource/ma-shan-zheng` 后的 node_modules/@fontsource 目录；不指定时使用系统字体。
-日期、姓名、时间表、电话等请直接修改下面的 INFO。
+日期、姓名、时间安排、电话等请直接修改下面的 INFO。
 """
 import argparse
 import html
@@ -20,18 +20,19 @@ import subprocess
 
 # ---------------------------------------------------------------- 可修改的信息
 INFO = {
-    "date": "XXXX.XX.XX",
-    "lunar": "农历 X月X日",
-    "groom": "新郎姓名",
-    "bride": "新娘姓名",
+    "date": "2026.10.28",
+    "lunar": "农历九月十九 · 星期三",
+    "groom": "谢拾雨",
+    "bride": "周心语",
+    # (时间, 事项, 备注)；备注可留空
     "schedule": [
-        ("XX:XX", "准时从新郎家出发"),
-        ("XX:XX", "到达新娘家（腰周家）"),
-        ("XX:XX", "从腰周家出发"),
-        ("XX:XX", "到达德惠市人民政府"),
-        ("XX:XX", "返回新郎家"),
+        ("5:00 – 5:20", "到达万金塔集结扎花", ""),
+        ("5:30", "从万金塔出发（男方）", ""),
+        ("6:30", "到达腰周家（女方）", ""),
+        ("8:00", "从腰周家出发返回万金塔", "途经德惠市人民政府"),
     ],
-    "phone": "XXX-XXXX-XXXX",
+    "thanks": "感谢各位朋友，请按图示路线行驶",
+    "phone": "",  # 留空则不显示联系电话
 }
 
 W, H = 1800, 1280
@@ -77,7 +78,7 @@ ROADS = [
     ([J1, J2], MAJOR),
     (G102 + CITY[1:], MAJOR),                         # G102 进城后接城区道路
     (WEST_RING, MINOR),
-    ([J3, (1000, 960), (860, 985)], MINOR),            # 德农路
+    ([J3, (1000, 960), (960, 967)], MINOR),            # 德农路
     ([J4, (1460, 1150), (1610, 1140)], MINOR),          # 德农环路东段
     ([HOME, P0], MINOR),                                # 加油站出口
 ]
@@ -120,11 +121,6 @@ def text(x, y, s, size, fill=TEXT, family=SANS, weight=400, anchor="middle",
     return (f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{fill}" '
             f'font-family="{family}" font-weight="{weight}" text-anchor="{anchor}"'
             f'{tr}{st}{extra}>{html.escape(s)}</text>')
-
-
-def vtext(x, y, s, size, fill, family=SANS, weight=700):
-    return "".join(text(x, y + i * size * 1.1, ch, size, fill, family, weight)
-                   for i, ch in enumerate(s))
 
 
 def arrow(x, y, dx, dy, color, length=46, shaft=7, head=20, half=9):
@@ -245,7 +241,7 @@ def build_svg():
                         fill="#5d6f9c"))
     o.append(road_label((1112, 940), (1052, 1120), "京哈高速", side=1, gap=34,
                         fill="#5d6f9c"))
-    o.append(road_label((1000, 960), (860, 985), "德农路", side=-1, gap=40))
+    o.append(road_label(J3, (1000, 960), "德农路", side=1, gap=36, t=0.72))
     o.append(road_label(J4, K, "G102国道", side=1, gap=46, size=26, t=0.48))
     o.append(shield(1121, 1235, "G102", "#e8232f", "#fff", rotate=-46))
 
@@ -313,45 +309,53 @@ def build_svg():
         o.append(arrow(1490, y, 1, 0, color, length=78, shaft=14, head=30, half=17))
         o.append(text(1542, y + 9, label, 25, "#333", SANS, 700, anchor="start"))
 
-    # 新人信息
-    ex, ey = 250, 568
-    o.append(f'<circle cx="{ex}" cy="{ey}" r="98" fill="url(#seal)" stroke="#f6c453" '
-             f'stroke-width="7" filter="url(#soft)"/>'
-             f'<circle cx="{ex}" cy="{ey}" r="82" fill="none" stroke="#f6c453" '
-             f'stroke-width="2.5" stroke-dasharray="6 6"/>')
-    o.append(text(ex, ey + 44, "囍", 124, "#ffd96a", SANS, 900))
-    o.append(vtext(112, 530, "新郎", 40, BLUE))
-    o.append(vtext(388, 530, "新娘", 40, "#e8202c"))
-    o.append(heart(140, 650, 30, PINK, -15, .8))
-    o.append(heart(362, 452, 26, PINK, 15, .7))
-    o.append(text(ex, 748, INFO["date"], 64, "#e8202c", SANS, 900, halo="#ffffff"))
-    o.append(text(ex, 802, INFO["lunar"], 36, "#e8457a", SANS, 700))
-    o.append(f'<text x="{ex}" y="866" font-size="44" text-anchor="middle" '
-             f'font-family="{BRUSH}">'
-             f'<tspan fill="{BLUE}">{html.escape(INFO["groom"])}</tspan>'
-             f'<tspan fill="{PINK}" dx="14" font-family="{SANS}" font-size="36">♥</tspan>'
-             f'<tspan fill="#e8202c" dx="14">{html.escape(INFO["bride"])}</tspan></text>')
+    # 信息卡：地图以外的内容都收在这一张卡片里
+    phone = INFO["phone"]
+    top, bottom = 490, 1212 + (48 if phone else 0)
+    o.append(f'<rect x="50" y="{top}" width="860" height="{bottom - top}" rx="28" '
+             f'fill="#ffffff" fill-opacity=".8" stroke="#ffc1d4" stroke-width="2" '
+             f'filter="url(#soft)"/>')
 
-    # 时间表
-    o.append('<rect x="486" y="512" width="574" height="388" rx="22" fill="#ffffff" '
-             f'fill-opacity=".62" stroke="#ffb3c9" stroke-width="2.5" stroke-dasharray="10 8"/>')
-    o.append(text(773, 578, "时间表", 54, "#e8202c", DISPLAY, 400,
-                  extra=' letter-spacing="8"'))
-    for i, (t, what) in enumerate(INFO["schedule"]):
-        y = 646 + i * 56
-        o.append(heart(524, y - 11, 20, PINK, 0, .9))
-        o.append(text(548, y, t, 34, "#e8202c", SANS, 900, anchor="start"))
-        o.append(text(668, y, what, 33, "#333", SANS, 500, anchor="start"))
+    # 左栏：囍、新人、日期
+    ex, ey = 250, 662
+    o.append(f'<circle cx="{ex}" cy="{ey}" r="80" fill="url(#seal)" stroke="#f6c453" '
+             f'stroke-width="6"/>'
+             f'<circle cx="{ex}" cy="{ey}" r="67" fill="none" stroke="#f6c453" '
+             f'stroke-width="2" stroke-dasharray="5 5"/>')
+    o.append(text(ex, ey + 36, "囍", 100, "#ffd96a", SANS, 900))
+    for x, role, name, color in ((150, "新郎", INFO["groom"], BLUE),
+                                 (350, "新娘", INFO["bride"], "#e8202c")):
+        o.append(text(x, 796, role, 22, "#b07a8c", SANS, 500))
+        o.append(text(x, 854, name, 46, color, BRUSH, 400))
+    o.append(heart(ex, 840, 22, PINK))
+    o.append(f'<line x1="170" y1="898" x2="330" y2="898" stroke="#ffc1d4" stroke-width="2"/>')
+    o.append(text(ex, 970, INFO["date"], 58, "#e8202c", SANS, 900))
+    o.append(text(ex, 1016, INFO["lunar"], 26, "#e8457a", SANS, 500))
 
-    # 结束语
-    o.append(text(80, 1164, "感谢各位朋友，请按图示路线行驶", 38, "#e8457a", SANS, 700,
-                  anchor="start"))
-    o.append(text(80, 1220, f"如有问题请联系：{INFO['phone']}", 38, "#e8457a", SANS, 700,
-                  anchor="start"))
+    o.append('<line x1="470" y1="540" x2="470" y2="1080" stroke="#ffc1d4" stroke-width="2" '
+             'stroke-dasharray="8 8"/>')
+
+    # 右栏：时间安排（时间轴）
+    o.append(text(690, 588, "时间安排", 46, "#e8202c", DISPLAY, 400,
+                  extra=' letter-spacing="6"'))
+    ys = [655 + i * 112 for i in range(len(INFO["schedule"]))]
+    o.append(f'<line x1="522" y1="{ys[0]}" x2="522" y2="{ys[-1]}" stroke="#ffc1d4" '
+             f'stroke-width="4"/>')
+    for y, (t, what, note) in zip(ys, INFO["schedule"]):
+        o.append(f'<circle cx="522" cy="{y}" r="11" fill="{PINK}" stroke="#fff" '
+                 f'stroke-width="4"/>')
+        o.append(text(552, y + 12, t, 34, "#e8202c", SANS, 900, anchor="start"))
+        o.append(text(552, y + 54, what, 28, "#333", SANS, 500, anchor="start"))
+        if note:
+            o.append(text(552, y + 88, note, 22, "#9a7f88", SANS, 400, anchor="start"))
+
+    # 底部：结束语
+    o.append('<line x1="110" y1="1116" x2="850" y2="1116" stroke="#ffc1d4" stroke-width="2"/>')
+    o.append(text(480, 1176, INFO["thanks"], 32, "#e8457a", SANS, 700))
+    if phone:
+        o.append(text(480, 1224, f"如有问题请联系：{phone}", 30, "#e8457a", SANS, 700))
 
     # 装饰爱心
-    o.append(heart(70, 1010, 70, "#ff9ab8", -16, .75))
-    o.append(heart(150, 1072, 46, "#ffb3c9", 12, .8))
     o.append(heart(1700, 1196, 84, "#ff9ab8", 14, .7))
     o.append(heart(1620, 1240, 46, "#ffb3c9", -10, .8))
     o.append(heart(60, 70, 54, "#ffb3c9", -12, .7))
