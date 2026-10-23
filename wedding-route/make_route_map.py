@@ -57,17 +57,22 @@ J2 = (1155, 600)           # 德惠西北路口
 J3 = (1194, 925)           # 德农路路口
 J4 = (1252, 1100)          # 德农环路 × G102
 BRIDE = (1175, 1180)       # 新娘家：腰周家
-K = (1487, 857)            # G102 转入城区
+K = (1487, 857)            # G102 在红旗大市场处转入城区
+K2 = (1505, 818)
 GOV = (1629, 906)          # 德惠市人民政府
 N1 = (1675, 860)
 
+G1 = [(1345, -10), (1252, 464), (1214, 590), (1160, 790), (1112, 940), (1052, 1120),
+      (1012, 1290)]      # 京哈高速，只作参照
 S303 = [(60, 333), P0, (470, 371), TIANTAI, J1, (1270, 466), (1390, 472)]
 WEST_RING = [J2, (1178, 664), (1236, 732), (1262, 778), J3, (1220, 1068), J4]
 G102 = [(1090, 1267), BRIDE, J4, K]
-CITY = [K, GOV, N1, (1592, 795), (1378, 694), (1338, 640), (1290, 610), (1232, 602), J2]
+CITY = [K, K2, GOV, N1, (1592, 795), (1378, 694), (1338, 640), (1290, 610), (1232, 602), J2]
 
 MAJOR, MINOR = (RED_ROAD, 40), (BLUE_ROAD, 34)
+HIGHWAY = ("#7f93c4", 26)
 ROADS = [
+    (G1, HIGHWAY),                                     # 先画，路线道路从上方跨过
     (S303, MAJOR),
     ([J1, J2], MAJOR),
     (G102 + CITY[1:], MAJOR),                         # G102 进城后接城区道路
@@ -78,8 +83,8 @@ ROADS = [
 ]
 
 LEG_TO_BRIDE = [HOME, P0, (470, 371), TIANTAI, J1, J2] + WEST_RING[1:] + [BRIDE]
-LEG_TO_GOV = [BRIDE, J4, K, GOV]
-LEG_HOME = CITY[1:] + [J1, TIANTAI, (470, 371), P0, HOME]
+LEG_TO_GOV = [BRIDE, J4, K, K2, GOV]
+LEG_HOME = CITY[CITY.index(GOV):] + [J1, TIANTAI, (470, 371), P0, HOME]
 LEGS = [(LEG_TO_BRIDE, PINK, 30), (LEG_TO_GOV, ORANGE, 40), (LEG_HOME, BLUE, 70)]
 
 
@@ -164,12 +169,19 @@ def road_label(a, b, s, side=1, gap=40, size=24, t=0.5, fill="#5b5b5b"):
                 halo="#fff3f7")
 
 
-def shield(x, y, label, bg, fg, rotate=0):
+def shield(x, y, label, bg, fg, rotate=0, border="#ffffff"):
     w = 14 * len(label) + 16
     tr = f' transform="rotate({rotate:.1f} {x} {y})"' if rotate else ""
     return (f'<g{tr}><rect x="{x - w / 2:.1f}" y="{y - 15}" width="{w}" height="30" rx="6" '
-            f'fill="{bg}" stroke="#ffffff" stroke-width="3"/>'
+            f'fill="{bg}" stroke="{border}" stroke-width="3"/>'
             + text(x, y + 8, label, 20, fg, SANS, 700) + "</g>")
+
+
+def poi(x, y, label, color, glyph, size=22):
+    """地图上的小地标：彩色圆点图标 + 文字，(x, y) 为文字基线起点。"""
+    return (f'<circle cx="{x - 16}" cy="{y - size * 0.35:.1f}" r="12" fill="{color}"/>'
+            + text(x - 16, y - size * 0.35 + 5, glyph, 14, "#fff", SANS, 700)
+            + text(x, y, label, size, color, SANS, 500, anchor="start", halo="#fff3f7"))
 
 
 def pin(x, y, color, inner="♥"):
@@ -215,7 +227,8 @@ def build_svg():
         o.append(f'<polyline points="{pts_attr(pts)}" fill="none" stroke="{color}" '
                  f'stroke-width="{width + 10}" stroke-linejoin="round" stroke-linecap="butt"/>')
     for pts, (color, width) in ROADS:
-        o.append(f'<polyline points="{pts_attr(pts)}" fill="none" stroke="{ROAD_FILL}" '
+        fill = "#eef1fa" if pts is G1 else ROAD_FILL
+        o.append(f'<polyline points="{pts_attr(pts)}" fill="none" stroke="{fill}" '
                  f'stroke-width="{width}" stroke-linejoin="round" stroke-linecap="butt"/>')
 
     # 路名
@@ -224,7 +237,14 @@ def build_svg():
     o.append(road_label(J1, (1270, 466), "303省道", side=-1, gap=44, size=26))
     o.append(road_label((1178, 664), (1236, 732), "西环城路", side=1, gap=42))
     o.append(road_label(J3, (1220, 1068), "德农环路", side=1, gap=44, t=0.45))
-    o.append(road_label(J4, (1460, 1150), "德农环路", side=1, gap=40, t=0.55))
+    o.append(road_label(J4, (1460, 1150), "德农环路", side=-1, gap=38, t=0.66))
+    o.append(shield(1530, 1147, "S001", "#ffd23f", "#333", rotate=-3.8))
+    o.append(shield(1141, 492, "Y037", "#ffffff", "#333", rotate=58.5, border="#333"))
+    o.append(shield(1294, 250, "G1", "#1f8f4e", "#fff"))
+    o.append(road_label((1345, -10), (1252, 464), "京哈高速", side=-1, gap=34, t=0.7,
+                        fill="#5d6f9c"))
+    o.append(road_label((1112, 940), (1052, 1120), "京哈高速", side=1, gap=34,
+                        fill="#5d6f9c"))
     o.append(road_label((1000, 960), (860, 985), "德农路", side=-1, gap=40))
     o.append(road_label(J4, K, "G102国道", side=1, gap=46, size=26, t=0.48))
     o.append(shield(1121, 1235, "G102", "#e8232f", "#fff", rotate=-46))
@@ -236,7 +256,9 @@ def build_svg():
              + text(1306, 751, "站", 15, "#fff", SANS, 700))
     o.append(text(1326, 753, "德惠西站", 24, TEXT, SANS, 500, anchor="start"))
     o.append(text(1310, 905, "龙凤采摘园", 23, "#3a9b3f", SANS, 500))
-    o.append(text(1400, 818, "德惠市区", 30, "#8a8aa8", SANS, 700, extra=' letter-spacing="4"'))
+    o.append(text(1395, 800, "德惠市区", 30, "#8a8aa8", SANS, 700, extra=' letter-spacing="4"'))
+    o.append(poi(1356, 834, "红旗大市场", "#a03cc8", "市"))
+    o.append(poi(1556, 698, "王三姐绿色生态园", "#3a9b3f", "园"))
 
     # 行车箭头
     for pts, color, phase in LEGS:
@@ -252,9 +274,9 @@ def build_svg():
              + text(143, 229, "起·终", 19, "#fff", SANS, 700))
 
     o.append(pin(*BRIDE, PINK))
-    o.append(text(1132, 1172, "新娘家", 58, "#e8202c", DISPLAY, 400, anchor="end",
+    o.append(text(1212, 1240, "新娘家", 58, "#e8202c", DISPLAY, 400, anchor="start",
                   halo="#ffffff"))
-    o.append(text(1130, 1218, "腰周家", 32, "#c2185b", SANS, 700, anchor="end",
+    o.append(text(1356, 1238, "腰周家", 32, "#c2185b", SANS, 700, anchor="start",
                   halo="#fff3f7"))
 
     o.append(pin(*GOV, ORANGE, "★"))
