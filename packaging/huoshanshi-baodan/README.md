@@ -16,7 +16,9 @@
 |---|---|---|
 | ![](preview/front-annotated.png) | ![](preview/front-window.png) | ![](preview/back-annotated.png) |
 
-> IP 是客户原图抠图后放上去的，没有重画。火山石盘、爆蛋仍是**矢量示意**，正式稿换成第 5 节生成的 AI 图。
+> IP 是客户原图抠图后放上去的，没有重画。主图已换成用第 5 节提示词生成的**俯拍火山石盘**（AI-①）；开窗版窗边用的是**顶部爆开特写**（AI-②B）。
+>
+> AI 图清晰度：石盘图 1184px，印到 121mm 直径只有约 250dpi；定稿前用即梦“超清”或 Topaz 等放大到 ≥1430px（2 倍更稳）。爆开特写在包装上只有 44mm 宽，现有分辨率够用。切面特写（AI-②）暂时没用上，可以留作电商图、宣传图。
 
 ### IP 选哪一个
 
@@ -92,7 +94,7 @@
 - 二维码和喷码区
 - -18℃ 标识和“肉质可追溯 · 品质有保障”
 
-**开窗版**：石盘位置改为直径 120mm 的圆形透明窗，保留金色盘沿和点阵圈，窗内不印白墨。
+**开窗版**：石盘位置改为直径 120mm 的圆形透明窗，保留金色盘沿和点阵圈，窗内不印白墨。窗口左下角压一颗顶部爆开的爆蛋（AI-②B），补上透过窗口看不到的内馅。
 
 ## 4. 配色
 
@@ -133,7 +135,7 @@
 - **Midjourney**：参考图链接放在提示词最前面，加 `--iw 1.5`；只想借色调就用 `--sref`
 - **安井那张**是别家的效果图，只参考外皮和切面的样子，不要拿来垫图照搬构图
 
-### AI-① 俯拍火山石盘（主图）· 1:1 · 纯白底
+### AI-① 俯拍火山石盘（主图）· 1:1 · 纯白底 · ✅ 已出图
 
 ```
 商业美食摄影，正上方90度垂直俯拍。一块正圆形的深灰色天然火山石圆盘，表面布满细密气孔，质感粗粝；盘中7颗圆球形爆蛋（直径约4厘米的肉馅丸子）均匀围成一圈，外皮乳白到浅奶黄色，光滑微鼓，带不规则的浅金色斑驳纹理，局部有零星烤出的浅金色焦斑，微微油亮；其中两颗顶部受热爆开一个不规则的小口，像小火山口，露出里面油亮的金褐色肉馅；正中央一颗对半切开、切面朝上，一圈较厚的洁白Q弹外皮包着粉褐色、颗粒感明显的肉糜馅，馅料湿润带汁；缝隙里撒少量翠绿葱花，一缕白色热气从中间升起。纯白色背景，圆盘完整居中、四周留白，左上方柔光，色调温暖清淡，盘子下方有柔和投影，超高清细节，8K
@@ -152,7 +154,7 @@ Commercial food photography, perfect 90-degree top-down flat lay. A perfectly ro
 ```
 负面词同 AI-①（把“侧面视角，透视变形”去掉）。
 
-### AI-② 切面特写 · 1:1 · 纯白底
+### AI-② 切面特写 · 1:1 · 纯白底 · ✅ 已出图（备用）
 
 俯拍图正中那颗的切面不够好看时，单独生成一颗，再合成到盘心。
 
@@ -165,7 +167,7 @@ Commercial food photography, perfect 90-degree top-down flat lay. A perfectly ro
 Macro food photography, a single Chinese "bao dan" meat ball sliced in half, cut face toward the camera slightly tilted: pale ivory to light cream-yellow skin with light-golden mottled marbling; the cut face shows a thick bright-white springy outer layer (about one third of the radius) with a thin light-golden rim, and a pinkish-tan coarse minced-meat filling in the center, moist and juicy, faint steam. Pure white background, soft light from upper left, ultra detailed --ar 1:1 --style raw --v 7 --no egg, egg yolk, dark golden crust, breadcrumbs, raw meat, text, knife, plate
 ```
 
-### AI-②B 顶部爆开特写 · 1:1 · 纯白底
+### AI-②B 顶部爆开特写 · 1:1 · 纯白底 · ✅ 已出图（用在开窗版）
 
 对应客户实物图里顶部爆开的那颗，可以用在盘心，也可以单独做宣传图。
 
