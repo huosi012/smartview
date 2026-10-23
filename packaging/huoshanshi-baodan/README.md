@@ -6,13 +6,30 @@
 - 文字暂按《金亨火山石爆蛋.pdf》第 1 页，委托方改为辛合甲(陕西)供应链管理有限公司
 - 换成辛合甲 LOGO
 - 成品尺寸 245 × 320 mm
-- 加入冒火胖娃娃 IP
+- IP 直接用客户提供的冒火胖娃娃原图（10/23 客户要求“用三个中的一个”）
 
-| 正面 · 标准版 | 正面 · 标注版 | 正面 · 开窗版 | 背面 | 背面 · 标注版 |
-|---|---|---|---|---|
-| ![](preview/front.png) | ![](preview/front-annotated.png) | ![](preview/front-window.png) | ![](preview/back.png) | ![](preview/back-annotated.png) |
+| 正面 · IP 方案 A | 正面 · IP 方案 B | 背面 · 方案 A | 背面 · 方案 B |
+|---|---|---|---|
+| ![](preview/front-A.png) | ![](preview/front-B.png) | ![](preview/back-A.png) | ![](preview/back-B.png) |
 
-> 稿中的火山石盘、爆蛋和「火山爆爆」都是**矢量示意**，正式稿换成第 5 节生成的 AI 图。
+| 正面 · 标注版 | 正面 · 开窗版（方案 B） | 背面 · 标注版 |
+|---|---|---|
+| ![](preview/front-annotated.png) | ![](preview/front-window.png) | ![](preview/back-annotated.png) |
+
+> IP 是客户原图抠图后放上去的，没有重画。火山石盘、爆蛋仍是**矢量示意**，正式稿换成第 5 节生成的 AI 图。
+
+### IP 选哪一个
+
+客户给了三张胖娃娃图，A、B 已经抠图放上包装；C 等原图文件到了再放。
+
+| 方案 | 原图 | 特点 |
+|---|---|---|
+| **A** | 紫色火山 + 蛋壳裂口 | 火焰张扬、动感强；紫色不在白金绿配色里，蛋壳造型会让人联想到“蛋” |
+| **B（推荐）** | 褐色火山 + 白色云朵圈 | 褐色火山、奶白身体、白云正好落在白金绿体系里，也没有蛋壳 |
+| **C（待放图）** | 黑褐火山石块 + 红黄蘑菇云喷发 | 火山石块质感最贴“火山石”；红色蘑菇云很抢眼，但红色面积大，会压过金绿 |
+
+三张原图都只有 1080px，放到包装上（约 70×90mm）只有约 230dpi，而且带“AI生成”水印（抠图时会去掉）。定稿前请客户提供生成平台导出的**高清无水印原图**；拿不到的话，用第 5 节 AI-⑦ 以原图为参考重新出高清图。
+
 > 标注版：红框 = AI 生成；蓝框 = 矢量 / 需原文件；背面黄底 = 待确认，绿底 = 已按要求修改。
 
 ---
@@ -26,7 +43,7 @@
 | 产品图 | 侧面看的堆叠、满碗或单颗切面 | **90° 俯拍的圆形火山石盘**：7 颗爆蛋围成一圈，正中一颗切开朝上，撒葱花芝麻；外圈是金色盘沿、点阵和热浪圈 |
 | 卖点“臻品爆蛋品质引领” | 横条胶囊 | **竖排对联**：“臻品爆蛋 / 品质引领”两列错位排列 |
 | 卖点“烤肠新一派 更多人喜爱” | 斜体大字 | **IP 的对话气泡**：由「火山爆爆」说出来 |
-| IP | 金亨：维吾尔族小男孩 | **「火山爆爆」**：一颗金色爆蛋，头顶裂开、冒出火山和火焰 |
+| IP | 金亨：维吾尔族小男孩 | 客户提供的**冒火胖娃娃**（方案 A / B 二选一） |
 | 开窗 | 大面积灰色开窗 | **圆形透明窗**，和石盘同一个位置 |
 | 背面 | 常规上下排列 | **竖带移到右侧**，和正面竖带在袋子侧边相接，整袋像被一条绿带包住 |
 
@@ -45,7 +62,8 @@
 | 4 | **保质期** | 文字稿里没有保质期，喷码区已预留 |
 | 5 | **二维码** | “企业溯源 · 食用说明”的二维码待提供 |
 | 6 | **LOGO 原文件** | 辛合甲和新疆优品标志是从效果图里抠的，需要客户提供矢量文件；新疆优品需确认有使用授权 |
-| 7 | **“爆蛋”与配料** | 配料中没有蛋类。GB 7718 规定新创名称易使人误解食品属性时，须在邻近位置用同一字号标示真实属性名称，建议先找当地市场监管部门确认。IP 头顶的“蛋壳裂口”如有顾虑，可改成白色云朵圈 |
+| 7 | **“爆蛋”与配料** | 配料中没有蛋类。GB 7718 规定新创名称易使人误解食品属性时，须在邻近位置用同一字号标示真实属性名称，建议先找当地市场监管部门确认。IP 方案 A 的蛋壳造型会加深“蛋”的印象，方案 B 没有这个问题 |
+| 8 | **IP 选哪张 + 高清原图** | 第三张胖娃娃图未收到；选定后需要高清无水印原图 |
 
 ## 3. 版面（245 × 320 mm，四周出血 3mm）
 
@@ -64,7 +82,7 @@
 | 竖排卖点 | x 222–236，y 37–79 | 臻品爆蛋 / 品质引领 |
 | 火山石盘 | 圆心 (154, 138)，盘径 118，含金圈约 135 | 俯拍主图 |
 | 对话气泡 | x 95–170，y 222–250 | 烤肠新一派 / 更多人喜爱 |
-| IP | x 166–236，y 172–271 | 「火山爆爆」，火焰压在石盘金圈上 |
+| IP | x 165–237，y 175–267 | 客户原图（方案 A / B），火焰压在石盘金圈上 |
 | 底部 | y 273–300 | 左：-18℃ 冷冻储存；右：净含量：1kg（字高 6.6mm，法规要求 ≥4mm） |
 
 **背面**：右侧竖带（x 159–245）放 LOGO、竖排品名、IP 和条码；左侧白区从上到下依次是：
@@ -144,22 +162,21 @@ Seamless repeating pattern, traditional Xinjiang Central Asian ornament, eight-p
 ```
 然后在 PS 里用“智能对象”把 `preview/front.png` 贴上去。
 
-### AI-⑦ IP 形象「火山爆爆」
+### AI-⑦ IP 高清重出（拿不到原图时用）
 
-以客户给的两张冒火胖娃娃为“角色参考 / 垫图”，按包装配色重新生成：
-- **身体**：金黄奶油色，像一颗炸好的爆蛋
-- **火山**：深褐火山石色，不要紫色
-- **火焰**：金黄到橙色
+IP 定为客户原图，**不要改形象**。只有拿不到高清原图，或者需要别的动作时，才用这一节：
+- 把选中的那张原图上传为“角色参考 / 垫图”，参考强度调高
+- 下面的提示词只用来补全细节和提高分辨率
 
-参考图带“AI生成”水印，分辨率也不够，不要直接用原图。
+方案 B 照原图描述是“白色云朵圈 + 褐色火山”。方案 A 把提示词里的“白色云朵圈”换成“蛋壳锯齿裂口”，“褐色火山”换成“紫色火山”。
 
 ```
-3D卡通IP形象设计，一个圆滚滚胖乎乎的小团子角色，身体是金黄奶油色，像刚炸好的金色爆蛋，表面光滑软萌，略带哑光质感；头顶像蛋壳一样裂开锯齿状边缘，从裂口里冒出一座深褐色小火山，火山表面有火山石气孔质感，火山口流淌着橙金色岩浆，顶部喷出金黄到橙色的火焰，周围飞溅几颗小火山石碎块和金色火星；黑亮的大圆眼睛带高光，粉色腮红，张嘴开心地笑，短短的小手，两只小脚；全身站立，泡泡玛特盲盒手办风格，C4D渲染，柔和棚拍灯光，左上方主光，纯白背景，高清，8K
+3D卡通IP形象设计，一个圆滚滚胖乎乎的小团子角色，身体是奶黄色，表面光滑软萌，略带哑光质感；头顶有一圈白色云朵，云朵中间冒出一座深褐色小火山，火山表面有火山石气孔质感，火山口流淌着橙金色岩浆，顶部喷出金黄到橙色的火焰，周围飞溅几颗小火山石碎块和金色火星；黑亮的大圆眼睛带高光，粉色腮红，张嘴开心地笑，短短的小手，两只小脚；全身站立，泡泡玛特盲盒手办风格，C4D渲染，柔和棚拍灯光，左上方主光，纯白背景，高清，8K
 ```
 负面词：`文字，水印，AI生成字样，紫色，恐怖，尖牙，多余手指，畸形，肢体错乱，背景杂物，模糊`
 
 ```
-3D cartoon mascot character design, a chubby round little dumpling creature whose body is golden cream colored like a freshly fried golden snack ball, smooth soft vinyl-toy texture with slight matte finish; the top of its head is cracked open like an eggshell with a zigzag edge, and a small dark-brown volcano with porous lava-stone texture rises out of the crack, glowing orange-gold lava dripping from the crater, golden-to-orange flames bursting out, tiny volcanic rock bits and golden sparks flying; big glossy black eyes with highlights, pink blush cheeks, happy open-mouth smile, tiny arms, two little feet; full body standing, Pop Mart blind box figure style, C4D octane render, soft studio lighting from upper left, pure white background --ar 1:1 --style raw --v 7 --no text, watermark, purple, scary, teeth, extra fingers, extra limbs
+3D cartoon mascot character design, a chubby round little dumpling creature with a creamy yellow body, smooth soft vinyl-toy texture with slight matte finish; a ring of fluffy white clouds sits on top of its head, and a small dark-brown volcano with porous lava-stone texture rises from the middle of the clouds, glowing orange-gold lava dripping from the crater, golden-to-orange flames bursting out, tiny volcanic rock bits and golden sparks flying; big glossy black eyes with highlights, pink blush cheeks, happy open-mouth smile, tiny arms, two little feet; full body standing, Pop Mart blind box figure style, C4D octane render, soft studio lighting from upper left, pure white background --ar 1:1 --style raw --v 7 --no text, watermark, purple, scary, teeth, extra fingers, extra limbs
 ```
 
 **动作变体**（加在提示词末尾）：
@@ -194,7 +211,7 @@ Seamless repeating pattern, traditional Xinjiang Central Asian ornament, eight-p
 packaging/huoshanshi-baodan/
 ├── README.md                 本文档
 ├── layout.html               交互排版稿（标准 / 标注 / 开窗）
-├── svg/front.svg             正面矢量底稿 245×320mm（可导入 Illustrator）
-├── svg/back.svg              背面矢量底稿 245×320mm
-└── preview/                  5 张预览图
+├── svg/front-A.svg / back-A.svg   IP 方案 A 的矢量底稿 245×320mm（可导入 Illustrator）
+├── svg/front-B.svg / back-B.svg   IP 方案 B 的矢量底稿
+└── preview/                       7 张预览图（A/B 正背面、标注版、开窗版）
 ```
