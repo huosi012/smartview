@@ -19,6 +19,7 @@
 <polyline points="60.0,333.0 225.0,350.0 470.0,371.0 760.0,400.0 1060.0,445.0 1270.0,466.0 1390.0,472.0" fill="none" stroke="#e8232f" stroke-width="50" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1060.0,445.0 1155.0,600.0" fill="none" stroke="#e8232f" stroke-width="50" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1090.0,1267.0 1175.0,1180.0 1252.0,1100.0 1487.0,857.0 1505.0,818.0 1629.0,906.0 1675.0,860.0 1592.0,795.0 1378.0,694.0 1338.0,640.0 1290.0,610.0 1232.0,602.0 1155.0,600.0" fill="none" stroke="#e8232f" stroke-width="50" stroke-linejoin="round" stroke-linecap="butt"/>
+<polyline points="1572.0,1290.0 1610.0,1140.0 1700.0,1060.0 1810.0,1030.0" fill="none" stroke="#e8232f" stroke-width="50" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1155.0,600.0 1178.0,664.0 1236.0,732.0 1262.0,778.0 1194.0,925.0 1220.0,1068.0 1252.0,1100.0" fill="none" stroke="#27a2e6" stroke-width="44" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1194.0,925.0 1000.0,960.0 960.0,967.0" fill="none" stroke="#27a2e6" stroke-width="44" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1252.0,1100.0 1460.0,1150.0 1610.0,1140.0" fill="none" stroke="#27a2e6" stroke-width="44" stroke-linejoin="round" stroke-linecap="butt"/>
@@ -27,6 +28,7 @@
 <polyline points="60.0,333.0 225.0,350.0 470.0,371.0 760.0,400.0 1060.0,445.0 1270.0,466.0 1390.0,472.0" fill="none" stroke="#fffafd" stroke-width="40" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1060.0,445.0 1155.0,600.0" fill="none" stroke="#fffafd" stroke-width="40" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1090.0,1267.0 1175.0,1180.0 1252.0,1100.0 1487.0,857.0 1505.0,818.0 1629.0,906.0 1675.0,860.0 1592.0,795.0 1378.0,694.0 1338.0,640.0 1290.0,610.0 1232.0,602.0 1155.0,600.0" fill="none" stroke="#fffafd" stroke-width="40" stroke-linejoin="round" stroke-linecap="butt"/>
+<polyline points="1572.0,1290.0 1610.0,1140.0 1700.0,1060.0 1810.0,1030.0" fill="none" stroke="#fffafd" stroke-width="40" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1155.0,600.0 1178.0,664.0 1236.0,732.0 1262.0,778.0 1194.0,925.0 1220.0,1068.0 1252.0,1100.0" fill="none" stroke="#fffafd" stroke-width="34" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1194.0,925.0 1000.0,960.0 960.0,967.0" fill="none" stroke="#fffafd" stroke-width="34" stroke-linejoin="round" stroke-linecap="butt"/>
 <polyline points="1252.0,1100.0 1460.0,1150.0 1610.0,1140.0" fill="none" stroke="#fffafd" stroke-width="34" stroke-linejoin="round" stroke-linecap="butt"/>
@@ -35,7 +37,7 @@
 <g transform="rotate(4.9 452 318)"><rect x="416.0" y="303" width="72" height="30" rx="6" fill="#ffd23f" stroke="#ffffff" stroke-width="3"/><text x="452.0" y="326.0" font-size="20" fill="#333" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">S303</text></g>
 <text x="1169.4" y="420.8" font-size="26" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(5.7 1169.4 420.8)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">303省道</text>
 <text x="1175.0" y="733.7" font-size="24" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(49.5 1175.0 733.7)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">西环城路</text>
-<text x="1162.4" y="1005.6" font-size="24" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(79.7 1162.4 1005.6)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">德农环路</text>
+<text x="1162.4" y="1005.6" font-size="24" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(79.7 1162.4 1005.6)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">德环路</text>
 <text x="1398.2" y="1104.5" font-size="24" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(13.5 1398.2 1104.5)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">德农环路</text>
 <g transform="rotate(-3.8 1530 1147)"><rect x="1494.0" y="1132" width="72" height="30" rx="6" fill="#ffd23f" stroke="#ffffff" stroke-width="3"/><text x="1530.0" y="1155.0" font-size="20" fill="#333" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">S001</text></g>
 <g transform="rotate(58.5 1141 492)"><rect x="1105.0" y="477" width="72" height="30" rx="6" fill="#ffffff" stroke="#333" stroke-width="3"/><text x="1141.0" y="500.0" font-size="20" fill="#333" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">Y037</text></g>
@@ -43,8 +45,9 @@
 <text x="1313.3" y="336.7" font-size="24" fill="#5d6f9c" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(-78.9 1313.3 336.7)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">京哈高速</text>
 <text x="1049.7" y="1027.6" font-size="24" fill="#5d6f9c" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(-71.6 1049.7 1027.6)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">京哈高速</text>
 <text x="1047.9" y="923.2" font-size="24" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(-10.2 1047.9 923.2)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">德农路</text>
-<text x="1397.9" y="1024.4" font-size="26" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(-46.0 1397.9 1024.4)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">G102国道</text>
-<g transform="rotate(-46.0 1121 1235)"><rect x="1085.0" y="1220" width="72" height="30" rx="6" fill="#e8232f" stroke="#ffffff" stroke-width="3"/><text x="1121.0" y="1243.0" font-size="20" fill="#fff" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">G102</text></g>
+<text x="1397.9" y="1024.4" font-size="26" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(-46.0 1397.9 1024.4)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">新华街</text>
+<text x="1685.6" y="1142.8" font-size="24" fill="#5b5b5b" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle" transform="rotate(-41.6 1685.6 1142.8)" stroke="#fff3f7" stroke-width="4" stroke-linejoin="round" paint-order="stroke">G102国道</text>
+<g transform="rotate(-15.3 1762 1043)"><rect x="1726.0" y="1028" width="72" height="30" rx="6" fill="#e8232f" stroke="#ffffff" stroke-width="3"/><text x="1762.0" y="1051.0" font-size="20" fill="#fff" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">G102</text></g>
 <text x="760.0" y="456.0" font-size="28" fill="#4a4a4a" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="500" text-anchor="middle">天台镇</text>
 <text x="70.0" y="300.0" font-size="24" fill="#777" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="400" text-anchor="start">万金塔乡</text>
 <circle cx="1306" cy="744" r="13" fill="#2f7bf6"/><text x="1306.0" y="751.0" font-size="15" fill="#fff" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">站</text>
@@ -136,8 +139,7 @@
 <text x="552.0" y="1079.0" font-size="22" fill="#9a7f88" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="400" text-anchor="start">途经德惠市人民政府</text>
 <line x1="110" y1="1116" x2="850" y2="1116" stroke="#ffc1d4" stroke-width="2"/>
 <text x="480.0" y="1176.0" font-size="32" fill="#e8457a" font-family="'Noto Sans SC','WenQuanYi Zen Hei',sans-serif" font-weight="700" text-anchor="middle">感谢各位朋友，请按图示路线行驶</text>
-<path transform="translate(1700 1196) rotate(14) scale(1.400)" d="M0,26 C-34,2 -46,-14 -38,-30 C-30,-46 -8,-44 0,-26 C8,-44 30,-46 38,-30 C46,-14 34,2 0,26 Z" fill="#ff9ab8" opacity="0.7"/>
-<path transform="translate(1620 1240) rotate(-10) scale(0.767)" d="M0,26 C-34,2 -46,-14 -38,-30 C-30,-46 -8,-44 0,-26 C8,-44 30,-46 38,-30 C46,-14 34,2 0,26 Z" fill="#ffb3c9" opacity="0.8"/>
+<path transform="translate(1738 1214) rotate(14) scale(1.167)" d="M0,26 C-34,2 -46,-14 -38,-30 C-30,-46 -8,-44 0,-26 C8,-44 30,-46 38,-30 C46,-14 34,2 0,26 Z" fill="#ff9ab8" opacity="0.7"/>
 <path transform="translate(60 70) rotate(-12) scale(0.900)" d="M0,26 C-34,2 -46,-14 -38,-30 C-30,-46 -8,-44 0,-26 C8,-44 30,-46 38,-30 C46,-14 34,2 0,26 Z" fill="#ffb3c9" opacity="0.7"/>
 <path transform="translate(120 125) rotate(10) scale(0.500)" d="M0,26 C-34,2 -46,-14 -38,-30 C-30,-46 -8,-44 0,-26 C8,-44 30,-46 38,-30 C46,-14 34,2 0,26 Z" fill="#ff9ab8" opacity="0.7"/>
 </svg>

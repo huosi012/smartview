@@ -57,9 +57,9 @@ TIANTAI = (760, 400)       # 天台镇
 J1 = (1060, 445)           # 303 省道转向德惠
 J2 = (1155, 600)           # 德惠西北路口
 J3 = (1194, 925)           # 德农路路口
-J4 = (1252, 1100)          # 德农环路 × G102
+J4 = (1252, 1100)          # 德环路 × 新华街 × 德农环路
 BRIDE = (1175, 1180)       # 新娘家：腰周家
-K = (1487, 857)            # G102 在红旗大市场处转入城区
+K = (1487, 857)            # 新华街在红旗大市场处转入城区
 K2 = (1505, 818)
 GOV = (1629, 906)          # 德惠市人民政府
 N1 = (1675, 860)
@@ -68,7 +68,8 @@ G1 = [(1345, -10), (1252, 464), (1214, 590), (1160, 790), (1112, 940), (1052, 11
       (1012, 1290)]      # 京哈高速，只作参照
 S303 = [(60, 333), P0, (470, 371), TIANTAI, J1, (1270, 466), (1390, 472)]
 WEST_RING = [J2, (1178, 664), (1236, 732), (1262, 778), J3, (1220, 1068), J4]
-G102 = [(1090, 1267), BRIDE, J4, K]
+XINHUA = [(1090, 1267), BRIDE, J4, K]     # 去腰周家的乡道 + 新华街（一条斜线）
+G102 = [(1572, 1290), (1610, 1140), (1700, 1060), (1810, 1030)]   # 城区东南，只作参照
 CITY = [K, K2, GOV, N1, (1592, 795), (1378, 694), (1338, 640), (1290, 610), (1232, 602), J2]
 
 MAJOR, MINOR = (RED_ROAD, 40), (BLUE_ROAD, 34)
@@ -77,7 +78,8 @@ ROADS = [
     (G1, HIGHWAY),                                     # 先画，路线道路从上方跨过
     (S303, MAJOR),
     ([J1, J2], MAJOR),
-    (G102 + CITY[1:], MAJOR),                         # G102 进城后接城区道路
+    (XINHUA + CITY[1:], MAJOR),                       # 新华街进城后接城区道路
+    (G102, MAJOR),
     (WEST_RING, MINOR),
     ([J3, (1000, 960), (960, 967)], MINOR),            # 德农路
     ([J4, (1460, 1150), (1610, 1140)], MINOR),          # 德农环路东段
@@ -253,7 +255,7 @@ def _build_svg():
     o.append(shield(452, 318, "S303", "#ffd23f", "#333", rotate=4.9))
     o.append(road_label(J1, (1270, 466), "303省道", side=-1, gap=44, size=26))
     o.append(road_label((1178, 664), (1236, 732), "西环城路", side=1, gap=42))
-    o.append(road_label(J3, (1220, 1068), "德农环路", side=1, gap=44, t=0.45))
+    o.append(road_label(J3, (1220, 1068), "德环路", side=1, gap=44, t=0.45))
     o.append(road_label(J4, (1460, 1150), "德农环路", side=-1, gap=38, t=0.66))
     o.append(shield(1530, 1147, "S001", "#ffd23f", "#333", rotate=-3.8))
     o.append(shield(1141, 492, "Y037", "#ffffff", "#333", rotate=58.5, border="#333"))
@@ -263,8 +265,9 @@ def _build_svg():
     o.append(road_label((1112, 940), (1052, 1120), "京哈高速", side=1, gap=34,
                         fill="#5d6f9c"))
     o.append(road_label(J3, (1000, 960), "德农路", side=1, gap=36, t=0.72))
-    o.append(road_label(J4, K, "G102国道", side=1, gap=46, size=26, t=0.48))
-    o.append(shield(1121, 1235, "G102", "#e8232f", "#fff", rotate=-46))
+    o.append(road_label(J4, K, "新华街", side=1, gap=46, size=26, t=0.48))
+    o.append(road_label((1610, 1140), (1700, 1060), "G102国道", side=1, gap=46, size=24))
+    o.append(shield(1762, 1043, "G102", "#e8232f", "#fff", rotate=-15.3))
 
     # 地标
     o.append(text(TIANTAI[0], 456, "天台镇", 28, TEXT, SANS, 500))
@@ -377,8 +380,7 @@ def _build_svg():
         o.append(text(480, 1224, f"如有问题请联系：{phone}", 30, "#e8457a", SANS, 700))
 
     # 装饰爱心
-    o.append(heart(1700, 1196, 84, "#ff9ab8", 14, .7))
-    o.append(heart(1620, 1240, 46, "#ffb3c9", -10, .8))
+    o.append(heart(1738, 1214, 70, "#ff9ab8", 14, .7))
     o.append(heart(60, 70, 54, "#ffb3c9", -12, .7))
     o.append(heart(120, 125, 30, "#ff9ab8", 10, .7))
 
