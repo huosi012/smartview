@@ -7,6 +7,7 @@
 用法：
   python3 make_route_map.py                       # 只生成 SVG / HTML
   python3 make_route_map.py --fonts <dir> --png   # 同时用 Chromium 渲染 PNG
+  python3 make_route_map.py --fonts <dir> --pptx  # 导出文字可编辑的 PPTX（需 python-pptx）
 
 --fonts 指向 `npm i @fontsource/noto-sans-sc @fontsource/zcool-qingke-huangyou
 @fontsource/ma-shan-zheng` 后的 node_modules/@fontsource 目录；不指定时使用系统字体。
@@ -113,8 +114,18 @@ def pts_attr(pts):
 
 
 # ---------------------------------------------------------------- SVG 片段
+_text_sink = None   # 导出 PPTX 时收集可编辑文字，此时 SVG 里不画这些文字
+
+
 def text(x, y, s, size, fill=TEXT, family=SANS, weight=400, anchor="middle",
-         rotate=0, halo=None, extra=""):
+         rotate=0, halo=None, spacing=0, extra="", editable=True):
+    if editable and _text_sink is not None:
+        _text_sink.append(dict(x=x, y=y, s=s, size=size, fill=fill, family=family,
+                               weight=weight, anchor=anchor, rotate=rotate, halo=halo,
+                               spacing=spacing))
+        return ""
+    if spacing:
+        extra += f' letter-spacing="{spacing}"'
     tr = f' transform="rotate({rotate:.1f} {x:.1f} {y:.1f})"' if rotate else ""
     st = (f' stroke="{halo}" stroke-width="{max(4, size // 6)}" stroke-linejoin="round"'
           f' paint-order="stroke"') if halo else ""
@@ -170,13 +181,13 @@ def shield(x, y, label, bg, fg, rotate=0, border="#ffffff"):
     tr = f' transform="rotate({rotate:.1f} {x} {y})"' if rotate else ""
     return (f'<g{tr}><rect x="{x - w / 2:.1f}" y="{y - 15}" width="{w}" height="30" rx="6" '
             f'fill="{bg}" stroke="{border}" stroke-width="3"/>'
-            + text(x, y + 8, label, 20, fg, SANS, 700) + "</g>")
+            + text(x, y + 8, label, 20, fg, SANS, 700, editable=False) + "</g>")
 
 
 def poi(x, y, label, color, glyph, size=22):
     """地图上的小地标：彩色圆点图标 + 文字，(x, y) 为文字基线起点。"""
     return (f'<circle cx="{x - 16}" cy="{y - size * 0.35:.1f}" r="12" fill="{color}"/>'
-            + text(x - 16, y - size * 0.35 + 5, glyph, 14, "#fff", SANS, 700)
+            + text(x - 16, y - size * 0.35 + 5, glyph, 14, "#fff", SANS, 700, editable=False)
             + text(x, y, label, size, color, SANS, 500, anchor="start", halo="#fff3f7"))
 
 
@@ -186,7 +197,7 @@ def pin(x, y, color, inner="♥"):
     return (f'<ellipse cx="{x}" cy="{y}" rx="13" ry="5" fill="#000" opacity=".18"/>'
             f'<path d="{body}" fill="{color}" stroke="#fff" stroke-width="4"/>'
             f'<circle cx="{x}" cy="{y - 44}" r="15" fill="#fff"/>'
-            + text(x, y - 36, inner, 22, color, SANS, 900))
+            + text(x, y - 36, inner, 22, color, SANS, 900, editable=False))
 
 
 def heart(x, y, size, color, rot=0, opacity=1.0):
@@ -197,7 +208,17 @@ def heart(x, y, size, color, rot=0, opacity=1.0):
 
 
 # ---------------------------------------------------------------- 组装
-def build_svg():
+def build_svg(text_sink=None):
+    """text_sink 为列表时，可编辑文字收集进去而不画进 SVG（用作 PPTX 背景）。"""
+    global _text_sink
+    _text_sink = text_sink
+    try:
+        return _build_svg()
+    finally:
+        _text_sink = None
+
+
+def _build_svg():
     o = []
     o.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
              f'viewBox="0 0 {W} {H}">')
@@ -249,10 +270,10 @@ def build_svg():
     o.append(text(TIANTAI[0], 456, "天台镇", 28, TEXT, SANS, 500))
     o.append(text(70, 300, "万金塔乡", 24, "#777", SANS, 400, anchor="start"))
     o.append('<circle cx="1306" cy="744" r="13" fill="#2f7bf6"/>'
-             + text(1306, 751, "站", 15, "#fff", SANS, 700))
+             + text(1306, 751, "站", 15, "#fff", SANS, 700, editable=False))
     o.append(text(1326, 753, "德惠西站", 24, TEXT, SANS, 500, anchor="start"))
     o.append(text(1310, 905, "龙凤采摘园", 23, "#3a9b3f", SANS, 500))
-    o.append(text(1395, 800, "德惠市区", 30, "#8a8aa8", SANS, 700, extra=' letter-spacing="4"'))
+    o.append(text(1395, 800, "德惠市区", 30, "#8a8aa8", SANS, 700, spacing=4))
     o.append(poi(1356, 834, "红旗大市场", "#a03cc8", "市"))
     o.append(poi(1556, 698, "王三姐绿色生态园", "#3a9b3f", "园"))
 
@@ -267,12 +288,12 @@ def build_svg():
     o.append(text(252, 288, "中国石油万金塔派出所北加油站", 24, "#2b3f9e", SANS, 500,
                   anchor="start", halo="#fff7fa"))
     o.append(f'<rect x="108" y="206" width="70" height="32" rx="16" fill="{PINK}"/>'
-             + text(143, 229, "起·终", 19, "#fff", SANS, 700))
+             + text(143, 229, "起·终", 19, "#fff", SANS, 700, editable=False))
 
     o.append(pin(*BRIDE, PINK))
     o.append(text(1212, 1240, "新娘家", 58, "#e8202c", DISPLAY, 400, anchor="start",
                   halo="#ffffff"))
-    o.append(text(1356, 1238, "腰周家", 32, "#c2185b", SANS, 700, anchor="start",
+    o.append(text(1372, 1238, "腰周家", 32, "#c2185b", SANS, 700, anchor="start",
                   halo="#fff3f7"))
 
     o.append(pin(*GOV, ORANGE, "★"))
@@ -282,7 +303,7 @@ def build_svg():
     o.append(heart(612, 86, 38, PINK, -18, .85))
     o.append(heart(1188, 86, 38, PINK, 18, .85))
     o.append(text(900, 136, "婚车路线图", 104, "#e8202c", DISPLAY, 400, halo="#ffffff",
-                  extra=' letter-spacing="10" filter="url(#soft)"'))
+                  spacing=10, extra=' filter="url(#soft)"'))
     o.append(text(900, 194, "万金塔加油站 → 腰周家 → 德惠市人民政府 → 万金塔加油站", 26,
                   "#c2185b", SANS, 500))
 
@@ -322,7 +343,7 @@ def build_svg():
              f'stroke-width="6"/>'
              f'<circle cx="{ex}" cy="{ey}" r="67" fill="none" stroke="#f6c453" '
              f'stroke-width="2" stroke-dasharray="5 5"/>')
-    o.append(text(ex, ey + 36, "囍", 100, "#ffd96a", SANS, 900))
+    o.append(text(ex, ey + 36, "囍", 100, "#ffd96a", SANS, 900, editable=False))
     for x, role, name, color in ((150, "新郎", INFO["groom"], BLUE),
                                  (350, "新娘", INFO["bride"], "#e8202c")):
         o.append(text(x, 796, role, 22, "#b07a8c", SANS, 500))
@@ -337,7 +358,7 @@ def build_svg():
 
     # 右栏：时间安排（时间轴）
     o.append(text(690, 588, "时间安排", 46, "#e8202c", DISPLAY, 400,
-                  extra=' letter-spacing="6"'))
+                  spacing=6))
     ys = [655 + i * 112 for i in range(len(INFO["schedule"]))]
     o.append(f'<line x1="522" y1="{ys[0]}" x2="522" y2="{ys[-1]}" stroke="#ffc1d4" '
              f'stroke-width="4"/>')
@@ -379,16 +400,110 @@ def build_html(svg, fonts_dir):
 </head><body>{svg}</body></html>"""
 
 
+# ---------------------------------------------------------------- PPTX 导出
+PX = 9144                       # 1 px = 0.01 英寸
+PT = 0.72                       # 1 px = 0.72 磅
+PPTX_FONTS = {SANS: "微软雅黑", DISPLAY: "微软雅黑", BRUSH: "楷体"}
+PPTX_SCALE = {DISPLAY: 0.85}    # 微软雅黑比海报用的标题字体宽，缩一点免得碰到旁边的图形
+
+
+def hex6(color):
+    c = color.lstrip("#").upper()
+    return "".join(ch * 2 for ch in c) if len(c) == 3 else c
+
+
+def text_width(s, size, spacing=0):
+    return sum(size if ord(c) > 0x2E7F else size * 0.6 for c in s) + spacing * len(s)
+
+
+def build_pptx(texts, background_png, out_path):
+    """背景图（地图、箭头、标记等图形）+ 可编辑文本框。"""
+    from lxml import etree
+    from pptx import Presentation
+    from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
+    from pptx.oxml.ns import qn
+    from pptx.util import Emu
+
+    prs = Presentation()
+    prs.slide_width, prs.slide_height = Emu(W * PX), Emu(H * PX)
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+    # 图形做成幻灯片背景：点不中、拖不动，方便直接点选文字
+    _, rid = slide.part.get_or_add_image_part(background_png)
+    bg = etree.fromstring(
+        '<p:bg xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+        'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+        f'<p:bgPr><a:blipFill><a:blip r:embed="{rid}"/><a:stretch><a:fillRect/></a:stretch>'
+        '</a:blipFill><a:effectLst/></p:bgPr></p:bg>')
+    slide._element.cSld.insert(0, bg)
+
+    align = {"start": PP_ALIGN.LEFT, "middle": PP_ALIGN.CENTER, "end": PP_ALIGN.RIGHT}
+    for t in texts:
+        size, ang = t["size"] * PPTX_SCALE.get(t["family"], 1), t["rotate"]
+        w = text_width(t["s"], size, t["spacing"]) * 1.15 + 8
+        h = size * 1.33
+        # 文本框中心（旋转前），再绕 SVG 的旋转点（文字锚点）旋转
+        cx = t["x"] + {"start": w / 2, "middle": 0, "end": -w / 2}[t["anchor"]]
+        cy = t["y"] - size * 0.393
+        if ang:
+            a = math.radians(ang)
+            dx, dy = cx - t["x"], cy - t["y"]
+            cx = t["x"] + dx * math.cos(a) - dy * math.sin(a)
+            cy = t["y"] + dx * math.sin(a) + dy * math.cos(a)
+        box = slide.shapes.add_textbox(Emu(int((cx - w / 2) * PX)), Emu(int((cy - h / 2) * PX)),
+                                       Emu(int(w * PX)), Emu(int(h * PX)))
+        box.name = t["s"]
+        box.rotation = ang
+        tf = box.text_frame
+        tf.word_wrap = False
+        tf.auto_size = MSO_AUTO_SIZE.NONE
+        tf.vertical_anchor = MSO_ANCHOR.TOP
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        para = tf.paragraphs[0]
+        para.alignment = align[t["anchor"]]
+        run = para.add_run()
+        run.text = t["s"]
+        rpr = run._r.get_or_add_rPr()
+        rpr.set("lang", "zh-CN")
+        rpr.set("sz", str(round(size * PT * 100)))
+        rpr.set("b", "1" if t["weight"] >= 700 or t["family"] == DISPLAY else "0")
+        if t["spacing"]:
+            rpr.set("spc", str(round(t["spacing"] * PT * 100)))
+        fill = etree.SubElement(rpr, qn("a:solidFill"))
+        etree.SubElement(fill, qn("a:srgbClr")).set("val", hex6(t["fill"]))
+        if t["halo"]:   # SVG 的白色描边在 PPT 里用发光代替
+            glow = etree.SubElement(etree.SubElement(rpr, qn("a:effectLst")), qn("a:glow"))
+            glow.set("rad", str(int(max(3, size / 10) * PX)))
+            clr = etree.SubElement(glow, qn("a:srgbClr"))
+            clr.set("val", hex6(t["halo"]))
+            etree.SubElement(clr, qn("a:alpha")).set("val", "90000")
+        for tag in ("a:latin", "a:ea", "a:cs"):
+            etree.SubElement(rpr, qn(tag)).set("typeface", PPTX_FONTS[t["family"]])
+    prs.save(out_path)
+
+
+def render_png(chrome, html_path, png_path, scale):
+    subprocess.run([chrome, "--no-sandbox", "--disable-gpu",
+                    "--hide-scrollbars", "--allow-file-access-from-files",
+                    f"--force-device-scale-factor={scale}",
+                    f"--window-size={W},{H}", "--virtual-time-budget=15000",
+                    f"--screenshot={png_path}", "file://" + html_path],
+                   check=True, stderr=subprocess.DEVNULL)
+
+
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser()
     ap.add_argument("--fonts", help="@fontsource 目录（node_modules/@fontsource）")
     ap.add_argument("--png", action="store_true", help="用 Chromium 渲染 PNG")
+    ap.add_argument("--pptx", action="store_true", help="导出文字可编辑的 PPTX")
     ap.add_argument("--chrome",
                     default="/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell")
     ap.add_argument("--scale", type=float, default=2.0)
     ap.add_argument("--out", default=here)
     args = ap.parse_args()
+    fonts = args.fonts and os.path.abspath(args.fonts)
 
     svg = build_svg()
     svg_path = os.path.join(args.out, "wedding_route_map.svg")
@@ -396,18 +511,26 @@ def main():
     with open(svg_path, "w", encoding="utf-8") as f:
         f.write(svg)
     with open(html_path, "w", encoding="utf-8") as f:
-        f.write(build_html(svg, args.fonts and os.path.abspath(args.fonts)))
+        f.write(build_html(svg, fonts))
     print("wrote", svg_path)
 
     if args.png:
         png_path = os.path.join(args.out, "wedding_route_map.png")
-        subprocess.run([args.chrome, "--no-sandbox", "--disable-gpu",
-                        "--hide-scrollbars", "--allow-file-access-from-files",
-                        f"--force-device-scale-factor={args.scale}",
-                        f"--window-size={W},{H}", "--virtual-time-budget=15000",
-                        f"--screenshot={png_path}", "file://" + html_path],
-                       check=True, stderr=subprocess.DEVNULL)
+        render_png(args.chrome, html_path, png_path, args.scale)
         print("wrote", png_path)
+
+    if args.pptx:
+        texts = []
+        bg_html = os.path.join(args.out, "wedding_route_map_bg.html")
+        bg_png = os.path.join(args.out, "wedding_route_map_bg.png")
+        with open(bg_html, "w", encoding="utf-8") as f:
+            f.write(build_html(build_svg(texts), fonts))
+        render_png(args.chrome, bg_html, bg_png, args.scale)
+        pptx_path = os.path.join(args.out, "wedding_route_map.pptx")
+        build_pptx(texts, bg_png, pptx_path)
+        os.remove(bg_html)
+        os.remove(bg_png)
+        print("wrote", pptx_path, f"({len(texts)} 个可编辑文本框)")
 
 
 if __name__ == "__main__":
