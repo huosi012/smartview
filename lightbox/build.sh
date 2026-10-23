@@ -16,4 +16,8 @@ fetch NotoSansSC-900.ttf https://fonts.gstatic.com/s/notosanssc/v41/k3kCo84MPvpL
 python3 -I src/build.py "$FONTS" lightbox.svg
 node src/render.cjs lightbox.svg .
 pdftoppm -jpeg -jpegopt quality=90 -scale-to-x 1260 -scale-to-y 2660 -singlefile lightbox_1260x2660mm.pdf preview
-echo "完成：lightbox_1260x2660mm.pdf / lightbox_bleed30_1320x2720mm.pdf / lightbox.svg / preview.jpg"
+# 门前效果图
+pdftoppm -png -scale-to-x 1412 -scale-to-y 2981 -singlefile lightbox_1260x2660mm.pdf .poster_hi
+node src/mockup.cjs .poster_hi.png "$FONTS" mockup.jpg
+rm -f .poster_hi.png
+echo "完成：lightbox_1260x2660mm.pdf / lightbox_bleed30_1320x2720mm.pdf / lightbox.svg / preview.jpg / mockup.jpg"
