@@ -9,11 +9,16 @@
   · 背景图放在“幻灯片母版”里，换背景只要换一次
   · 页面 140cm × 50cm（= 14m × 5m 的 1:10）
 
-用法：  python3 tools/build_pptx.py
-依赖：  pip install python-pptx Pillow
+用法：  python3 tools/build_pptx.py                    资料来自 config.js
+        python3 tools/build_pptx.py 保存的大屏文件.html   资料来自网页版“保存并应用到大屏”存下的文件（含照片）
+依赖：  pip install -r requirements.txt
 """
+import base64
 import io
+import json
 import math
+import sys
+from pathlib import Path
 
 import numpy as np
 from lxml import etree
@@ -67,9 +72,20 @@ def jpeg_bytes(im, quality=90):
     return buf.getvalue()
 
 
-def load_photo(rel):
+def open_image(ref):
+    """图片：项目里的路径（如 photos/01.jpg），或网页版保存文件里的 data: URI。"""
+    if str(ref).startswith("data:"):
+        return Image.open(io.BytesIO(base64.b64decode(ref.split(",", 1)[1])))
+    return Image.open(ROOT / ref)
+
+
+def has_image(ref):
+    return bool(ref) and (str(ref).startswith("data:") or (ROOT / ref).exists())
+
+
+def load_photo(ref):
     """读照片：按 EXIF 摆正、限制尺寸。返回 (jpeg 字节, 宽/高)。"""
-    im = ImageOps.exif_transpose(Image.open(ROOT / rel))
+    im = ImageOps.exif_transpose(open_image(ref))
     im.thumbnail((PHOTO_MAX_SIDE, PHOTO_MAX_SIDE), Image.LANCZOS)
     return jpeg_bytes(im), im.width / im.height
 
@@ -426,9 +442,9 @@ def enable_loop(prs):
 
 # ---------------------------------------------------------------- 总览页
 
-def card_x(k):
-    """本页第 k 张卡片（0～7）的左边位置：一行居中排开。"""
-    return (STAGE_W - (PER_PAGE * CARD_W + (PER_PAGE - 1) * GAP_X)) / 2 + k * (CARD_W + GAP_X)
+def card_x(k, count):
+    """本页第 k 张卡片的左边位置：一行居中排开（最后一页不满 8 人时也居中）。"""
+    return (STAGE_W - (count * CARD_W + (count - 1) * GAP_X)) / 2 + k * (CARD_W + GAP_X)
 
 
 def vertical_tag(slide, x, y, w, text, size, color, fill, name, max_h):
@@ -448,7 +464,7 @@ def build_overview(slide, page, pages, members, details, overviews, silk):
     add_shadow(panel, 30, 8, 0.3)
 
     for k, (idx, person, photo) in enumerate(members):
-        x, n = card_x(k), idx + 1
+        x, n = card_x(k, len(members)), idx + 1
         data, aspect = photo
         # 照片框：圆角照片 + 红绸装饰 + 白色细边 + 竖排姓名单位
         pic = add_picture(slide, data, x, WIN_TOP, CARD_W, WIN_H, f"!!p{n}",
@@ -624,7 +640,7 @@ def build_pptx(cfg, out_path):
     people = cfg["people"]
     photos, blank = [], None
     for p in people:
-        if p.get("photo") and (ROOT / p["photo"]).exists():
+        if has_image(p.get("photo")):
             photos.append(load_photo(p["photo"]))
         else:
             blank = blank or placeholder_photo()
@@ -634,7 +650,7 @@ def build_pptx(cfg, out_path):
     prs = Presentation()
     prs.slide_width, prs.slide_height = E(STAGE_W), E(STAGE_H)
     bg = cfg.get("background")
-    set_master_background(prs, jpeg_bytes(Image.open(ROOT / bg)) if bg and (ROOT / bg).exists() else default_background())
+    set_master_background(prs, jpeg_bytes(open_image(bg)) if has_image(bg) else default_background())
 
     blank_layout = prs.slide_layouts[6]
     pages = math.ceil(len(people) / PER_PAGE)
@@ -662,12 +678,30 @@ def build_pptx(cfg, out_path):
     prs.save(out_path)
 
 
+def config_from_html(path):
+    """读网页版保存的大屏文件：人员资料（照片是内嵌的 data: URI）和背景都在 <script id="sv-config"> 里。"""
+    html = Path(path).read_text("utf-8")
+    tag = '<script id="sv-config">'
+    start = html.find(tag)
+    if start < 0:
+        raise SystemExit(f"{path} 里找不到人员资料：请用网页版“保存并应用到大屏”存下的文件，或 output 里的大屏文件")
+    body = html[start + len(tag):html.index("</script>", start)]
+    return json.loads(body[body.index("=") + 1:body.rindex(";")])
+
+
 def main():
-    cfg = load_config()
+    src = sys.argv[1] if len(sys.argv) > 1 else None
+    cfg = config_from_html(src) if src else load_config()
+    if not cfg.get("people"):
+        raise SystemExit("名单是空的")
     OUT.mkdir(exist_ok=True)
     out_path = OUT / f"{cfg.get('title', 'smartview')}-交互版.pptx"
     build_pptx(cfg, out_path)
-    print(f"已生成 {out_path.relative_to(ROOT)}  ({out_path.stat().st_size / 1024:.0f} KB)")
+    people = cfg["people"]
+    missing = [p["name"] for p in people if not has_image(p.get("photo"))]
+    print(f"已生成 {out_path.relative_to(ROOT)}  ({out_path.stat().st_size / 1024:.0f} KB)，"
+          f"共 {len(people)} 人、{math.ceil(len(people) / PER_PAGE)} 页"
+          + (f"；没有照片：{'、'.join(missing)}" if missing else ""))
 
 
 if __name__ == "__main__":
