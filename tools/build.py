@@ -78,7 +78,7 @@ def replace_once(html, tag, new):
 def main():
     cfg = load_config()
     OUT.mkdir(exist_ok=True)
-    for old in OUT.glob("*"):
+    for old in OUT.glob("*.html"):   # 只清理旧的网页版；PPT 由 build_pptx.py 生成
         old.unlink()
     out_path = OUT / f"{cfg.get('title', 'smartview')}-大屏.html"
     build_html(cfg, out_path)
