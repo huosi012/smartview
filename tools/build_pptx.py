@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """生成交互版 PPT：output/<标题>-交互版.pptx（数据来自 config.js）
 
-  · 每页 8 人排成一行，总览页只显示照片、姓名、单位；人数多就自动分页（24 人 = 3 页）
+  · 总览页同最初海报：红色大面板里 8 人排成一行，照片框带红绸装饰和竖排姓名单位，下面是介绍文字；
+    人数多就自动分页（24 人 = 3 页）
   · 点照片：照片“平滑”飞到屏幕中间放大，展开人物展板（姓名、单位、一句话事迹、正面行为介绍）；
     点任意处回到本页
   · 翻页笔“下一页”按顺序走：第 1 页 → 第 1～8 位 → 第 2 页 → 第 9～16 位 → … → 回到第 1 页
@@ -32,13 +33,13 @@ EMU_PER_U = 18000
 PT_PER_U = EMU_PER_U / 12700
 PER_PAGE = 8
 
-# 总览页卡片（一行 8 张）：金边 5 + 衬纸 5 包住 4:3 照片，下面是姓名单位名牌
-CARD_W, PAD, PLATE, GAP_X = 310, 10, 86, 30
-PHOTO_W = CARD_W - 2 * PAD
-PHOTO_H = round(PHOTO_W * 3 / 4)
-FRAME_H = PAD + PHOTO_H + 5 + PLATE + 5
-CARD_TOP = 420                                   # 顶部约 1.5 米留给背景上的大标题，卡片在下方偏上居中
-BUTTON_Y, BUTTON_H = 946, 44                     # 翻页按钮在屏幕下方的两个角
+# 总览页（同最初海报）：红色大面板里 8 张卡片；卡片 = 方形照片框（红绸装饰 + 竖排姓名单位）+ 下方介绍文字框
+PANEL = (45, 205, 2710, 700)                     # 顶部约 1 米留给标志和大标题
+CARD_W, GAP_X = 300, 33
+WIN_TOP, WIN_H = 245, 300                        # 照片框（方形）
+TEXT_TOP, TEXT_BOTTOM = 567, 875                 # 介绍文字框
+BUTTON_Y, BUTTON_H = 935, 44                     # 翻页按钮在面板下方的两个角
+NAME_FONT = ("KaiTi", "楷体")                    # 竖排姓名、单位用楷体，接近原海报的手写感
 
 # 放大页版面（与网页版一致）：照片连相框居中，展板横贯全屏
 LAYOUT = {"photoMaxH": 860, "photoMaxW": 1000, "frame": 28, "boardX": 70, "boardMinH": 600,
@@ -89,6 +90,59 @@ def placeholder_photo():
     except OSError:
         pass
     return jpeg_bytes(im), w / h
+
+
+def silk_overlay(size=1200):
+    """照片框上的红绸装饰（透明底 PNG，方形）：上方一条斜飘的红绸，下方两层红色波浪，同最初海报的相框。"""
+    n = size
+    xs = np.linspace(0, 1, n, dtype=np.float32)[None, :]
+    ys = np.linspace(0, 1, n, dtype=np.float32)[:, None]
+    rgb = np.zeros((n, n, 3), np.float32)
+    alpha = np.zeros((n, n), np.float32)
+    soft = 1.5 / n
+
+    def below(edge, width=soft):          # 曲线下方（含抗锯齿）
+        return np.clip((ys - edge) / width + 0.5, 0, 1)
+
+    def above(edge, width=soft):
+        return np.clip((edge - ys) / width + 0.5, 0, 1)
+
+    def paint(mask, color, a=1.0):
+        nonlocal rgb, alpha
+        m = (mask * a)[..., None]
+        rgb = np.asarray(color, np.float32) * m + rgb * (1 - m)
+        alpha = mask * a + alpha * (1 - mask * a)
+
+    def lerp(c0, c1, t):
+        t = t[..., None]
+        return np.asarray(c0, np.float32) * (1 - t) + np.asarray(c1, np.float32) * t
+
+    # 上方红绸：左边窄、右边宽，斜着飘下来
+    top = 0.06 + 0.16 * xs ** 1.8
+    paint(above(top + 0.03, 0.03), (60, 0, 6), 0.35)                                   # 绸带投在照片上的影子
+    paint(above(top), lerp((236, 52, 56), (172, 10, 20), np.broadcast_to(xs, (n, n))))
+    fold = np.clip(1 - np.abs(ys - (top - 0.028)) / 0.018, 0, 1)                         # 绸带下缘的亮色褶
+    paint(fold * above(top), (255, 160, 160), 0.55)
+    gloss = np.clip(1 - np.abs(ys - (0.022 + 0.09 * xs ** 1.6)) / 0.006, 0, 1)            # 高光细线
+    paint(gloss, (255, 236, 236), 0.6)
+
+    # 下方波浪：后层深红，前层亮红渐变，波峰处有一道浅色高光
+    back = 0.74 + 0.045 * np.cos(2 * np.pi * (xs - 0.2))
+    front = 0.80 - 0.05 * np.sin(2 * np.pi * (0.85 * xs + 0.05))
+    paint(below(back - 0.025, 0.03), (60, 0, 6), 0.25)
+    paint(below(back), (140, 6, 14))
+    paint(below(front - 0.02, 0.025), (70, 0, 8), 0.3)
+    paint(below(front), lerp((228, 40, 46), (160, 8, 18), np.clip((ys - front) / 0.2, 0, 1)))
+    shine = np.clip(1 - np.abs(ys - (front + 0.012)) / 0.012, 0, 1)
+    paint(shine * below(front), (255, 178, 178), 0.65)
+    gloss2 = np.clip(1 - np.abs(ys - (front + 0.045)) / 0.004, 0, 1)
+    paint(gloss2 * below(front), (255, 230, 230), 0.35)
+
+    out = np.where(alpha[..., None] > 1e-4, rgb / np.maximum(alpha[..., None], 1e-4), 0)
+    img = Image.fromarray(np.dstack([np.clip(out, 0, 255), np.clip(alpha * 255, 0, 255)]).astype(np.uint8), "RGBA")
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    return buf.getvalue()
 
 
 def default_background():
@@ -235,15 +289,16 @@ def add_diamond(slide, cx, cy, size, name, color=GOLD):
     return add_shape(slide, cx - size / 2, cy - size / 2, size, size, name, fill=color, shape=MSO_SHAPE.DIAMOND)
 
 
-def style_run(run, size_u, color, bold=False, spacing_em=0.0, gradient=None, shadow=False):
+def style_run(run, size_u, color, bold=False, spacing_em=0.0, gradient=None, shadow=False, font=None):
+    latin, ea = font or (LATIN_FONT, EA_FONT)
     f = run.font
     size_pt = size_u * PT_PER_U
     f.size = Pt(size_pt)
     f.bold = bold
     f.color.rgb = RGBColor.from_string(color)
-    f.name = LATIN_FONT
+    f.name = latin
     rPr = run._r.get_or_add_rPr()
-    rPr.find(qn("a:latin")).addnext(a_el("ea", typeface=EA_FONT))
+    rPr.find(qn("a:latin")).addnext(a_el("ea", typeface=ea))
     if spacing_em:
         rPr.set("spc", str(int(size_pt * spacing_em * 100)))
     if gradient:                                      # 金色渐变字
@@ -259,7 +314,8 @@ def style_run(run, size_u, color, bold=False, spacing_em=0.0, gradient=None, sha
 
 
 def add_text(slide, x, y, w, h, name, paras, size_u, color, bold=False, align=PP_ALIGN.CENTER,
-             anchor=MSO_ANCHOR.MIDDLE, spacing_em=0.0, line=None, indent_em=0.0, gradient=None, shadow=False):
+             anchor=MSO_ANCHOR.MIDDLE, spacing_em=0.0, line=None, indent_em=0.0, gradient=None, shadow=False,
+             font=None):
     """paras：字符串列表；也可以是 [(文字, 字号, 颜色, 粗体[, 首行缩进])] 的列表，每段不同样式。"""
     tb = slide.shapes.add_textbox(E(x), E(y), E(w), E(h))
     set_name(tb, name)
@@ -281,14 +337,18 @@ def add_text(slide, x, y, w, h, name, paras, size_u, color, bold=False, align=PP
             pPr.set("indent", str(int(E(sz * ind))))
         run = p.add_run()
         run.text = text
-        style_run(run, sz, col, bd, spacing_em, gradient, shadow)
+        style_run(run, sz, col, bd, spacing_em, gradient, shadow, font)
     return tb
 
 
-def add_picture(slide, data, x, y, w, h, name, crop=None, line=None, line_w=0):
+def add_picture(slide, data, x, y, w, h, name, crop=None, line=None, line_w=0, radius=0):
     pic = slide.shapes.add_picture(io.BytesIO(data), E(x), E(y), E(w), E(h))
     if crop:
         pic.crop_left, pic.crop_top, pic.crop_right, pic.crop_bottom = crop
+    if radius:
+        pic.auto_shape_type = MSO_SHAPE.ROUNDED_RECTANGLE
+        pic._element.spPr.find(qn("a:prstGeom")).find(qn("a:avLst")).append(
+            a_el("gd", name="adj", fmla="val %d" % int(radius / min(w, h) * 100000)))
     if line:
         pic.line.color.rgb = RGBColor.from_string(line)
         pic.line.width = E(line_w)
@@ -296,13 +356,27 @@ def add_picture(slide, data, x, y, w, h, name, crop=None, line=None, line_w=0):
     return pic
 
 
-def cover_crop(aspect, target):
-    """把照片裁成 target 比例（铺满不变形）；偏高的照片多裁下面，保住脸。"""
+def add_shadow(shape, blur, dist, alpha=0.35):
+    eff = a_el("effectLst")
+    sh = a_el("outerShdw", blurRad=int(E(blur)), dist=int(E(dist)), dir=5400000, algn="t", rotWithShape=0)
+    sh.append(color_el("000000", alpha))
+    eff.append(sh)
+    shape._element.spPr.append(eff)
+
+
+def cover_crop(aspect, target, focus=None):
+    """把照片裁成 target 比例（铺满不变形）。focus 如 "70% 40%" 指定保留哪一块，默认左右居中、偏上（保住脸）。"""
+    fx, fy = 0.5, 0.3
+    if focus:
+        try:
+            fx, fy = (float(v.strip().rstrip("%")) / 100 for v in str(focus).split()[:2])
+        except ValueError:
+            pass
     if aspect > target:
-        side = (1 - target / aspect) / 2
-        return (side, 0, side, 0)
+        cut = 1 - target / aspect
+        return (cut * fx, 0, cut * (1 - fx), 0)
     cut = 1 - aspect / target
-    return (0, cut * 0.3, 0, cut * 0.7)
+    return (0, cut * fy, 0, cut * (1 - fy))
 
 
 def set_transition(slide):
@@ -357,35 +431,66 @@ def card_x(k):
     return (STAGE_W - (PER_PAGE * CARD_W + (PER_PAGE - 1) * GAP_X)) / 2 + k * (CARD_W + GAP_X)
 
 
-def build_overview(slide, page, pages, members, details, overviews):
-    for k, (idx, person, photo) in enumerate(members):
-        x, y = card_x(k), CARD_TOP
-        n = idx + 1
-        # 照片 + 名牌
-        add_shape(slide, x, y, CARD_W, FRAME_H, f"卡框{n}", fill=GOLD_FRAME, radius=12, angle=45)
-        add_shape(slide, x + 5, y + 5, CARD_W - 10, PHOTO_H + 10, f"衬纸{n}", fill="FFFAF0")
-        data, aspect = photo
-        add_picture(slide, data, x + PAD, y + PAD, PHOTO_W, PHOTO_H, f"!!p{n}", crop=cover_crop(aspect, 4 / 3))
-        py = y + PAD + PHOTO_H + 5
-        add_shape(slide, x + 5, py, CARD_W - 10, PLATE, f"名牌底{n}", fill=[(0, "C81A21"), (100000, "8C0910")])
-        add_shape(slide, x + 5, py, CARD_W - 10, 3, f"名牌金线{n}", fill="FFDC8C")
-        name_size = min(40, (CARD_W - 30) / text_em(person["name"], 0.08))
-        unit_size = min(23, (CARD_W - 30) / max(1, text_em(person.get("unit", ""))))
-        add_text(slide, x + 5, py + 3, CARD_W - 10, PLATE - 3, f"名牌{n}",
-                 [(person["name"], name_size, GOLD, True), (person.get("unit", ""), unit_size, "FFF1D6", False)],
-                 40, GOLD)
-        add_hotspot(slide, x, y, CARD_W, FRAME_H, f"热区{n}", details[idx])
+def vertical_tag(slide, x, y, w, text, size, color, fill, name, max_h):
+    """竖排的名字签（一字一行），像原海报照片右上角挂的小条。"""
+    text = text.replace(" ", "")
+    size = min(size, (max_h - 24) / max(1, len(text)) / 1.08)
+    h = len(text) * size * 1.08 + 24
+    tag = add_shape(slide, x, y, w, h, name + "底", fill=fill, radius=4)
+    add_shadow(tag, 6, 3, 0.35)
+    add_text(slide, x, y + 10, w, h - 20, name, list(text), size, color, bold=True, line=1.08, font=NAME_FONT)
 
-    # 翻页按钮（屏幕下方左右两角）
+
+def build_overview(slide, page, pages, members, details, overviews, silk):
+    px, py, pw, ph = PANEL
+    panel = add_shape(slide, px, py, pw, ph, "面板", fill=[(0, "B91019"), (100000, "A00C14")], alpha=0.92,
+                      line="D8343A", line_w=1.5, radius=26)
+    add_shadow(panel, 30, 8, 0.3)
+
+    for k, (idx, person, photo) in enumerate(members):
+        x, n = card_x(k), idx + 1
+        data, aspect = photo
+        # 照片框：圆角照片 + 红绸装饰 + 白色细边 + 竖排姓名单位
+        pic = add_picture(slide, data, x, WIN_TOP, CARD_W, WIN_H, f"!!p{n}",
+                          crop=cover_crop(aspect, CARD_W / WIN_H, person.get("focus")), radius=12)
+        add_shadow(pic, 14, 5, 0.4)
+        add_picture(slide, silk, x, WIN_TOP, CARD_W, WIN_H, f"红绸{n}", radius=12)
+        add_shape(slide, x, WIN_TOP, CARD_W, WIN_H, f"相框边{n}", fill=None, line="FFE9D6", line_w=2.5, radius=12)
+        right = x + CARD_W
+        vertical_tag(slide, right - 82, WIN_TOP + 12, 40, person["name"], 30, "3A1A0A",
+                     [(0, "FFF6E2"), (100000, "F2D49A")], f"姓名{n}", 170)
+        if person.get("unit"):
+            vertical_tag(slide, right - 38, WIN_TOP + 36, 28, person["unit"], 19, "C8161D",
+                         [(0, "FFFBF2"), (100000, "F7E6C4")], f"单位{n}", 210)
+
+        # 介绍文字框：白底圆角，底部一条绿黄红饰条
+        th_box = TEXT_BOTTOM - TEXT_TOP
+        box = add_shape(slide, x, TEXT_TOP, CARD_W, th_box, f"文字框{n}", fill=[(0, "FFFFFF"), (100000, "FBF7EF")],
+                        radius=10)
+        add_shadow(box, 10, 4, 0.3)
+        add_shape(slide, x + 10, TEXT_BOTTOM - 14, CARD_W - 20, 6, f"文字框饰条{n}",
+                  fill=[(0, "1F9D55"), (45000, "F2C230"), (100000, "D8262C")], angle=0)
+        bio = [t.strip() for t in str(person.get("bio", "")).split("\n") if t.strip()]
+        tw, th = CARD_W - 28, th_box - 16 - 26
+        short = sum(len(t) for t in bio) <= 30
+        size = 20
+        while size > 12 and count_lines(bio, size, tw, 0 if short else 2) * size * 1.5 > th - size * 0.3:
+            size -= 1
+        add_text(slide, x + 14, TEXT_TOP + 16, tw, th, f"介绍{n}", bio, size, "333333",
+                 align=PP_ALIGN.CENTER if short else PP_ALIGN.JUSTIFY,
+                 anchor=MSO_ANCHOR.MIDDLE if short else MSO_ANCHOR.TOP, line=1.5, indent_em=0 if short else 2)
+        add_hotspot(slide, x, WIN_TOP, CARD_W, TEXT_BOTTOM - WIN_TOP, f"热区{n}", details[idx])
+
+    # 翻页按钮（面板下方左右两角）
     def button(text, x, target, name):
         add_shape(slide, x, BUTTON_Y, 170, BUTTON_H, name + "底", fill="3A0306", alpha=0.55, line=GOLD, line_w=2,
                   radius=BUTTON_H / 2)
         add_text(slide, x, BUTTON_Y, 170, BUTTON_H, name + "字", [text], 24, GOLD, spacing_em=0.1)
         add_hotspot(slide, x, BUTTON_Y, 170, BUTTON_H, name, target)
     if page > 0:
-        button("‹ 上一页", 40, overviews[page - 1], "上一页")
+        button("‹ 上一页", 45, overviews[page - 1], "上一页")
     if page < pages - 1:
-        button("下一页 ›", STAGE_W - 210, overviews[page + 1], "下一页")
+        button("下一页 ›", STAGE_W - 215, overviews[page + 1], "下一页")
     set_transition(slide)
 
 
@@ -525,6 +630,7 @@ def build_pptx(cfg, out_path):
             blank = blank or placeholder_photo()
             photos.append(blank)
 
+    silk = silk_overlay()
     prs = Presentation()
     prs.slide_width, prs.slide_height = E(STAGE_W), E(STAGE_H)
     bg = cfg.get("background")
@@ -542,7 +648,7 @@ def build_pptx(cfg, out_path):
     for page in range(pages):
         ids = range(page * PER_PAGE, min(len(people), (page + 1) * PER_PAGE))
         members = [(i, people[i], photos[i]) for i in ids]
-        build_overview(overviews[page], page, pages, members, details, overviews)
+        build_overview(overviews[page], page, pages, members, details, overviews, silk)
         overviews[page].notes_slide.notes_text_frame.text = (
             f"第 {page + 1} 页（共 {pages} 页）。点照片放大；翻页笔“下一页”按顺序放大；放映中输入页码再按回车可直接跳转：\n" +
             "\n".join(f"第 {number[details[i].slide_id]} 张幻灯片：第 {i + 1} 位 {people[i]['name']}（{people[i].get('unit', '')}）"
