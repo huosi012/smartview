@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """生成交互版 PPT：output/<标题>-交互版.pptx（数据来自 config.js）
 
-  · 每页 8 人排成一行（照片 + 名牌 + 下方文字框，同最初海报的版式），人数多就自动分页（24 人 = 3 页）
+  · 每页 8 人排成一行，总览页只显示照片、姓名、单位；人数多就自动分页（24 人 = 3 页）
   · 点照片：照片“平滑”飞到屏幕中间放大，展开人物展板（姓名、单位、一句话事迹、正面行为介绍）；
     点任意处回到本页
   · 翻页笔“下一页”按顺序走：第 1 页 → 第 1～8 位 → 第 2 页 → 第 9～16 位 → … → 回到第 1 页
@@ -32,14 +32,13 @@ EMU_PER_U = 18000
 PT_PER_U = EMU_PER_U / 12700
 PER_PAGE = 8
 
-# 总览页卡片（一行 8 张）：金边 5 + 衬纸 5 包住 4:3 照片，下面是名牌，再下面是文字框
-CARD_W, PAD, PLATE, GAP_X = 300, 10, 66, 34
+# 总览页卡片（一行 8 张）：金边 5 + 衬纸 5 包住 4:3 照片，下面是姓名单位名牌
+CARD_W, PAD, PLATE, GAP_X = 310, 10, 86, 30
 PHOTO_W = CARD_W - 2 * PAD
 PHOTO_H = round(PHOTO_W * 3 / 4)
 FRAME_H = PAD + PHOTO_H + 5 + PLATE + 5
-CARD_TOP = 300                                   # 顶部约 1.5 米留给背景上的大标题
-BIO_TOP, BIO_BOTTOM = CARD_TOP + FRAME_H + 14, 935
-BUTTON_Y, BUTTON_H = 946, 44                     # 翻页按钮在卡片下方的两个角
+CARD_TOP = 420                                   # 顶部约 1.5 米留给背景上的大标题，卡片在下方偏上居中
+BUTTON_Y, BUTTON_H = 946, 44                     # 翻页按钮在屏幕下方的两个角
 
 # 放大页版面（与网页版一致）：照片连相框居中，展板横贯全屏
 LAYOUT = {"photoMaxH": 860, "photoMaxW": 1000, "frame": 28, "boardX": 70, "boardMinH": 600,
@@ -370,34 +369,14 @@ def build_overview(slide, page, pages, members, details, overviews):
         py = y + PAD + PHOTO_H + 5
         add_shape(slide, x + 5, py, CARD_W - 10, PLATE, f"名牌底{n}", fill=[(0, "C81A21"), (100000, "8C0910")])
         add_shape(slide, x + 5, py, CARD_W - 10, 3, f"名牌金线{n}", fill="FFDC8C")
-        name_size = min(32, (CARD_W - 30) / text_em(person["name"], 0.08))
-        unit_size = min(19, (CARD_W - 30) / max(1, text_em(person.get("unit", ""))))
+        name_size = min(40, (CARD_W - 30) / text_em(person["name"], 0.08))
+        unit_size = min(23, (CARD_W - 30) / max(1, text_em(person.get("unit", ""))))
         add_text(slide, x + 5, py + 3, CARD_W - 10, PLATE - 3, f"名牌{n}",
                  [(person["name"], name_size, GOLD, True), (person.get("unit", ""), unit_size, "FFF1D6", False)],
-                 32, GOLD)
+                 40, GOLD)
+        add_hotspot(slide, x, y, CARD_W, FRAME_H, f"热区{n}", details[idx])
 
-        # 下方文字框：一句话事迹（红色粗体）+ 正面行为介绍
-        bh = BIO_BOTTOM - BIO_TOP
-        add_shape(slide, x, BIO_TOP, CARD_W, bh, f"文字框{n}", fill=[(0, "FFFDF7"), (100000, "FBF1DC")],
-                  line="E9C46A", line_w=2, radius=12)
-        add_shape(slide, x + 12, BIO_BOTTOM - 14, CARD_W - 24, 5, f"文字框饰条{n}",
-                  fill=[(0, "C8161D"), (60000, "E0A43A"), (100000, "FFD27A")], angle=0)
-        hl = person.get("highlight", "").strip()
-        bio = [t.strip() for t in str(person.get("bio", "")).split("\n") if t.strip()]
-        tw, th = CARD_W - 32, bh - 14 - 26
-        short = not hl and sum(len(t) for t in bio) <= 30
-        size = 22
-        while size > 12 and ((count_lines([hl], size, tw) if hl else 0) +
-                             count_lines(bio, size, tw, 0 if short else 2)) * size * 1.5 > th - size * 0.3:
-            size -= 1
-        paras = ([("“" + hl + "”", size, "B8121A", True, 0)] if hl else []) + \
-                [(t, size, "3A2A1A", False, 0 if short else 2) for t in bio]
-        add_text(slide, x + 16, BIO_TOP + 14, tw, th, f"文字{n}", paras, size, "3A2A1A",
-                 align=PP_ALIGN.CENTER if short else PP_ALIGN.JUSTIFY,
-                 anchor=MSO_ANCHOR.MIDDLE if short else MSO_ANCHOR.TOP, line=1.5)
-        add_hotspot(slide, x, y, CARD_W, BIO_BOTTOM - y, f"热区{n}", details[idx])
-
-    # 翻页按钮（卡片下方左右两角）
+    # 翻页按钮（屏幕下方左右两角）
     def button(text, x, target, name):
         add_shape(slide, x, BUTTON_Y, 170, BUTTON_H, name + "底", fill="3A0306", alpha=0.55, line=GOLD, line_w=2,
                   radius=BUTTON_H / 2)
