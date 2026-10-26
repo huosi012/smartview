@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """生成交互版 PPT：output/<标题>-交互版.pptx（数据来自 config.js）
 
-  · 每页 12 人（2 行 × 6），人数多就自动分页（24 人 = 2 页）
+  · 每页 8 人排成一行（照片 + 名牌 + 下方文字框，同最初海报的版式），人数多就自动分页（24 人 = 3 页）
   · 点照片：照片“平滑”飞到屏幕中间放大，展开人物展板（姓名、单位、一句话事迹、正面行为介绍）；
     点任意处回到本页
-  · 翻页笔“下一页”按顺序走：第 1 页 → 第 1～12 位 → 第 2 页 → 第 13～24 位 → 回到第 1 页
+  · 翻页笔“下一页”按顺序走：第 1 页 → 第 1～8 位 → 第 2 页 → 第 9～16 位 → … → 回到第 1 页
   · 背景图放在“幻灯片母版”里，换背景只要换一次
   · 页面 140cm × 50cm（= 14m × 5m 的 1:10）
 
@@ -30,14 +30,16 @@ from build import ROOT, OUT, load_config
 STAGE_W, STAGE_H = 2800, 1000
 EMU_PER_U = 18000
 PT_PER_U = EMU_PER_U / 12700
-PER_PAGE, COLS = 12, 6
+PER_PAGE = 8
 
-# 总览页卡片：金边 5 + 衬纸 5 包住 4:3 照片，下面是名牌
-CARD_W, PAD, PLATE = 290, 10, 70
+# 总览页卡片（一行 8 张）：金边 5 + 衬纸 5 包住 4:3 照片，下面是名牌，再下面是文字框
+CARD_W, PAD, PLATE, GAP_X = 300, 10, 66, 34
 PHOTO_W = CARD_W - 2 * PAD
 PHOTO_H = round(PHOTO_W * 3 / 4)
-CARD_H = PAD + PHOTO_H + 5 + PLATE + 5
-GRID_TOP, GRID_BOTTOM, GAP_X = 330, 965, 80      # 顶部约 1.6 米留给背景上的大标题
+FRAME_H = PAD + PHOTO_H + 5 + PLATE + 5
+CARD_TOP = 300                                   # 顶部约 1.5 米留给背景上的大标题
+BIO_TOP, BIO_BOTTOM = CARD_TOP + FRAME_H + 14, 935
+BUTTON_Y, BUTTON_H = 946, 44                     # 翻页按钮在卡片下方的两个角
 
 # 放大页版面（与网页版一致）：照片连相框居中，展板横贯全屏
 LAYOUT = {"photoMaxH": 860, "photoMaxW": 1000, "frame": 28, "boardX": 70, "boardMinH": 600,
@@ -259,7 +261,7 @@ def style_run(run, size_u, color, bold=False, spacing_em=0.0, gradient=None, sha
 
 def add_text(slide, x, y, w, h, name, paras, size_u, color, bold=False, align=PP_ALIGN.CENTER,
              anchor=MSO_ANCHOR.MIDDLE, spacing_em=0.0, line=None, indent_em=0.0, gradient=None, shadow=False):
-    """paras：字符串列表；也可以是 [(文字, 字号, 颜色, 粗体)] 的列表，每段不同字号。"""
+    """paras：字符串列表；也可以是 [(文字, 字号, 颜色, 粗体[, 首行缩进])] 的列表，每段不同样式。"""
     tb = slide.shapes.add_textbox(E(x), E(y), E(w), E(h))
     set_name(tb, name)
     tf = tb.text_frame
@@ -268,15 +270,16 @@ def add_text(slide, x, y, w, h, name, paras, size_u, color, bold=False, align=PP
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
     tf.vertical_anchor = anchor
     for i, item in enumerate(paras):
-        text, sz, col, bd = item if isinstance(item, tuple) else (item, size_u, color, bold)
+        text, sz, col, bd = item[:4] if isinstance(item, tuple) else (item, size_u, color, bold)
+        ind = item[4] if isinstance(item, tuple) and len(item) > 4 else indent_em
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         p.alignment = align
         if line:
             p.line_spacing = Pt(sz * PT_PER_U * line)
-        if indent_em:
+        if ind:
             pPr = p._p.get_or_add_pPr()
             pPr.set("marL", "0")
-            pPr.set("indent", str(int(E(sz * indent_em))))
+            pPr.set("indent", str(int(E(sz * ind))))
         run = p.add_run()
         run.text = text
         style_run(run, sz, col, bd, spacing_em, gradient, shadow)
@@ -350,19 +353,17 @@ def enable_loop(prs):
 
 # ---------------------------------------------------------------- 总览页
 
-def card_pos(k):
-    """第 k 张卡片（本页内 0～11）的左上角。"""
-    rows = math.ceil(PER_PAGE / COLS)
-    gap_y = (GRID_BOTTOM - GRID_TOP - rows * CARD_H) / max(1, rows - 1)
-    x0 = (STAGE_W - (COLS * CARD_W + (COLS - 1) * GAP_X)) / 2
-    return x0 + (k % COLS) * (CARD_W + GAP_X), GRID_TOP + (k // COLS) * (CARD_H + gap_y)
+def card_x(k):
+    """本页第 k 张卡片（0～7）的左边位置：一行居中排开。"""
+    return (STAGE_W - (PER_PAGE * CARD_W + (PER_PAGE - 1) * GAP_X)) / 2 + k * (CARD_W + GAP_X)
 
 
 def build_overview(slide, page, pages, members, details, overviews):
     for k, (idx, person, photo) in enumerate(members):
-        x, y = card_pos(k)
+        x, y = card_x(k), CARD_TOP
         n = idx + 1
-        add_shape(slide, x, y, CARD_W, CARD_H, f"卡框{n}", fill=GOLD_FRAME, radius=12, angle=45)
+        # 照片 + 名牌
+        add_shape(slide, x, y, CARD_W, FRAME_H, f"卡框{n}", fill=GOLD_FRAME, radius=12, angle=45)
         add_shape(slide, x + 5, y + 5, CARD_W - 10, PHOTO_H + 10, f"衬纸{n}", fill="FFFAF0")
         data, aspect = photo
         add_picture(slide, data, x + PAD, y + PAD, PHOTO_W, PHOTO_H, f"!!p{n}", crop=cover_crop(aspect, 4 / 3))
@@ -374,17 +375,38 @@ def build_overview(slide, page, pages, members, details, overviews):
         add_text(slide, x + 5, py + 3, CARD_W - 10, PLATE - 3, f"名牌{n}",
                  [(person["name"], name_size, GOLD, True), (person.get("unit", ""), unit_size, "FFF1D6", False)],
                  32, GOLD)
-        add_hotspot(slide, x, y, CARD_W, CARD_H, f"热区{n}", details[idx])
 
-    # 翻页按钮
+        # 下方文字框：一句话事迹（红色粗体）+ 正面行为介绍
+        bh = BIO_BOTTOM - BIO_TOP
+        add_shape(slide, x, BIO_TOP, CARD_W, bh, f"文字框{n}", fill=[(0, "FFFDF7"), (100000, "FBF1DC")],
+                  line="E9C46A", line_w=2, radius=12)
+        add_shape(slide, x + 12, BIO_BOTTOM - 14, CARD_W - 24, 5, f"文字框饰条{n}",
+                  fill=[(0, "C8161D"), (60000, "E0A43A"), (100000, "FFD27A")], angle=0)
+        hl = person.get("highlight", "").strip()
+        bio = [t.strip() for t in str(person.get("bio", "")).split("\n") if t.strip()]
+        tw, th = CARD_W - 32, bh - 14 - 26
+        short = not hl and sum(len(t) for t in bio) <= 30
+        size = 22
+        while size > 12 and ((count_lines([hl], size, tw) if hl else 0) +
+                             count_lines(bio, size, tw, 0 if short else 2)) * size * 1.5 > th - size * 0.3:
+            size -= 1
+        paras = ([("“" + hl + "”", size, "B8121A", True, 0)] if hl else []) + \
+                [(t, size, "3A2A1A", False, 0 if short else 2) for t in bio]
+        add_text(slide, x + 16, BIO_TOP + 14, tw, th, f"文字{n}", paras, size, "3A2A1A",
+                 align=PP_ALIGN.CENTER if short else PP_ALIGN.JUSTIFY,
+                 anchor=MSO_ANCHOR.MIDDLE if short else MSO_ANCHOR.TOP, line=1.5)
+        add_hotspot(slide, x, y, CARD_W, BIO_BOTTOM - y, f"热区{n}", details[idx])
+
+    # 翻页按钮（卡片下方左右两角）
     def button(text, x, target, name):
-        add_shape(slide, x, 935, 190, 50, name + "底", fill="3A0306", alpha=0.55, line=GOLD, line_w=2, radius=25)
-        add_text(slide, x, 935, 190, 50, name + "字", [text], 26, GOLD, spacing_em=0.1)
-        add_hotspot(slide, x, 935, 190, 50, name, target)
+        add_shape(slide, x, BUTTON_Y, 170, BUTTON_H, name + "底", fill="3A0306", alpha=0.55, line=GOLD, line_w=2,
+                  radius=BUTTON_H / 2)
+        add_text(slide, x, BUTTON_Y, 170, BUTTON_H, name + "字", [text], 24, GOLD, spacing_em=0.1)
+        add_hotspot(slide, x, BUTTON_Y, 170, BUTTON_H, name, target)
     if page > 0:
         button("‹ 上一页", 40, overviews[page - 1], "上一页")
     if page < pages - 1:
-        button("下一页 ›", STAGE_W - 230, overviews[page + 1], "下一页")
+        button("下一页 ›", STAGE_W - 210, overviews[page + 1], "下一页")
     set_transition(slide)
 
 
@@ -532,7 +554,7 @@ def build_pptx(cfg, out_path):
     blank_layout = prs.slide_layouts[6]
     pages = math.ceil(len(people) / PER_PAGE)
     overviews, details = [], [None] * len(people)
-    for page in range(pages):                      # 页面顺序：第 1 页、第 1～12 位、第 2 页、第 13～24 位……
+    for page in range(pages):                      # 页面顺序：第 1 页、第 1～8 位、第 2 页、第 9～16 位……
         overviews.append(prs.slides.add_slide(blank_layout))
         for idx in range(page * PER_PAGE, min(len(people), (page + 1) * PER_PAGE)):
             details[idx] = prs.slides.add_slide(blank_layout)
